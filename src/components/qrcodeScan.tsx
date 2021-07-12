@@ -117,7 +117,15 @@ export default function QRCodeScan(): JSX.Element {
   return (
     <>
       <p>QRコードを読み取ってください</p>
-      <video playsInline muted autoPlay ref={videoRef} />
+      <video
+        playsInline
+        muted
+        autoPlay
+        ref={videoRef}
+        controlsList="nodownload nofullscreen noremoteplayback"
+        disablePictureInPicture
+        disableRemotePlayback
+      />
       {mediaStream && mediaStream?.active && videoRef.current && (
         <Canvas stream={mediaStream} videoElement={videoRef.current} />
       )}

@@ -1,12 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Link, Route, Switch } from 'react-router-dom';
 import CreateCard from './components/createCard';
+import Login from './components/login';
 import QRCodeScan from './components/qrcodeScan';
 
 function App(): JSX.Element {
   return (
     <BrowserRouter>
       <div className="App">
+        <Login redirectPath="/" />
         <ul>
           <li>
             <Link to="/">トップ</Link>
