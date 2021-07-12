@@ -1,13 +1,8 @@
-import { createContext } from 'react';
+import React, { createContext } from 'react';
 
-export type authContext = {
-  loginStatus: boolean;
-  updateLoginStatus: () => void;
-};
-
-export const AuthContext = createContext<authContext>({
+export const AuthContext = createContext<{
+  loginStatus: boolean | null;
+  updateLoginStatus?: React.Dispatch<React.SetStateAction<boolean | null>>;
+}>({
   loginStatus: false,
-  updateLoginStatus: () => {
-    return;
-  },
 });
