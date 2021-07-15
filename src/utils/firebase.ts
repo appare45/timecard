@@ -13,8 +13,11 @@ const firebaseConfig = {
   measurementId: `G-${process.env.REACT_APP_FIREBASE_MEASUREMENT_ID}`,
 };
 
+let app: firebase.app.App;
+
 if (firebase.app.length) {
-  firebase.initializeApp(firebaseConfig);
+  app = firebase.initializeApp(firebaseConfig);
 }
 const Auth = firebase.auth();
-export { Auth, firebase };
+const Db = firebase.firestore();
+export { Auth, firebase, Db, app };

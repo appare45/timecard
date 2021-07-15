@@ -1,8 +1,10 @@
 import React from 'react';
+import * as firebaseui from 'firebaseui';
 import { FirebaseAuth } from 'react-firebaseui';
 import { Auth, firebase } from './../utils/firebase';
 export default function Login(props: { redirectPath: string }): JSX.Element {
   const firebaseUiConfig: firebaseui.auth.Config = {
+    credentialHelper: firebaseui.auth.CredentialHelper.GOOGLE_YOLO,
     signInOptions: [firebase.auth.GoogleAuthProvider.PROVIDER_ID],
     signInSuccessUrl: `${process.env.REACT_APP_URL}${props.redirectPath}`,
   };

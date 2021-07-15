@@ -1,8 +1,15 @@
 import React, { createContext } from 'react';
 
 export const AuthContext = createContext<{
-  loginStatus: boolean | null;
-  updateLoginStatus?: React.Dispatch<React.SetStateAction<boolean | null>>;
+  loginStatus: {
+    current: boolean | null;
+    update?: React.Dispatch<React.SetStateAction<boolean | null>>;
+  };
+  accountEnablement: {
+    current: boolean;
+    update?: React.Dispatch<React.SetStateAction<boolean>>;
+  };
 }>({
-  loginStatus: false,
+  loginStatus: { current: false },
+  accountEnablement: { current: false },
 });

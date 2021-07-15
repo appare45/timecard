@@ -5,7 +5,7 @@ export default function Logout(props: {
   onSignOut?: () => void;
   onError?: (e: unknown) => void;
 }): JSX.Element {
-  const { updateLoginStatus } = useContext(AuthContext);
+  const localAuthContext = useContext(AuthContext);
   return (
     <button
       onClick={() => {
@@ -14,8 +14,11 @@ export default function Logout(props: {
             if (props.onSignOut) {
               props.onSignOut();
             }
-            if (updateLoginStatus) {
-              updateLoginStatus(false);
+            if (
+              localAuthContext.loginStatus &&
+              localAuthContext.loginStatus?.update
+            ) {
+              localAuthContext.loginStatus?.update(false);
             }
           })
           .catch((e) => {
