@@ -6,8 +6,8 @@ export const AuthContext = createContext<{
     update?: React.Dispatch<React.SetStateAction<boolean | null>>;
   };
   accountEnablement: {
-    current: boolean;
-    update?: React.Dispatch<React.SetStateAction<boolean>>;
+    current: boolean | null;
+    update?: React.Dispatch<React.SetStateAction<boolean | null>>;
   };
 }>({
   loginStatus: { current: false },

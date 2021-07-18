@@ -13,7 +13,9 @@ export default function User(props: {
   path: string;
 }): JSX.Element {
   const [loginStatus, updateLoginStatus] = useState<boolean | null>(null);
-  const [accountEnabled, updateAccountEnablement] = useState<boolean>(false);
+  const [accountEnabled, updateAccountEnablement] = useState<boolean | null>(
+    null
+  );
   const [authData, setAuthData] = useState<firebase.User>();
   const [defaultName, setDefaultName] = useState<string>('新規ユーザー');
   useEffect(() => {
@@ -26,8 +28,10 @@ export default function User(props: {
         getUser(account.uid)
           .then((user) => {
             if (user) {
+              updateAccountEnablement(true);
               setUser({ name: user.name }, account.uid);
             } else {
+              updateAccountEnablement(false);
               if (account.displayName) {
                 setDefaultName(account.displayName);
               }
@@ -57,7 +61,7 @@ export default function User(props: {
         <Login redirectPath={props.path} />
       )}
       {/* ログイン後アカウント未登録時 */}
-      {!accountEnabled && authData && (
+      {accountEnabled === false && authData && (
         <NewAccount name={defaultName} id={authData.uid} />
       )}
       {/* ログイン・アカウント登録済 */}

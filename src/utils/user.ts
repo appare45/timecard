@@ -3,8 +3,8 @@ import { firebase } from '../utils/firebase';
 import { Timestamp } from '@firebase/firestore-types';
 
 type User = {
-  readonly name: string;
-  readonly updated?: Timestamp;
+  name: string;
+  updated?: Timestamp;
 };
 
 // Type guard
@@ -56,17 +56,16 @@ async function setUser(
   }
 }
 
-const getUser = async (id: string): Promise<User> => {
-  return await Db.collection('user')
-    .withConverter(userDataConverter)
-    .doc(id)
-    .get()
-    .then((user) => {
-      return user.data();
-    })
-    .catch((e) => {
-      return e;
-    });
+const getUser = async (id: string): Promise<Readonly<User> | null> => {
+  try {
+    const data = await Db.collection('user')
+      .withConverter(userDataConverter)
+      .doc(id)
+      .get();
+    return data.data() ?? null;
+  } catch (error) {
+    throw new Error('Invalid data');
+  }
 };
 
 export { setUser, getUser };
