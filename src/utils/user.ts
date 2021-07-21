@@ -4,15 +4,30 @@ import { Timestamp } from '@firebase/firestore-types';
 
 type User = {
   name: string;
+  groupId?: [string];
   updated?: Timestamp;
 };
 
 // Type guard
-const isUser = (item: { name?: unknown; updated?: unknown }): item is User => {
+const isUser = (item: {
+  name?: unknown;
+  updated?: unknown;
+  groupId?: unknown[];
+}): item is User => {
   if (!(item.name && typeof item.name == 'string')) {
     return false;
   }
   if (!item.updated) {
+    return false;
+  }
+  if (
+    !(
+      (item?.groupId &&
+        Array.isArray(item.groupId) &&
+        item.groupId.some((v) => typeof v === 'string')) ||
+      !item?.groupId
+    )
+  ) {
     return false;
   }
   return true;
@@ -22,6 +37,7 @@ const userDataConverter = {
   toFirestore(user: User): firebase.firestore.DocumentData {
     return {
       name: user.name,
+      groupId: user?.groupId ?? [],
       updated: firebase.firestore.FieldValue.serverTimestamp(),
     };
   },
@@ -31,8 +47,7 @@ const userDataConverter = {
   ): User {
     const data = snapshot.data(option);
     if (!isUser(data)) {
-      alert('エラーが発生しました');
-      return new Error('invalid data');
+      console.error('ユーザーデータ取得中にエラーが発生しました');
     }
     return {
       name: data.name,
@@ -52,6 +67,7 @@ async function setUser(
       .withConverter(userDataConverter)
       .set(user, option ?? {});
   } catch (error) {
+    console.error(error);
     throw new Error(`Invalid data: ${error}`);
   }
 }
@@ -64,6 +80,7 @@ const getUser = async (id: string): Promise<Readonly<User> | null> => {
       .get();
     return data.data() ?? null;
   } catch (error) {
+    console.error(error);
     throw new Error('Invalid data');
   }
 };
