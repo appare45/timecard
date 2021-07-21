@@ -20,6 +20,7 @@ type Group = {
   name: string;
   joinStatus: boolean;
   created: Timestamp | FieldValue;
+  authorId: string;
   admin?: firebase.firestore.CollectionReference<Admin>;
   account?: firebase.firestore.CollectionReference<Account>;
   member?: firebase.firestore.CollectionReference<Member>;
@@ -61,6 +62,7 @@ const isGroup = (item: {
   name?: unknown;
   joinStatus?: unknown;
   created?: unknown;
+  authorId?: unknown;
   admin?: firebase.firestore.CollectionReference<Admin>;
   account?: firebase.firestore.CollectionReference<Account>;
   member?: firebase.firestore.CollectionReference<Member>;
@@ -69,6 +71,9 @@ const isGroup = (item: {
     return false;
   }
   if (!(item.joinStatus || typeof item.joinStatus == 'boolean')) {
+    return false;
+  }
+  if (!(item?.authorId || typeof item.authorId === 'string')) {
     return false;
   }
   if (!item?.created) {
@@ -82,6 +87,7 @@ const groupDataConverter = {
     return {
       name: group.name,
       joinStatus: group.joinStatus,
+      authorId: group.authorId,
       admin: group?.admin,
       member: group?.member,
       account: group?.account,
@@ -99,6 +105,7 @@ const groupDataConverter = {
     return {
       name: data.name,
       joinStatus: data.joinStatus,
+      authorId: data.authorId,
       admin: data.admin,
       member: data.member,
       account: data.account,
@@ -188,6 +195,7 @@ const createGroup = async (
       .add({
         name: group.name,
         joinStatus: group.joinStatus,
+        authorId: author.id,
         created: FieldValue.serverTimestamp(),
       });
     addMember(author.name, group_1.id).then((member) => {
