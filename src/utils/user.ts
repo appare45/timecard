@@ -25,7 +25,7 @@ const isUser = (item: {
       (item?.groupId &&
         Array.isArray(item.groupId) &&
         item.groupId.some((v) => typeof v === 'string')) ||
-      !item?.groupId
+      item?.groupId?.length == 0
     )
   ) {
     return false;
@@ -47,7 +47,7 @@ const userDataConverter = {
   ): User {
     const data = snapshot.data(option);
     if (!isUser(data)) {
-      console.error('ユーザーデータ取得中にエラーが発生しました');
+      throw new Error('ユーザーデータ取得中にエラーが発生しました');
     }
     return {
       name: data.name,
@@ -75,14 +75,12 @@ async function setUser(
 const getUser = async (id: string): Promise<Readonly<User> | null> => {
   try {
     const data = await Db.collection('user')
-      .withConverter(userDataConverter)
       .doc(id)
+      .withConverter(userDataConverter)
       .get();
     return data.data() ?? null;
   } catch (error) {
-    console.error(error);
-    throw new Error('Invalid data');
+    throw new Error(error);
   }
 };
-
 export { setUser, getUser };

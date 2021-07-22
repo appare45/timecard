@@ -30,15 +30,14 @@ export default function User(props: {
             if (user) {
               updateAccountEnablement(true);
               setUser({ name: user.name }, account.uid);
-            } else {
-              updateAccountEnablement(false);
-              if (account.displayName) {
-                setDefaultName(account.displayName);
-              }
             }
           })
           .catch((e) => {
             console.error(e);
+            updateAccountEnablement(false);
+            if (account.displayName) {
+              setDefaultName(account.displayName);
+            }
           });
       }
     });
