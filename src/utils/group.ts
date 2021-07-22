@@ -1,9 +1,8 @@
-import { FieldValue, Timestamp } from '@firebase/firestore-types';
+import { firebase } from './../utils/firebase';
 import { Db } from './firebase';
-import { firebase } from './firebase';
 
 type Admin = {
-  upGraded: Timestamp | FieldValue;
+  upGraded: firebase.firestore.FieldValue;
   upGradedBy: string;
 };
 
@@ -19,7 +18,7 @@ type Member = {
 type Group = {
   name: string;
   joinStatus: boolean;
-  created: Timestamp | FieldValue;
+  created: firebase.firestore.FieldValue;
   authorId: string;
   admin?: firebase.firestore.CollectionReference<Admin>;
   account?: firebase.firestore.CollectionReference<Account>;
@@ -196,7 +195,7 @@ const createGroup = async (
         name: group.name,
         joinStatus: group.joinStatus,
         authorId: author.id,
-        created: FieldValue.serverTimestamp(),
+        created: firebase.firestore.FieldValue.serverTimestamp(),
       });
     addMember(author.name, group_1.id).then((member) => {
       addAccount(author.id, member, group_1.id);
