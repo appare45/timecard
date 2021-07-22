@@ -1,8 +1,42 @@
-import React from 'react';
+import {
+  Button,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Heading,
+  Input,
+  Text,
+} from '@chakra-ui/react';
+import React, { useContext, useState } from 'react';
+import { AuthContext } from '../contexts/user';
+import { createGroup } from '../utils/group';
 
 type groupProps = {
   groupIds: string[];
   children: JSX.Element;
+};
+
+const CreateGroup: React.FC = () => {
+  const [groupName, setGroupName] = useState('');
+  return (
+    <FormControl isRequired>
+      <FormLabel>グループ名</FormLabel>
+      <Input
+        minLength={1}
+        maxLength={20}
+        value={groupName}
+        onChange={(e) => {
+          if (e.target.value.length <= 20) {
+            setGroupName(e.target.value);
+          }
+        }}
+      />
+      <FormHelperText>
+        グループ名は1文字以上20文字以内で入力してください
+      </FormHelperText>
+      <Button type="submit">作成</Button>
+    </FormControl>
+  );
 };
 
 const Group: React.FC<groupProps> = ({ groupIds, children }) => {
@@ -19,11 +53,12 @@ const Group: React.FC<groupProps> = ({ groupIds, children }) => {
         </>
       ) : (
         <>
-          <h1>グループの作成</h1>
+          <Heading>グループの作成</Heading>
           <section>
-            <p>現在では既存のグループに参加することはできません。</p>
-            <p>将来的に対応予定なのでしばらくお待ちください</p>
+            <Text>現在では既存のグループに参加することはできません。</Text>
+            <Text>将来的に対応予定なのでしばらくお待ちください</Text>
           </section>
+          <CreateGroup />
         </>
       )}
     </>
