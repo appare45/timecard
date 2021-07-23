@@ -1,3 +1,4 @@
+import { Spinner } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { account, AuthContext } from '../contexts/user';
@@ -69,6 +70,8 @@ export default function User(props: {
           id: accountStatus.id,
         },
       }}>
+      {/* 読み込み中 */}
+      {loginStatus === null && <Spinner />}
       {/* 未ログイン時 */}
       {loginStatus === false && !authData && (
         <Login redirectPath={props.path} />
