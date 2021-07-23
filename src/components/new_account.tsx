@@ -1,54 +1,77 @@
-import React, { useContext, useState } from 'react';
+import {
+  Button,
+  FormControl,
+  FormLabel,
+  Heading,
+  Input,
+  useBoolean,
+} from '@chakra-ui/react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../contexts/user';
 import { setUser } from '../utils/user';
+import { firebase } from '../utils/firebase';
 
 type Props = {
-  name: string;
+  name: string | null;
   id: string;
 };
 
 const NewAccount: React.FC<Props> = ({ name, id }) => {
   const localAuthContext = useContext(AuthContext);
-
-  const [input, updateInput] = useState<string>(name);
-  async function applyUserName(name: string, id: string): Promise<void> {
+  const [input, updateInput] = useState<string>('');
+  useEffect(() => {
+    if (name) {
+      updateInput(name);
+    }
+  }, [name]);
+  const [isSubmitting, setIsSubmitting] = useBoolean(false);
+  console.info(name, id);
+  async function applyUserName(setName: string, id: string): Promise<void> {
+    console.info(setName);
+    if (!(setName.length > 0)) {
+      return;
+    }
+    setIsSubmitting.on();
     try {
-      const user = await setUser(
+      await setUser(
         {
-          name: name,
+          name: setName,
+          updated: firebase.firestore.FieldValue.serverTimestamp(),
         },
         id
-      );
-      if (localAuthContext.accountEnablement.update) {
-        localAuthContext.accountEnablement.update(true);
-      }
-      return user;
+      ).then(() => {
+        if (localAuthContext.accountEnablement.update) {
+          localAuthContext.accountEnablement.update(true);
+        }
+      });
+      setIsSubmitting.off();
     } catch (error) {
       console.error(error);
-      return error;
+      setIsSubmitting.off();
     }
   }
   return (
     <>
-      <h1>アカウント登録</h1>
-      <form
-        action=""
-        onSubmit={(e) => {
-          e.preventDefault();
-          applyUserName(input, id);
-        }}>
-        <label htmlFor="name">名前</label>
-        <input
-          type="text"
-          defaultValue={input}
-          id="name"
-          autoFocus
-          onChange={(e) => {
-            updateInput(e.target.value);
-          }}
-        />
-        <button type="submit">登録</button>
-      </form>
+      <Heading>アカウント登録</Heading>
+      <FormControl>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            applyUserName(input, id);
+          }}>
+          <FormLabel>名前</FormLabel>
+          <Input
+            defaultValue={name ?? ''}
+            autoFocus
+            onChange={(e) => {
+              updateInput(e.target.value);
+            }}
+          />
+          <Button type="submit" isLoading={isSubmitting}>
+            登録
+          </Button>
+        </form>
+      </FormControl>
     </>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Route, Switch } from 'react-router-dom';
-import { AuthContext } from '../contexts/user';
+import { account, AuthContext } from '../contexts/user';
 import { Auth, firebase } from '../utils/firebase';
 import { getUser, setUser } from '../utils/user';
 import CreateCard from './createCard';
@@ -19,7 +19,11 @@ export default function User(props: {
   );
   const [joinedGroups, updateJoinedGroups] = useState<string[]>([]);
   const [authData, setAuthData] = useState<firebase.User>();
-  const [defaultName, setDefaultName] = useState<string>('新規ユーザー');
+  const [defaultName, setDefaultName] = useState<string | null>(null);
+  const [accountStatus, updateAccountStatus] = useState<account>({
+    name: null,
+    id: null,
+  });
   useEffect(() => {
     const unregisterAuthObserver = Auth.onAuthStateChanged((account) => {
       if (updateLoginStatus) {
@@ -32,15 +36,18 @@ export default function User(props: {
             if (user) {
               updateAccountEnablement(true);
               updateJoinedGroups(user.groupId ?? []);
-              setUser({ name: user.name }, account.uid);
+              updateAccountStatus({
+                name: user.name ?? account.displayName,
+                id: account.uid,
+              });
+              setUser({ name: user.name }, account.uid, { merge: true });
+            } else {
+              updateAccountEnablement(false);
+              setDefaultName(account.displayName);
             }
           })
           .catch((e) => {
             console.error(e);
-            updateAccountEnablement(false);
-            if (account.displayName) {
-              setDefaultName(account.displayName);
-            }
           });
       }
     });
@@ -56,6 +63,10 @@ export default function User(props: {
         accountEnablement: {
           current: accountEnabled,
           update: updateAccountEnablement,
+        },
+        account: {
+          name: accountStatus.name,
+          id: accountStatus.id,
         },
       }}>
       {/* 未ログイン時 */}

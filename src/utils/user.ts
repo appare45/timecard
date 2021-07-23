@@ -1,11 +1,11 @@
 import { Db } from './firebase';
 import { firebase } from '../utils/firebase';
-import { Timestamp } from '@firebase/firestore-types';
+import { FieldValue } from '@firebase/firestore-types';
 
 type User = {
   name: string;
-  groupId?: [string];
-  updated?: Timestamp;
+  groupId?: string[];
+  updated: FieldValue;
 };
 
 // Type guard
@@ -14,7 +14,7 @@ const isUser = (item: {
   updated?: unknown;
   groupId?: unknown[];
 }): item is User => {
-  if (!(item.name && typeof item.name == 'string')) {
+  if (!(item.name && typeof item.name == 'string' && item.name.length > 0)) {
     return false;
   }
   if (!item.updated) {
@@ -35,11 +35,9 @@ const isUser = (item: {
 
 const userDataConverter = {
   toFirestore(user: User): firebase.firestore.DocumentData {
-    return {
-      name: user.name,
-      groupId: user?.groupId ?? [],
-      updated: firebase.firestore.FieldValue.serverTimestamp(),
-    };
+    const data: User = user;
+    user.updated = firebase.firestore.FieldValue.serverTimestamp();
+    return data;
   },
   fromFirestore(
     snapshot: firebase.firestore.QueryDocumentSnapshot,
@@ -47,18 +45,19 @@ const userDataConverter = {
   ): User {
     const data = snapshot.data(option);
     if (!isUser(data)) {
-      throw new Error('ユーザーデータ取得中にエラーが発生しました');
+      throw new Error('Invalid user data');
     }
     return {
       name: data.name,
       updated: data.updated,
+      groupId: data.groupId ?? [],
     };
   },
 };
 
 async function setUser(
-  user: User,
-  id?: string,
+  user: Partial<User>,
+  id: string,
   option?: firebase.firestore.SetOptions
 ): Promise<void> {
   try {
