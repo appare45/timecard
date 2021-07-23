@@ -5,12 +5,14 @@ import {
   FormLabel,
   Heading,
   Input,
+  Select,
+  Skeleton,
   Text,
   useBoolean,
 } from '@chakra-ui/react';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../contexts/user';
-import { createGroup } from '../utils/group';
+import { createGroup, getGroup, Group } from '../utils/group';
 import { setUser } from '../utils/user';
 
 type groupProps = {
@@ -77,16 +79,54 @@ const CreateGroup: React.FC = () => {
   );
 };
 
-const Group: React.FC<groupProps> = ({ groupIds, children }) => {
+const GroupSelector: React.FC<{
+  ids: string[];
+  groups: Group[];
+  update: (e: string) => void;
+}> = ({ ids, groups, update }) => {
+  const [isLoaded, setIsLoaded] = useBoolean(false);
+  useEffect(() => {
+    if (groups.length) {
+      console.info(groups.length);
+      setIsLoaded.on();
+    }
+  }, [groups, setIsLoaded]);
+  return (
+    <Skeleton isLoaded={isLoaded}>
+      <Select onChange={(e) => update(e.target.value)}>
+        {groups.map((group, key) => (
+          <option key={ids[key]} value={ids[key]}>
+            {group.name}
+          </option>
+        ))}
+      </Select>
+    </Skeleton>
+  );
+};
+
+const GroupUI: React.FC<groupProps> = ({ groupIds, children }) => {
+  const [groups, updateGroups] = useState<Group[]>([]);
+  useEffect(() => {
+    const _groups: Group[] = [];
+    groupIds.forEach((groupId) => {
+      getGroup(groupId).then((group) => {
+        if (group) {
+          updateGroups([..._groups, group]);
+        }
+      });
+    });
+  }, [groupIds]);
+  const [currentId, updateCurrentId] = useState<string>(groupIds[0]);
   return (
     <>
       {groupIds.length ? (
         <>
-          <ul>
-            {groupIds.map((group) => (
-              <li key={group}>{group}</li>
-            ))}
-          </ul>
+          <Text>参加しているグループ一覧</Text>
+          <GroupSelector
+            ids={groupIds}
+            groups={groups}
+            update={updateCurrentId}
+          />
           {children}
         </>
       ) : (
@@ -103,4 +143,4 @@ const Group: React.FC<groupProps> = ({ groupIds, children }) => {
   );
 };
 
-export default Group;
+export default GroupUI;

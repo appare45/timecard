@@ -4,7 +4,7 @@ import { account, AuthContext } from '../contexts/user';
 import { Auth, firebase } from '../utils/firebase';
 import { getUser, setUser } from '../utils/user';
 import CreateCard from './createCard';
-import Group from './group';
+import GroupUI from './group';
 import Login from './login';
 import NewAccount from './new_account';
 import QRCodeScan from './qrcodeScan';
@@ -80,7 +80,7 @@ export default function User(props: {
       {/* ログイン・アカウント登録済 */}
       {loginStatus === true && authData && accountEnabled && (
         <>
-          <Group groupIds={joinedGroups}>
+          <GroupUI groupIds={joinedGroups}>
             <>
               <Switch>
                 <Route path="/qr">
@@ -92,7 +92,7 @@ export default function User(props: {
               </Switch>
               {props.children}
             </>
-          </Group>
+          </GroupUI>
         </>
       )}
     </AuthContext.Provider>

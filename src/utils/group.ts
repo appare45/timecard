@@ -15,7 +15,7 @@ type Member = {
   name: string;
 };
 
-type Group = {
+export type Group = {
   name: string;
   joinStatus: boolean;
   created: firebase.firestore.FieldValue;
