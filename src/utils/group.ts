@@ -20,9 +20,6 @@ type Group = {
   joinStatus: boolean;
   created: firebase.firestore.FieldValue;
   authorId: string;
-  admin?: firebase.firestore.CollectionReference<Admin>;
-  account?: firebase.firestore.CollectionReference<Account>;
-  member?: firebase.firestore.CollectionReference<Member>;
 };
 
 const isAccount = (item: { memberId?: unknown }): item is Account => {
@@ -41,9 +38,9 @@ const isMember = (item: { name?: unknown }): item is Member => {
 
 const isAdmin = (item: {
   upGraded?: unknown;
-  upGradedBy?: string;
+  upGradedBy?: unknown;
 }): item is Admin => {
-  if (!(item?.upGraded && typeof item.upGraded == 'string')) {
+  if (!item?.upGraded) {
     return false;
   }
   if (!(item.upGradedBy && typeof item.upGradedBy == 'string')) {
@@ -62,36 +59,26 @@ const isGroup = (item: {
   joinStatus?: unknown;
   created?: unknown;
   authorId?: unknown;
-  admin?: firebase.firestore.CollectionReference<Admin>;
-  account?: firebase.firestore.CollectionReference<Account>;
-  member?: firebase.firestore.CollectionReference<Member>;
 }): item is Group => {
-  if (!(item.name || typeof item.name == 'string')) {
+  if (!(item.name && typeof item.name == 'string' && item.name.length > 0)) {
     return false;
   }
-  if (!(item.joinStatus || typeof item.joinStatus == 'boolean')) {
+  if (!(item.joinStatus && typeof item.joinStatus == 'boolean')) {
     return false;
   }
-  if (!(item?.authorId || typeof item.authorId === 'string')) {
+  if (!(item?.authorId && typeof item.authorId === 'string')) {
     return false;
   }
   if (!item?.created) {
     return false;
   }
+
   return true;
 };
 
 const groupDataConverter = {
-  toFirestore(group: Group): firebase.firestore.DocumentData {
-    return {
-      name: group.name,
-      joinStatus: group.joinStatus,
-      authorId: group.authorId,
-      admin: group?.admin,
-      member: group?.member,
-      account: group?.account,
-      created: group.created,
-    };
+  toFirestore(group: Partial<Group>): firebase.firestore.DocumentData {
+    return group;
   },
   fromFirestore(
     snapshot: firebase.firestore.QueryDocumentSnapshot,
@@ -105,9 +92,6 @@ const groupDataConverter = {
       name: data.name,
       joinStatus: data.joinStatus,
       authorId: data.authorId,
-      admin: data.admin,
-      member: data.member,
-      account: data.account,
       created: data.created,
     };
   },
@@ -115,11 +99,7 @@ const groupDataConverter = {
 
 const memberDataConverter = {
   toFirestore(member: Member): firebase.firestore.DocumentData {
-    if (!isMember(member)) {
-      console.error('Invalid member data');
-      throw new Error('データの取得に失敗しました');
-    }
-    return { member: member.name };
+    return member;
   },
   fromFirestore(
     snapshot: firebase.firestore.QueryDocumentSnapshot,
@@ -161,9 +141,6 @@ const accountDataConverter = {
 
 const adminDataConverter = {
   toFirestore(admin: Admin): firebase.firestore.DocumentData {
-    if (!isAdmin(admin)) {
-      throw new Error('データ設定中にエラーが発生しました');
-    }
     return {
       upgraded: admin.upGraded,
       upgradedBy: admin.upGradedBy,
@@ -184,41 +161,45 @@ const adminDataConverter = {
   },
 };
 
-const createGroup = async (
+const createGroup = (
   group: { name: string; joinStatus: boolean },
   author: { id: string; name: string }
 ): Promise<string> => {
   try {
-    const group_1 = await Db.collection('group')
+    const _group: Readonly<Group> = {
+      name: group.name,
+      joinStatus: group.joinStatus,
+      authorId: author.id,
+      created: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    return Db.collection('group')
       .withConverter(groupDataConverter)
-      .add({
-        name: group.name,
-        joinStatus: group.joinStatus,
-        authorId: author.id,
-        created: firebase.firestore.FieldValue.serverTimestamp(),
+      .add(_group)
+      .then((group_1) => {
+        addMember({ name: author.name }, group_1.id).then((memberId) => {
+          addAccount(author.id, { memberId: memberId }, group_1.id);
+          addAdmin(memberId, memberId, group_1.id);
+        });
+        return group_1.id;
       });
-    addMember(author.name, group_1.id).then((member) => {
-      addAccount(author.id, member, group_1.id);
-      addAdmin(member, member, group_1.id);
-    });
-    return group_1.id;
   } catch (error) {
+    console.error(error);
     throw new Error(error);
   }
 };
 
 async function addAccount(
   accountId: string,
-  memberId: string,
+  account: Account,
   groupId: string
 ): Promise<void> {
   try {
     await Db.collection('group')
       .doc(groupId)
       .collection('account')
-      .withConverter(accountDataConverter)
       .doc(accountId)
-      .set({ memberId: memberId });
+      .withConverter(accountDataConverter)
+      .set(account);
     return;
   } catch (e) {
     throw new Error(e);
@@ -231,17 +212,16 @@ async function addAccount(
  * @param groupId 追加するグループ名
  * @returns メンバーのID
  */
-async function addMember(name: string, groupId: string): Promise<string> {
+async function addMember(member: Member, groupId: string): Promise<string> {
   try {
     const group = await Db.collection('group')
       .doc(groupId)
       .collection('member')
       .withConverter(memberDataConverter)
-      .add({
-        name: name,
-      });
+      .add(member);
     return group.id;
   } catch (error) {
+    console.error(error);
     throw new Error(error);
   }
 }
@@ -258,15 +238,16 @@ async function addAdmin(
   groupId: string
 ): Promise<void> {
   try {
+    const admin: Readonly<Admin> = {
+      upGraded: firebase.firestore.FieldValue.serverTimestamp(),
+      upGradedBy: upGradedBy,
+    };
     Db.collection('group')
       .doc(groupId)
       .collection('admin')
       .doc(memberId)
       .withConverter(adminDataConverter)
-      .set({
-        upGraded: firebase.firestore.FieldValue.serverTimestamp(),
-        upGradedBy: upGradedBy,
-      });
+      .set(admin);
     return;
   } catch (error) {
     console.error(error);
