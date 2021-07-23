@@ -6,11 +6,11 @@ import {
   Heading,
   Input,
   Select,
-  Skeleton,
   Text,
   useBoolean,
 } from '@chakra-ui/react';
 import React, { useContext, useEffect, useState } from 'react';
+import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { createGroup, getGroup, Group } from '../utils/group';
 import { setUser } from '../utils/user';
@@ -84,15 +84,8 @@ const GroupSelector: React.FC<{
   groups: Group[];
   update: (e: string) => void;
 }> = ({ ids, groups, update }) => {
-  const [isLoaded, setIsLoaded] = useBoolean(false);
-  useEffect(() => {
-    if (groups.length) {
-      console.info(groups.length);
-      setIsLoaded.on();
-    }
-  }, [groups, setIsLoaded]);
   return (
-    <Skeleton isLoaded={isLoaded}>
+    <>
       <Select onChange={(e) => update(e.target.value)}>
         {groups.map((group, key) => (
           <option key={ids[key]} value={ids[key]}>
@@ -100,7 +93,7 @@ const GroupSelector: React.FC<{
           </option>
         ))}
       </Select>
-    </Skeleton>
+    </>
   );
 };
 
@@ -120,7 +113,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds, children }) => {
   return (
     <>
       {groupIds.length ? (
-        <>
+        <GroupContext.Provider value={{ currentId: currentId, ids: groupIds }}>
           <Text>参加しているグループ一覧</Text>
           <GroupSelector
             ids={groupIds}
@@ -128,7 +121,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds, children }) => {
             update={updateCurrentId}
           />
           {children}
-        </>
+        </GroupContext.Provider>
       ) : (
         <>
           <Heading>グループの作成</Heading>
