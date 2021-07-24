@@ -208,7 +208,7 @@ async function addAccount(
 
 /**
  * メンバーを追加する
- * @param name 表示名
+ * @param member メンバーのデータ
  * @param groupId 追加するグループ名
  * @returns メンバーのID
  */
