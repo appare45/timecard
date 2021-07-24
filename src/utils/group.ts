@@ -11,7 +11,7 @@ type Account = {
   memberId: string;
 };
 
-type Member = {
+export type Member = {
   name: string;
 };
 
@@ -290,4 +290,27 @@ const getGroup = async (id: string): Promise<Readonly<Group> | null> => {
   }
 };
 
-export { setGroup, getGroup, addAccount, addAdmin, addMember, createGroup };
+const listMembers = async (
+  id: string,
+  option?: firebase.firestore.GetOptions
+): Promise<Readonly<firebase.firestore.QuerySnapshot<Member> | null> | null> => {
+  try {
+    return await Db.collection('group')
+      .doc(id)
+      .collection('member')
+      .withConverter(memberDataConverter)
+      .get(option);
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+export {
+  setGroup,
+  getGroup,
+  addAccount,
+  addAdmin,
+  addMember,
+  createGroup,
+  listMembers,
+};

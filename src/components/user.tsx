@@ -7,6 +7,7 @@ import { getUser, setUser } from '../utils/user';
 import CreateCard from './createCard';
 import GroupUI from './group';
 import Login from './login';
+import { MembersList } from './members';
 import NewAccount from './new_account';
 import QRCodeScan from './qrcodeScan';
 
@@ -93,6 +94,7 @@ export default function User(props: {
                   <CreateCard />
                 </Route>
               </Switch>
+              <MembersList />
               {props.children}
             </>
           </GroupUI>

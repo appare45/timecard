@@ -18,6 +18,12 @@ let app: firebase.app.App;
 if (firebase.app.length) {
   app = firebase.initializeApp(firebaseConfig);
 }
+
+export type dataWithId<T> = {
+  id: string;
+  data: T;
+};
+
 const Auth = firebase.auth();
 const Db = firebase.firestore();
 export { Auth, firebase, Db, app };

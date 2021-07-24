@@ -1,5 +1,6 @@
 import {
   Button,
+  Circle,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -86,7 +87,11 @@ const GroupSelector: React.FC<{
 }> = ({ ids, groups, update }) => {
   return (
     <>
-      <Select onChange={(e) => update(e.target.value)}>
+      <Select
+        onChange={(e) => update(e.target.value)}
+        colorScheme="gray"
+        isFullWidth={false}
+        width="sm">
         {groups.map((group, key) => (
           <option key={ids[key]} value={ids[key]}>
             {group.name}
@@ -99,20 +104,21 @@ const GroupSelector: React.FC<{
 
 const GroupUI: React.FC<groupProps> = ({ groupIds, children }) => {
   const [groups, updateGroups] = useState<Group[]>([]);
+  const [currentId, updateCurrentId] = useState<string>();
   useEffect(() => {
     const _groups: Group[] = [];
     groupIds.forEach((groupId) => {
       getGroup(groupId).then((group) => {
         if (group) {
           updateGroups([..._groups, group]);
+          updateCurrentId(groupIds[0]);
         }
       });
     });
   }, [groupIds]);
-  const [currentId, updateCurrentId] = useState<string>(groupIds[0]);
   return (
     <>
-      {groupIds.length ? (
+      {groupIds.length && currentId && (
         <GroupContext.Provider value={{ currentId: currentId, ids: groupIds }}>
           <Text>参加しているグループ一覧</Text>
           <GroupSelector
@@ -122,7 +128,9 @@ const GroupUI: React.FC<groupProps> = ({ groupIds, children }) => {
           />
           {children}
         </GroupContext.Provider>
-      ) : (
+      )}
+      {!currentId && <Circle />}
+      {!groupIds.length && (
         <>
           <Heading>グループの作成</Heading>
           <section>
