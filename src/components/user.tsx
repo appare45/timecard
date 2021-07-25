@@ -1,18 +1,14 @@
 import { Spinner } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
-import { Route, Switch } from 'react-router-dom';
 import { account, AuthContext } from '../contexts/user';
 import { Auth, firebase } from '../utils/firebase';
 import { getUser, setUser } from '../utils/user';
-import CreateCard from './createCard';
 import GroupUI from './group';
 import Login from './login';
-import { MembersList } from './members';
 import NewAccount from './new_account';
-import QRCodeScan from './qrcodeScan';
 
 export default function User(props: {
-  children: JSX.Element[];
+  children: JSX.Element[] | JSX.Element;
   path: string;
 }): JSX.Element {
   const [loginStatus, updateLoginStatus] = useState<boolean | null>(null);
@@ -84,20 +80,7 @@ export default function User(props: {
       {/* ログイン・アカウント登録済 */}
       {loginStatus === true && authData && accountEnabled && (
         <>
-          <GroupUI groupIds={joinedGroups}>
-            <>
-              <Switch>
-                <Route path="/qr">
-                  <QRCodeScan />
-                </Route>
-                <Route path="/create_card">
-                  <CreateCard />
-                </Route>
-              </Switch>
-              <MembersList />
-              {props.children}
-            </>
-          </GroupUI>
+          <GroupUI groupIds={joinedGroups} />
         </>
       )}
     </AuthContext.Provider>

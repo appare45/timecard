@@ -11,14 +11,16 @@ import {
   useBoolean,
 } from '@chakra-ui/react';
 import React, { useContext, useEffect, useState } from 'react';
+import { Link, Route, Switch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { createGroup, getGroup, Group } from '../utils/group';
 import { setUser } from '../utils/user';
+import { MembersList } from './members';
+import QRCodeScan from './qrcodeScan';
 
 type groupProps = {
   groupIds: string[];
-  children: JSX.Element;
 };
 
 const CreateGroup: React.FC = () => {
@@ -102,7 +104,7 @@ const GroupSelector: React.FC<{
   );
 };
 
-const GroupUI: React.FC<groupProps> = ({ groupIds, children }) => {
+const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const [groups, updateGroups] = useState<Group[]>([]);
   const [currentId, updateCurrentId] = useState<string>();
   useEffect(() => {
@@ -121,12 +123,30 @@ const GroupUI: React.FC<groupProps> = ({ groupIds, children }) => {
       {groupIds.length && currentId && (
         <GroupContext.Provider value={{ currentId: currentId, ids: groupIds }}>
           <Text>グループ</Text>
+          <ul>
+            <li>
+              <Link to="/">トップ</Link>
+            </li>
+            <li>
+              <Link to="/qr">QRコードをスキャンする</Link>
+            </li>
+            <li>
+              <Link to="/create_card">カードを作成する</Link>
+            </li>
+          </ul>
           <GroupSelector
             ids={groupIds}
             groups={groups}
             update={updateCurrentId}
           />
-          {children}
+          <Switch>
+            <Route exact path="/">
+              <MembersList />
+            </Route>
+            <Route path="/qr">
+              <QRCodeScan />
+            </Route>
+          </Switch>
         </GroupContext.Provider>
       )}
       {!currentId && <Circle />}

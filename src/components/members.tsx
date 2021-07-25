@@ -1,5 +1,10 @@
 import {
   Button,
+  Drawer,
+  DrawerBody,
+  DrawerCloseButton,
+  DrawerContent,
+  DrawerHeader,
   FormControl,
   FormLabel,
   Heading,
@@ -13,20 +18,29 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Skeleton,
   Spacer,
   Table,
   Tbody,
   Td,
   Th,
   Thead,
+  Tooltip,
   Tr,
   useBoolean,
 } from '@chakra-ui/react';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { GroupContext } from '../contexts/group';
-import { addMember, listMembers, Member } from '../utils/group';
+import {
+  addMember,
+  getGroup,
+  Group,
+  listMembers,
+  Member,
+} from '../utils/group';
 import { dataWithId } from '../utils/firebase';
-import { IoAdd, IoCard } from 'react-icons/io5';
+import { IoCard, IoPersonAdd, IoPersonRemove } from 'react-icons/io5';
+import { Card } from './createCard';
 
 const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
   groupId,
@@ -42,7 +56,7 @@ const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
         color="black"
         size="sm"
         onClick={() => setModalIsOpen(true)}
-        leftIcon={<IoAdd />}
+        leftIcon={<IoPersonAdd />}
         variant="outline">
         メンバーを追加
       </Button>
@@ -102,10 +116,41 @@ const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
   );
 };
 
+const MemberCardDrawer: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  groupId: string;
+  member: dataWithId<Member>;
+}> = ({ isOpen, onClose, member, groupId }) => {
+  const [group, setGroup] = useState<Group | null>(null);
+  useEffect(() => {
+    getGroup(groupId).then((group) => setGroup(group));
+  }, [groupId]);
+  console.info(isOpen);
+  return (
+    <Drawer placement="bottom" isOpen={isOpen} onClose={onClose}>
+      <DrawerContent>
+        <DrawerHeader>
+          {`${member.data.name}のカード`}
+          <DrawerCloseButton />
+        </DrawerHeader>
+        <DrawerBody>
+          {group && <Card member={member} group={group} />}
+        </DrawerBody>
+      </DrawerContent>
+    </Drawer>
+  );
+};
+
 const MembersList: React.FC = () => {
   const groupContext = useContext(GroupContext);
   const [members, setMembers] = useState<dataWithId<Member>[]>();
-  const updateMembersList = (groupId: string | null) => {
+  const [isUpdating, setIsUpdating] = useState(true);
+  const [memberCardDisplay, setMemberCardDisplay] = useBoolean(false);
+  const [displayCardMember, setDisplayCardMember] =
+    useState<dataWithId<Member>>();
+  const updateMembersList = useCallback((groupId: string | null) => {
+    setIsUpdating(true);
     if (groupId) {
       listMembers(groupId).then((members) => {
         if (members) {
@@ -115,14 +160,24 @@ const MembersList: React.FC = () => {
           });
           setMembers(_members);
         }
+        setIsUpdating(false);
       });
     }
-  };
+    setIsUpdating(false);
+  }, []);
   useEffect(() => {
     updateMembersList(groupContext.currentId);
-  }, [groupContext.currentId]);
+  }, [groupContext.currentId, updateMembersList]);
   return (
     <>
+      {displayCardMember && groupContext.currentId && (
+        <MemberCardDrawer
+          member={displayCardMember}
+          isOpen={memberCardDisplay}
+          groupId={groupContext.currentId}
+          onClose={() => setMemberCardDisplay.off()}
+        />
+      )}
       <HStack>
         <Heading size="md">メンバー一覧</Heading>
         <Spacer />
@@ -133,25 +188,42 @@ const MembersList: React.FC = () => {
           />
         )}
       </HStack>
-      <Table colorScheme="blackAlpha" size="sm">
-        <Thead>
-          <Tr>
-            <Th>名前</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {members?.map((member) => (
-            <Tr key={member.id}>
-              <Td>{member.data.name}</Td>
-              <Td>
-                <Button colorScheme="gray" variant="ghost">
-                  <Icon as={IoCard} />
-                </Button>
-              </Td>
+      <Skeleton isLoaded={!isUpdating}>
+        <Table colorScheme="blackAlpha" size="sm">
+          <Thead>
+            <Tr>
+              <Th>名前</Th>
             </Tr>
-          ))}
-        </Tbody>
-      </Table>
+          </Thead>
+          <Tbody>
+            {members?.map((member) => (
+              <Tr key={member.id}>
+                <Td>{member.data.name}</Td>
+                <Td>
+                  <HStack>
+                    <Tooltip label="カードを表示">
+                      <Button
+                        colorScheme="gray"
+                        variant="ghost"
+                        onClick={() => {
+                          setDisplayCardMember(member);
+                          setMemberCardDisplay.on();
+                        }}>
+                        <Icon as={IoCard} />
+                      </Button>
+                    </Tooltip>
+                    <Tooltip label="メンバーを削除">
+                      <Button colorScheme="gray" variant="ghost">
+                        <Icon as={IoPersonRemove} />
+                      </Button>
+                    </Tooltip>
+                  </HStack>
+                </Td>
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+      </Skeleton>
     </>
   );
 };
