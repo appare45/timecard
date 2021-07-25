@@ -3,6 +3,8 @@ import {
   FormControl,
   FormLabel,
   Heading,
+  HStack,
+  Icon,
   Input,
   Modal,
   ModalBody,
@@ -11,6 +13,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Spacer,
   Table,
   Tbody,
   Td,
@@ -23,6 +26,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { GroupContext } from '../contexts/group';
 import { addMember, listMembers, Member } from '../utils/group';
 import { dataWithId } from '../utils/firebase';
+import { IoAdd, IoCard } from 'react-icons/io5';
 
 const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
   groupId,
@@ -35,8 +39,11 @@ const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
     <>
       <Button
         colorScheme="blackAlpha"
-        bg="black"
-        onClick={() => setModalIsOpen(true)}>
+        color="black"
+        size="sm"
+        onClick={() => setModalIsOpen(true)}
+        leftIcon={<IoAdd />}
+        variant="outline">
         メンバーを追加
       </Button>
       <Modal onClose={() => setModalIsOpen(false)} isOpen={modalIsOpen}>
@@ -116,14 +123,17 @@ const MembersList: React.FC = () => {
   }, [groupContext.currentId]);
   return (
     <>
-      <Heading>メンバー一覧</Heading>
-      {groupContext.currentId && (
-        <AddMember
-          groupId={groupContext.currentId}
-          onUpdate={() => updateMembersList(groupContext.currentId)}
-        />
-      )}
-      <Table>
+      <HStack>
+        <Heading size="md">メンバー一覧</Heading>
+        <Spacer />
+        {groupContext.currentId && (
+          <AddMember
+            groupId={groupContext.currentId}
+            onUpdate={() => updateMembersList(groupContext.currentId)}
+          />
+        )}
+      </HStack>
+      <Table colorScheme="blackAlpha" size="sm">
         <Thead>
           <Tr>
             <Th>名前</Th>
@@ -133,6 +143,11 @@ const MembersList: React.FC = () => {
           {members?.map((member) => (
             <Tr key={member.id}>
               <Td>{member.data.name}</Td>
+              <Td>
+                <Button colorScheme="gray" variant="ghost">
+                  <Icon as={IoCard} />
+                </Button>
+              </Td>
             </Tr>
           ))}
         </Tbody>

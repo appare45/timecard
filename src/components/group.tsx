@@ -120,7 +120,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds, children }) => {
     <>
       {groupIds.length && currentId && (
         <GroupContext.Provider value={{ currentId: currentId, ids: groupIds }}>
-          <Text>参加しているグループ一覧</Text>
+          <Text>グループ</Text>
           <GroupSelector
             ids={groupIds}
             groups={groups}
