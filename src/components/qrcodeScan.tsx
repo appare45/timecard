@@ -1,5 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
+import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
+  AspectRatio,
+  Circle,
+  FormControl,
+  FormLabel,
+  Select,
+} from '@chakra-ui/react';
+import { cardHeight, cardWidth } from './createCard';
+import { useContext } from 'react';
+import { GroupContext } from '../contexts/group';
+import { addWork, getMember } from '../utils/group';
 
 const getUserCamera = () =>
   new Promise<MediaStream>((resolve, reject) => {
@@ -30,7 +44,11 @@ const updateCanvas = (
   }, fps / 1000);
 };
 
-const detectCode = (canvasElement: HTMLCanvasElement, fps: number): void => {
+const detectCode = (
+  canvasElement: HTMLCanvasElement,
+  fps: number,
+  onDetectCode: (e: string) => Promise<boolean>
+): void => {
   const ctx = canvasElement.getContext('2d');
   if (ctx) {
     const image = ctx.getImageData(
@@ -40,11 +58,25 @@ const detectCode = (canvasElement: HTMLCanvasElement, fps: number): void => {
       canvasElement.height
     );
     const code = jsQR(image.data, image.width, image.height);
-    if (code) {
-      console.info(code);
+    if (code && code.data) {
+      onDetectCode(code.data).then((e) => {
+        console.info(e);
+        if (e) {
+          setTimeout(
+            () => detectCode(canvasElement, fps, onDetectCode),
+            1000 / fps
+          );
+        } else {
+          console.info('continue');
+        }
+      });
+    } else {
+      setTimeout(
+        () => detectCode(canvasElement, fps, onDetectCode),
+        1000 / fps
+      );
     }
   }
-  setTimeout(() => detectCode(canvasElement, fps), 1000 / fps);
 };
 
 function Canvas(props: {
@@ -54,6 +86,9 @@ function Canvas(props: {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tracks = props.stream.getTracks();
   const [currentTrackIndex, updateCurrentTrackIndex] = useState<number>(0);
+  const groupContext = useContext(GroupContext);
+  const notificationAudio = useRef<HTMLAudioElement>(null);
+  const errorAudio = useRef<HTMLAudioElement>(null);
   useEffect(() => {
     if (canvasRef.current) {
       canvasRef.current.width =
@@ -61,6 +96,7 @@ function Canvas(props: {
       canvasRef.current.height =
         tracks[currentTrackIndex]?.getSettings()?.height ?? 100;
       const canvasContext = canvasRef.current.getContext('2d');
+      const unknownMemberIds: string[] = [];
       if (canvasContext) {
         updateCanvas(
           tracks[currentTrackIndex].getSettings()?.frameRate ?? 30,
@@ -71,7 +107,36 @@ function Canvas(props: {
         );
         detectCode(
           canvasRef.current,
-          tracks[currentTrackIndex].getSettings()?.frameRate ?? 30
+          tracks[currentTrackIndex].getSettings()?.frameRate ?? 30,
+          async (e): Promise<boolean> => {
+            if (groupContext.currentId && !unknownMemberIds.includes(e)) {
+              return getMember(e, groupContext.currentId).then((member) => {
+                if (member && groupContext.currentId) {
+                  addWork(groupContext.currentId, {
+                    type: 'work',
+                    content: {
+                      startTime: new Date(),
+                      endTime: null,
+                      status: 'running',
+                      memo: '',
+                    },
+                    memberId: e,
+                  });
+                  notificationAudio.current?.play();
+                  return false;
+                } else {
+                  unknownMemberIds.push(e);
+                  console.error('Unknown member');
+                  errorAudio.current?.play();
+                  return true;
+                }
+              });
+            } else {
+              console.error('Unknown member(saved)');
+              errorAudio.current?.play();
+              return true;
+            }
+          }
         );
       }
     }
@@ -79,11 +144,12 @@ function Canvas(props: {
 
   return (
     <>
-      <div>
-        <label htmlFor="selectCamera">カメラを選択</label>
-        <select
-          name="camera"
-          id="selectCamera"
+      <audio src="audio/notification_simple-01.wav" ref={notificationAudio} />
+      <audio src="audio/alert_error-02.wav" ref={errorAudio} />
+      <FormControl>
+        <FormLabel>カメラを選択</FormLabel>
+        <Select
+          w="sm"
           onChange={(e) => {
             updateCurrentTrackIndex(Number(e.target.value));
           }}>
@@ -92,9 +158,16 @@ function Canvas(props: {
               {track.label}
             </option>
           ))}
-        </select>
-      </div>
-      <canvas ref={canvasRef} />
+        </Select>
+      </FormControl>
+      <AspectRatio
+        maxW="lg"
+        maxH="lg"
+        ratio={cardWidth / cardHeight}
+        borderRadius="lg"
+        overflow="hidden">
+        <canvas ref={canvasRef} style={{ objectFit: 'cover' }} />
+      </AspectRatio>
     </>
   );
 }
@@ -117,6 +190,11 @@ export default function QRCodeScan(): JSX.Element {
   return (
     <>
       <p>QRコードを読み取ってください</p>
+      {mediaStream && mediaStream?.active && videoRef.current ? (
+        <Canvas stream={mediaStream} videoElement={videoRef.current} />
+      ) : (
+        <Circle />
+      )}
       <video
         playsInline
         muted
@@ -125,11 +203,20 @@ export default function QRCodeScan(): JSX.Element {
         controlsList="nodownload nofullscreen noremoteplayback"
         disablePictureInPicture
         disableRemotePlayback
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          opacity: 0,
+          zIndex: -10,
+        }}
       />
-      {mediaStream && mediaStream?.active && videoRef.current && (
-        <Canvas stream={mediaStream} videoElement={videoRef.current} />
+      {error && (
+        <Alert status="error">
+          <AlertIcon />
+          <AlertDescription>カメラにアクセスできません</AlertDescription>
+        </Alert>
       )}
-      {error && <span>{error}</span>}
     </>
   );
 }
