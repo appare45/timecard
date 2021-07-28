@@ -1,3 +1,4 @@
+import { QueryDocumentSnapshot } from '@firebase/firestore-types';
 import { firebase } from './../utils/firebase';
 import { Db } from './firebase';
 
@@ -22,6 +23,21 @@ export type Group = {
   authorId: string;
 };
 
+type activityType = 'work';
+
+export type activity<T> = {
+  type: activityType;
+  memberId: string;
+  content: T;
+};
+
+export type work = {
+  startTime: Date;
+  endTime: Date | null;
+  memo: string;
+  status: 'running' | 'done';
+};
+
 const isAccount = (item: { memberId?: unknown }): item is Account => {
   if (!(item.memberId && typeof item.memberId == 'string')) {
     return false;
@@ -44,6 +60,23 @@ const isAdmin = (item: {
     return false;
   }
   if (!(item.upGradedBy && typeof item.upGradedBy == 'string')) {
+    return false;
+  }
+  return true;
+};
+
+const isActivity = (item: {
+  type?: unknown;
+  content?: unknown;
+  status?: unknown;
+}): item is activity<unknown> => {
+  if (!(item?.type && typeof item.type === 'string')) {
+    return false;
+  }
+  if (!item?.content) {
+    return false;
+  }
+  if (!(item.status && typeof item.status === 'string')) {
     return false;
   }
   return true;
@@ -161,6 +194,22 @@ const adminDataConverter = {
   },
 };
 
+const activityDataConverter = {
+  toFirestore(activity: activity<unknown>): firebase.firestore.DocumentData {
+    return activity;
+  },
+  fromFirestore(
+    snapshot: firebase.firestore.QueryDocumentSnapshot,
+    option?: firebase.firestore.SnapshotOptions
+  ): activity<unknown> {
+    const data = snapshot.data(option);
+    if (!isActivity(data)) {
+      throw new Error('データ取得中にエラーが発生しました');
+    }
+    return data;
+  },
+};
+
 const createGroup = (
   group: { name: string; joinStatus: boolean },
   author: { id: string; name: string }
@@ -223,6 +272,20 @@ async function addMember(member: Member, groupId: string): Promise<string> {
   } catch (error) {
     console.error(error);
     throw new Error(error);
+  }
+}
+
+async function getMember(id: string, groupId: string): Promise<Member | null> {
+  try {
+    const member = await Db.collection('group')
+      .doc(groupId)
+      .collection('member')
+      .withConverter(memberDataConverter)
+      .doc(id)
+      .get();
+    return member.data() ?? null;
+  } catch (error) {
+    return null;
   }
 }
 
@@ -305,6 +368,74 @@ const listMembers = async (
   }
 };
 
+const addWork = async (
+  groupId: string,
+  activity: activity<work>
+): Promise<string> => {
+  try {
+    const data = await Db.collection('group')
+      .doc(groupId)
+      .collection('activity')
+      .withConverter(activityDataConverter)
+      .add(activity);
+    return data.id;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const getUserActivity = async (
+  groupId: string,
+  limit: number,
+  memberId?: string,
+  type?: activityType
+): Promise<QueryDocumentSnapshot<activity<unknown>>[]> => {
+  try {
+    const query = await Db.collection('group')
+      .doc(groupId)
+      .collection('activity')
+      .withConverter(activityDataConverter)
+      .where('type', '==', type)
+      .where('memberId', '==', memberId)
+      .limit(limit)
+      .get();
+    const data: QueryDocumentSnapshot<activity<unknown>>[] = [];
+    query.forEach((activity) => {
+      data.push(activity);
+    });
+    return data;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const getActivities = async (
+  groupId: string,
+  type: activityType,
+  order: string,
+  memberId?: string,
+  limit?: number
+): Promise<QueryDocumentSnapshot<activity<unknown>>[]> => {
+  try {
+    const query = await Db.collection('group')
+      .doc(groupId)
+      .collection('activity')
+      .withConverter(activityDataConverter)
+      .where('memberId', memberId ? '==' : '!=', memberId ?? '')
+      .where('type', type ? '==' : '!=', type ?? '')
+      .orderBy(order)
+      .limit(limit ?? 1)
+      .get();
+    const dataSet: QueryDocumentSnapshot<activity<unknown>>[] = [];
+    query.forEach((data) => {
+      dataSet.push(data);
+    });
+    return dataSet;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 export {
   setGroup,
   getGroup,
@@ -313,4 +444,8 @@ export {
   addMember,
   createGroup,
   listMembers,
+  addWork,
+  getUserActivity,
+  getMember,
+  getActivities,
 };

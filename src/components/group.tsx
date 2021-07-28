@@ -130,9 +130,6 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
             <li>
               <Link to="/qr">QRコードをスキャンする</Link>
             </li>
-            <li>
-              <Link to="/create_card">カードを作成する</Link>
-            </li>
           </ul>
           <GroupSelector
             ids={groupIds}

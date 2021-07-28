@@ -5,6 +5,7 @@ import {
   DrawerCloseButton,
   DrawerContent,
   DrawerHeader,
+  DrawerOverlay,
   FormControl,
   FormLabel,
   Heading,
@@ -39,7 +40,7 @@ import {
   Member,
 } from '../utils/group';
 import { dataWithId } from '../utils/firebase';
-import { IoCard, IoPersonAdd, IoPersonRemove } from 'react-icons/io5';
+import { IoAnalyticsSharp, IoCard, IoPersonAdd } from 'react-icons/io5';
 import { Card } from './createCard';
 
 const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
@@ -129,6 +130,7 @@ const MemberCardDrawer: React.FC<{
   console.info(isOpen);
   return (
     <Drawer placement="bottom" isOpen={isOpen} onClose={onClose}>
+      <DrawerOverlay />
       <DrawerContent>
         <DrawerHeader>
           {`${member.data.name}のカード`}
@@ -212,9 +214,9 @@ const MembersList: React.FC = () => {
                         <Icon as={IoCard} />
                       </Button>
                     </Tooltip>
-                    <Tooltip label="メンバーを削除">
+                    <Tooltip label="履歴を見る">
                       <Button colorScheme="gray" variant="ghost">
-                        <Icon as={IoPersonRemove} />
+                        <Icon as={IoAnalyticsSharp} />
                       </Button>
                     </Tooltip>
                   </HStack>

@@ -3,6 +3,7 @@ import {
   AlertDescription,
   AlertIcon,
   AlertTitle,
+  AspectRatio,
   Box,
   Button,
   Link,
@@ -13,14 +14,14 @@ import { IoDownload } from 'react-icons/io5';
 import { dataWithId } from '../utils/firebase';
 import { Group, Member } from '../utils/group';
 
+export const cardWidth = 91;
+export const cardHeight = 55;
 export const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
   member,
   group,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const qrRef = useRef<HTMLImageElement>(null);
-  const width = 91;
-  const height = 55;
   const name = member.data.name.toUpperCase().replace('　', ' ');
   const groupName = group.name.toUpperCase().replace('　', ' ');
   const [dataUrl, setDataUrl] = useState<string | null>(null);
@@ -103,18 +104,19 @@ export const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
           </AlertDescription>
         </Alert>
       )}
-      <Box display={isLoading ? 'none' : 'block'}>
+      <AspectRatio
+        w="sm"
+        ratio={cardWidth / cardHeight}
+        display={isLoading ? 'none' : 'block'}>
         <canvas
           ref={canvasRef}
-          width={width * 16}
-          height={height * 16}
+          width={cardWidth * 16}
+          height={cardHeight * 16}
           style={{
-            width: '91mm',
-            height: '55mm',
             border: '1px solid black',
           }}
         />
-      </Box>
+      </AspectRatio>
       {dataUrl && (
         <Link href={dataUrl} download>
           <Button leftIcon={<IoDownload />}>ダウンロード</Button>
