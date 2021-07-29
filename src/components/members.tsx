@@ -42,6 +42,7 @@ import {
 import { dataWithId } from '../utils/firebase';
 import { IoAnalyticsSharp, IoCard, IoPersonAdd } from 'react-icons/io5';
 import { Card } from './createCard';
+import { Link } from 'react-router-dom';
 
 const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
   groupId,
@@ -215,9 +216,11 @@ const MembersList: React.FC = () => {
                       </Button>
                     </Tooltip>
                     <Tooltip label="履歴を見る">
-                      <Button colorScheme="gray" variant="ghost">
-                        <Icon as={IoAnalyticsSharp} />
-                      </Button>
+                      <Link to={`/activity/${member.id}`}>
+                        <Button colorScheme="gray" variant="ghost">
+                          <Icon as={IoAnalyticsSharp} />
+                        </Button>
+                      </Link>
                     </Tooltip>
                   </HStack>
                 </Td>
@@ -230,4 +233,12 @@ const MembersList: React.FC = () => {
   );
 };
 
-export { MembersList };
+const Members: React.FC = () => {
+  return (
+    <>
+      <MembersList />
+    </>
+  );
+};
+
+export { Members };

@@ -16,7 +16,8 @@ import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { createGroup, getGroup, Group } from '../utils/group';
 import { setUser } from '../utils/user';
-import { MembersList } from './members';
+import { Activities } from './activity';
+import { Members } from './members';
 import QRCodeScan from './qrcodeScan';
 
 type groupProps = {
@@ -138,10 +139,13 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
           />
           <Switch>
             <Route exact path="/">
-              <MembersList />
+              <Members />
             </Route>
             <Route path="/qr">
               <QRCodeScan />
+            </Route>
+            <Route path={`/activity/`}>
+              <Activities />
             </Route>
           </Switch>
         </GroupContext.Provider>
