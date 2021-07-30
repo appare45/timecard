@@ -2,7 +2,7 @@ import { Db } from './firebase';
 import { firebase } from '../utils/firebase';
 import { FieldValue } from '@firebase/firestore-types';
 
-type User = {
+export type User = {
   name: string;
   groupId?: string[];
   updated: FieldValue;

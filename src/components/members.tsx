@@ -128,7 +128,6 @@ const MemberCardDrawer: React.FC<{
   useEffect(() => {
     getGroup(groupId).then((group) => setGroup(group));
   }, [groupId]);
-  console.info(isOpen);
   return (
     <Drawer placement="bottom" isOpen={isOpen} onClose={onClose}>
       <DrawerOverlay />

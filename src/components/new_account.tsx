@@ -25,9 +25,7 @@ const NewAccount: React.FC<Props> = ({ name, id }) => {
     }
   }, [name]);
   const [isSubmitting, setIsSubmitting] = useBoolean(false);
-  console.info(name, id);
   async function applyUserName(setName: string, id: string): Promise<void> {
-    console.info(setName);
     if (!(setName.length > 0)) {
       return;
     }

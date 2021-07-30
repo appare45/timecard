@@ -60,14 +60,11 @@ const detectCode = (
     const code = jsQR(image.data, image.width, image.height);
     if (code && code.data) {
       onDetectCode(code.data).then((e) => {
-        console.info(e);
         if (e) {
           setTimeout(
             () => detectCode(canvasElement, fps, onDetectCode),
             1000 / fps
           );
-        } else {
-          console.info('continue');
         }
       });
     } else {

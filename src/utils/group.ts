@@ -422,10 +422,12 @@ const getActivities = async (
       .collection('activity')
       .withConverter(activityDataConverter)
       .where('memberId', memberId ? '==' : '!=', memberId ?? '')
-      .where('type', type ? '==' : '!=', type ?? '')
+      .where('content.type', type ? '==' : '!=', type ?? '')
+      .orderBy(!memberId ? 'memberId' : order)
       .orderBy(order)
       .limit(limit ?? 1)
       .get();
+    console.info('content.type', type ? '==' : '!=', type ?? '');
     const dataSet: QueryDocumentSnapshot<activity<unknown>>[] = [];
     query.forEach((data) => {
       dataSet.push(data);
