@@ -31,11 +31,13 @@ export type activity<T> = {
   content: T;
 };
 
+type workStatus = 'running' | 'done';
+
 export type work = {
   startTime: Date;
   endTime: Date | null;
   memo: string;
-  status: 'running' | 'done';
+  status: workStatus;
 };
 
 const isAccount = (item: { memberId?: unknown }): item is Account => {
@@ -69,14 +71,11 @@ const isActivity = (item: {
   type?: unknown;
   content?: unknown;
   status?: unknown;
-}): item is activity<unknown> => {
+}): item is activity<work> => {
   if (!(item?.type && typeof item.type === 'string')) {
     return false;
   }
   if (!item?.content) {
-    return false;
-  }
-  if (!(item.status && typeof item.status === 'string')) {
     return false;
   }
   return true;
@@ -195,13 +194,13 @@ const adminDataConverter = {
 };
 
 const activityDataConverter = {
-  toFirestore(activity: activity<unknown>): firebase.firestore.DocumentData {
+  toFirestore(activity: activity<work>): firebase.firestore.DocumentData {
     return activity;
   },
   fromFirestore(
     snapshot: firebase.firestore.QueryDocumentSnapshot,
     option?: firebase.firestore.SnapshotOptions
-  ): activity<unknown> {
+  ): activity<work> {
     const data = snapshot.data(option);
     if (!isActivity(data)) {
       throw new Error('データ取得中にエラーが発生しました');
@@ -389,7 +388,7 @@ const getUserActivity = async (
   limit: number,
   memberId?: string,
   type?: activityType
-): Promise<QueryDocumentSnapshot<activity<unknown>>[]> => {
+): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
   try {
     const query = await Db.collection('group')
       .doc(groupId)
@@ -399,7 +398,7 @@ const getUserActivity = async (
       .where('memberId', '==', memberId)
       .limit(limit)
       .get();
-    const data: QueryDocumentSnapshot<activity<unknown>>[] = [];
+    const data: QueryDocumentSnapshot<activity<work>>[] = [];
     query.forEach((activity) => {
       data.push(activity);
     });
@@ -409,26 +408,18 @@ const getUserActivity = async (
   }
 };
 
-const getActivities = async (
+const getUserActivities = async (
   groupId: string,
-  type: activityType,
-  order: string,
-  memberId?: string,
-  limit?: number
-): Promise<QueryDocumentSnapshot<activity<unknown>>[]> => {
+  memberId: string
+): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
   try {
     const query = await Db.collection('group')
       .doc(groupId)
       .collection('activity')
       .withConverter(activityDataConverter)
-      .where('memberId', memberId ? '==' : '!=', memberId ?? '')
-      .where('content.type', type ? '==' : '!=', type ?? '')
-      .orderBy(!memberId ? 'memberId' : order)
-      .orderBy(order)
-      .limit(limit ?? 1)
+      .where('memberId', '==', memberId)
       .get();
-    console.info('content.type', type ? '==' : '!=', type ?? '');
-    const dataSet: QueryDocumentSnapshot<activity<unknown>>[] = [];
+    const dataSet: QueryDocumentSnapshot<activity<work>>[] = [];
     query.forEach((data) => {
       dataSet.push(data);
     });
@@ -449,5 +440,5 @@ export {
   addWork,
   getUserActivity,
   getMember,
-  getActivities,
+  getUserActivities,
 };
