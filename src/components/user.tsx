@@ -5,6 +5,7 @@ import { Auth, firebase } from '../utils/firebase';
 import { getUser, setUser } from '../utils/user';
 import GroupUI from './group';
 import Login from './login';
+import Logout from './logout';
 import NewAccount from './new_account';
 
 export default function User(props: {
@@ -80,6 +81,7 @@ export default function User(props: {
       {/* ログイン・アカウント登録済 */}
       {loginStatus === true && authData && accountEnabled && (
         <>
+          <Logout />
           <GroupUI groupIds={joinedGroups} />
         </>
       )}
