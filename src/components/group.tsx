@@ -1,17 +1,25 @@
 import {
+  Box,
   Button,
   Circle,
   FormControl,
   FormHelperText,
   FormLabel,
   Heading,
+  HStack,
+  Icon,
   Input,
+  Link,
+  List,
+  ListIcon,
+  ListItem,
   Select,
   Text,
   useBoolean,
 } from '@chakra-ui/react';
 import React, { useContext, useEffect, useState } from 'react';
-import { Link, Route, Switch } from 'react-router-dom';
+import { IoAnalytics, IoHome, IoQrCode } from 'react-icons/io5';
+import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { createGroup, getGroup, Group } from '../utils/group';
@@ -94,7 +102,7 @@ const GroupSelector: React.FC<{
         onChange={(e) => update(e.target.value)}
         colorScheme="gray"
         isFullWidth={false}
-        width="sm">
+        width="50">
         {groups.map((group, key) => (
           <option key={ids[key]} value={ids[key]}>
             {group.name}
@@ -123,31 +131,52 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
     <>
       {groupIds.length && currentId && (
         <GroupContext.Provider value={{ currentId: currentId, ids: groupIds }}>
-          <Text>グループ</Text>
-          <ul>
-            <li>
-              <Link to="/">トップ</Link>
-            </li>
-            <li>
-              <Link to="/qr">QRコードをスキャンする</Link>
-            </li>
-          </ul>
-          <GroupSelector
-            ids={groupIds}
-            groups={groups}
-            update={updateCurrentId}
-          />
-          <Switch>
-            <Route exact path="/">
-              <Members />
-            </Route>
-            <Route path="/qr">
-              <QRCodeScan />
-            </Route>
-            <Route path={`/activity/`}>
-              <Activities />
-            </Route>
-          </Switch>
+          <HStack align="start" h="100vh" py="10" px="5" spacing="5">
+            <Box>
+              <GroupSelector
+                ids={groupIds}
+                groups={groups}
+                update={updateCurrentId}
+              />
+              <Button
+                size="sm"
+                mt="5"
+                mb="3"
+                colorScheme="red"
+                leftIcon={<Icon as={IoQrCode} />}>
+                <Link as={routerLink} to="/qr" wordBreak="keep-all">
+                  QRコードをスキャンする
+                </Link>
+              </Button>
+              <List spacing="1">
+                <ListItem>
+                  <ListIcon as={IoHome} />
+                  <Link as={routerLink} to="/" wordBreak="keep-all">
+                    トップ
+                  </Link>
+                </ListItem>
+                <ListItem>
+                  <ListIcon as={IoAnalytics} />
+                  <Link as={routerLink} to="/activity" wordBreak="keep-all">
+                    アクティビティー
+                  </Link>
+                </ListItem>
+              </List>
+            </Box>
+            <Box w="full">
+              <Switch>
+                <Route exact path="/">
+                  <Members />
+                </Route>
+                <Route path="/qr">
+                  <QRCodeScan />
+                </Route>
+                <Route path={`/activity/`}>
+                  <Activities />
+                </Route>
+              </Switch>
+            </Box>
+          </HStack>
         </GroupContext.Provider>
       )}
       {!currentId && <Circle />}

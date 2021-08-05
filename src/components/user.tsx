@@ -1,4 +1,15 @@
-import { Spinner } from '@chakra-ui/react';
+import {
+  Avatar,
+  Button,
+  HStack,
+  Popover,
+  PopoverBody,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
+  Spinner,
+  Text,
+} from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { account, AuthContext } from '../contexts/user';
 import { Auth, firebase } from '../utils/firebase';
@@ -81,8 +92,32 @@ export default function User(props: {
       {/* ログイン・アカウント登録済 */}
       {loginStatus === true && authData && accountEnabled && (
         <>
-          <Logout />
           <GroupUI groupIds={joinedGroups} />
+          <HStack position="fixed" bottom="0" left="0" p="2">
+            <Popover>
+              <PopoverTrigger>
+                <Button size="lg">
+                  <Avatar
+                    src={authData.photoURL ?? ''}
+                    name={authData.displayName ?? ''}
+                    size="sm"
+                    mr="2"
+                  />
+                  <Text fontSize="lg" fontWeight="bold">
+                    {authData.displayName}
+                  </Text>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <PopoverHeader>
+                  {authData.displayName}としてログイン中
+                </PopoverHeader>
+                <PopoverBody>
+                  <Logout />
+                </PopoverBody>
+              </PopoverContent>
+            </Popover>
+          </HStack>
         </>
       )}
     </AuthContext.Provider>
