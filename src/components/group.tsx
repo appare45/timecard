@@ -11,7 +11,6 @@ import {
   Input,
   Link,
   List,
-  ListIcon,
   ListItem,
   Select,
   Text,
@@ -138,27 +137,32 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                 groups={groups}
                 update={updateCurrentId}
               />
-              <Button
-                size="sm"
-                mt="5"
-                mb="3"
-                colorScheme="red"
-                leftIcon={<Icon as={IoQrCode} />}>
-                <Link as={routerLink} to="/qr" wordBreak="keep-all">
+              <Link as={routerLink} to="/qr" wordBreak="keep-all">
+                <Button
+                  size="sm"
+                  mt="5"
+                  mb="3"
+                  colorScheme="red"
+                  leftIcon={<Icon as={IoQrCode} />}>
                   QRコードをスキャンする
-                </Link>
-              </Button>
+                </Button>
+              </Link>
               <List spacing="1">
                 <ListItem>
-                  <ListIcon as={IoHome} />
                   <Link as={routerLink} to="/" wordBreak="keep-all">
-                    トップ
+                    <Button leftIcon={<IoHome />} variant="link" color="black">
+                      トップ
+                    </Button>
                   </Link>
                 </ListItem>
                 <ListItem>
-                  <ListIcon as={IoAnalytics} />
                   <Link as={routerLink} to="/activity" wordBreak="keep-all">
-                    アクティビティー
+                    <Button
+                      leftIcon={<IoAnalytics />}
+                      variant="link"
+                      color="black">
+                      アクティビティー
+                    </Button>
                   </Link>
                 </ListItem>
               </List>

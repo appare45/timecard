@@ -181,7 +181,7 @@ const MembersList: React.FC = () => {
         />
       )}
       <HStack>
-        <Heading size="md">メンバー一覧</Heading>
+        <Heading>メンバー一覧</Heading>
         <Spacer />
         {groupContext.currentId && (
           <AddMember
@@ -191,7 +191,7 @@ const MembersList: React.FC = () => {
         )}
       </HStack>
       <Skeleton isLoaded={!isUpdating}>
-        <Table colorScheme="blackAlpha" size="sm">
+        <Table colorScheme="blackAlpha" size="sm" mt="5">
           <Thead>
             <Tr>
               <Th>名前</Th>

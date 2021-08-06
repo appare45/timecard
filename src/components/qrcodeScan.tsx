@@ -8,12 +8,16 @@ import {
   Circle,
   FormControl,
   FormLabel,
+  Heading,
+  HStack,
   Select,
+  VStack,
 } from '@chakra-ui/react';
 import { cardHeight, cardWidth } from './createCard';
 import { useContext } from 'react';
 import { GroupContext } from '../contexts/group';
 import { addWork, getMember } from '../utils/group';
+import { firebase } from '../utils/firebase';
 
 const getUserCamera = () =>
   new Promise<MediaStream>((resolve, reject) => {
@@ -112,7 +116,7 @@ function Canvas(props: {
                   addWork(groupContext.currentId, {
                     type: 'work',
                     content: {
-                      startTime: new Date(),
+                      startTime: firebase.firestore.Timestamp.now(),
                       endTime: null,
                       status: 'running',
                       memo: '',
@@ -143,19 +147,21 @@ function Canvas(props: {
     <>
       <audio src="audio/notification_simple-01.wav" ref={notificationAudio} />
       <audio src="audio/alert_error-02.wav" ref={errorAudio} />
-      <FormControl>
-        <FormLabel>カメラを選択</FormLabel>
-        <Select
-          w="sm"
-          onChange={(e) => {
-            updateCurrentTrackIndex(Number(e.target.value));
-          }}>
-          {tracks.map((track, index) => (
-            <option key={track.id} id={index.toString()}>
-              {track.label}
-            </option>
-          ))}
-        </Select>
+      <FormControl mt="2" mb="5">
+        <HStack align="center">
+          <FormLabel>カメラを選択</FormLabel>
+          <Select
+            w="max-content"
+            onChange={(e) => {
+              updateCurrentTrackIndex(Number(e.target.value));
+            }}>
+            {tracks.map((track, index) => (
+              <option key={track.id} id={index.toString()}>
+                {track.label}
+              </option>
+            ))}
+          </Select>
+        </HStack>
       </FormControl>
       <AspectRatio
         maxW="lg"
@@ -186,7 +192,7 @@ export default function QRCodeScan(): JSX.Element {
   }, []);
   return (
     <>
-      <p>QRコードを読み取ってください</p>
+      <Heading>QRコードを読み取ってください</Heading>
       {mediaStream && mediaStream?.active && videoRef.current ? (
         <Canvas stream={mediaStream} videoElement={videoRef.current} />
       ) : (

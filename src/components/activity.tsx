@@ -16,7 +16,7 @@ import {
 } from '../utils/group';
 
 const ActivityCard: React.FC<{ data: activity<work> }> = ({ data }) => {
-  console.info(data);
+  console.info(data.content.startTime);
   return (
     <Box>
       {data.content?.status ?? ''}{' '}
@@ -59,6 +59,7 @@ function UserActivity(): JSX.Element {
       {activities?.map((activity) => (
         <ActivityCard data={activity.data} key={activity.id} />
       ))}
+      {!activities?.length && <Text>履歴が存在しません</Text>}
     </>
   );
 }

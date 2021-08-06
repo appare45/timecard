@@ -3,12 +3,11 @@ import {
   Button,
   HStack,
   Popover,
-  PopoverBody,
   PopoverContent,
+  PopoverFooter,
   PopoverHeader,
   PopoverTrigger,
   Spinner,
-  Text,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { account, AuthContext } from '../contexts/user';
@@ -96,25 +95,25 @@ export default function User(props: {
           <HStack position="fixed" bottom="0" left="0" p="2">
             <Popover>
               <PopoverTrigger>
-                <Button size="lg">
-                  <Avatar
-                    src={authData.photoURL ?? ''}
-                    name={authData.displayName ?? ''}
-                    size="sm"
-                    mr="2"
-                  />
-                  <Text fontSize="lg" fontWeight="bold">
-                    {authData.displayName}
-                  </Text>
+                <Button
+                  size="lg"
+                  leftIcon={
+                    <Avatar
+                      src={authData.photoURL ?? ''}
+                      name={authData.displayName ?? ''}
+                      size="sm"
+                    />
+                  }>
+                  {authData.displayName}
                 </Button>
               </PopoverTrigger>
               <PopoverContent>
                 <PopoverHeader>
                   {authData.displayName}としてログイン中
                 </PopoverHeader>
-                <PopoverBody>
+                <PopoverFooter>
                   <Logout />
-                </PopoverBody>
+                </PopoverFooter>
               </PopoverContent>
             </Popover>
           </HStack>

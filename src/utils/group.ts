@@ -1,4 +1,4 @@
-import { QueryDocumentSnapshot } from '@firebase/firestore-types';
+import { QueryDocumentSnapshot, Timestamp } from '@firebase/firestore-types';
 import { firebase } from './../utils/firebase';
 import { Db } from './firebase';
 
@@ -34,8 +34,8 @@ export type activity<T> = {
 type workStatus = 'running' | 'done';
 
 export type work = {
-  startTime: Date;
-  endTime: Date | null;
+  startTime: Timestamp;
+  endTime: Timestamp | null;
   memo: string;
   status: workStatus;
 };
