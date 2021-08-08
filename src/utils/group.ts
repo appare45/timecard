@@ -14,6 +14,7 @@ type Account = {
 
 export type Member = {
   name: string;
+  photoUrl?: string;
 };
 
 export type Group = {
@@ -211,7 +212,7 @@ const activityDataConverter = {
 
 const createGroup = (
   group: { name: string; joinStatus: boolean },
-  author: { id: string; name: string }
+  author: { id: string; name: string; photoUrl: string }
 ): Promise<string> => {
   try {
     const _group: Readonly<Group> = {
@@ -224,7 +225,10 @@ const createGroup = (
       .withConverter(groupDataConverter)
       .add(_group)
       .then((group_1) => {
-        addMember({ name: author.name }, group_1.id).then((memberId) => {
+        addMember(
+          { name: author.name, photoUrl: author.photoUrl },
+          group_1.id
+        ).then((memberId) => {
           addAccount(author.id, { memberId: memberId }, group_1.id);
           addAdmin(memberId, memberId, group_1.id);
         });
@@ -429,6 +433,25 @@ const getUserActivities = async (
   }
 };
 
+const getAllActivities = async (
+  groupId: string
+): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
+  try {
+    const query = await Db.collection('group')
+      .doc(groupId)
+      .collection('activity')
+      .withConverter(activityDataConverter)
+      .get();
+    const dataSet: QueryDocumentSnapshot<activity<work>>[] = [];
+    query.forEach((data) => {
+      dataSet.push(data);
+    });
+    return dataSet;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 export {
   setGroup,
   getGroup,
@@ -441,4 +464,5 @@ export {
   getUserActivity,
   getMember,
   getUserActivities,
+  getAllActivities,
 };

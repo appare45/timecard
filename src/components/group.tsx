@@ -36,16 +36,24 @@ const CreateGroup: React.FC = () => {
   const userContext = useContext(AuthContext);
   const [isSubmitting, setIsSubmitting] = useBoolean(false);
   const submit = async (groupName: string) => {
-    if (userContext.account.id && userContext.account.name) {
+    if (
+      userContext.account?.uid &&
+      userContext.account.displayName &&
+      userContext.account.photoURL
+    ) {
       setIsSubmitting.on();
       try {
         if (groupName.length <= 20 && groupName.length > 0) {
           await createGroup(
             { name: groupName, joinStatus: false },
-            { id: userContext.account.id, name: userContext.account.name }
+            {
+              id: userContext.account.uid,
+              name: userContext.account.displayName,
+              photoUrl: userContext.account.photoURL,
+            }
           ).then((groupId) => {
-            if (userContext.account.id) {
-              setUser({ groupId: [groupId] }, userContext.account.id, {
+            if (userContext.account?.uid) {
+              setUser({ groupId: [groupId] }, userContext.account.uid, {
                 merge: true,
               });
             }

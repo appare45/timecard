@@ -5,13 +5,19 @@ import {
   AlertDescription,
   AlertIcon,
   AspectRatio,
+  Button,
   Circle,
+  Drawer,
+  DrawerBody,
+  DrawerCloseButton,
+  DrawerContent,
+  DrawerHeader,
+  DrawerOverlay,
   FormControl,
   FormLabel,
   Heading,
   HStack,
   Select,
-  VStack,
 } from '@chakra-ui/react';
 import { cardHeight, cardWidth } from './createCard';
 import { useContext } from 'react';
@@ -90,6 +96,7 @@ function Canvas(props: {
   const groupContext = useContext(GroupContext);
   const notificationAudio = useRef<HTMLAudioElement>(null);
   const errorAudio = useRef<HTMLAudioElement>(null);
+  const [detectedModalId, setDetectedModalId] = useState<null | string>(null);
   useEffect(() => {
     if (canvasRef.current) {
       canvasRef.current.width =
@@ -112,18 +119,9 @@ function Canvas(props: {
           async (e): Promise<boolean> => {
             if (groupContext.currentId && !unknownMemberIds.includes(e)) {
               return getMember(e, groupContext.currentId).then((member) => {
+                notificationAudio.current?.play();
                 if (member && groupContext.currentId) {
-                  addWork(groupContext.currentId, {
-                    type: 'work',
-                    content: {
-                      startTime: firebase.firestore.Timestamp.now(),
-                      endTime: null,
-                      status: 'running',
-                      memo: '',
-                    },
-                    memberId: e,
-                  });
-                  notificationAudio.current?.play();
+                  setDetectedModalId(e);
                   return false;
                 } else {
                   unknownMemberIds.push(e);
@@ -171,6 +169,38 @@ function Canvas(props: {
         overflow="hidden">
         <canvas ref={canvasRef} style={{ objectFit: 'cover' }} />
       </AspectRatio>
+      <Drawer
+        isOpen={!!detectedModalId}
+        onClose={() => setDetectedModalId(null)}
+        placement="bottom">
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerCloseButton />
+          <DrawerHeader>登録</DrawerHeader>
+          <DrawerBody>
+            {detectedModalId}
+            <Button
+              onClick={() => {
+                if (groupContext.currentId && detectedModalId) {
+                  addWork(groupContext.currentId, {
+                    type: 'work',
+                    content: {
+                      startTime: firebase.firestore.Timestamp.now(),
+                      endTime: null,
+                      status: 'running',
+                      memo: '',
+                    },
+                    memberId: detectedModalId,
+                  }).then(() => {
+                    setDetectedModalId(null);
+                  });
+                }
+              }}>
+              スタート
+            </Button>
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }

@@ -10,7 +10,7 @@ import {
   Spinner,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
-import { account, AuthContext } from '../contexts/user';
+import { AuthContext } from '../contexts/user';
 import { Auth, firebase } from '../utils/firebase';
 import { getUser, setUser } from '../utils/user';
 import GroupUI from './group';
@@ -29,10 +29,7 @@ export default function User(props: {
   const [joinedGroups, updateJoinedGroups] = useState<string[]>([]);
   const [authData, setAuthData] = useState<firebase.User>();
   const [defaultName, setDefaultName] = useState<string | null>(null);
-  const [accountStatus, updateAccountStatus] = useState<account>({
-    name: null,
-    id: null,
-  });
+  const [accountStatus, updateAccountStatus] = useState<firebase.User>();
   useEffect(() => {
     const unregisterAuthObserver = Auth.onAuthStateChanged((account) => {
       if (updateLoginStatus) {
@@ -45,10 +42,7 @@ export default function User(props: {
             if (user) {
               updateAccountEnablement(true);
               updateJoinedGroups(user.groupId ?? []);
-              updateAccountStatus({
-                name: user.name ?? account.displayName,
-                id: account.uid,
-              });
+              updateAccountStatus(account);
               setUser({ name: user.name }, account.uid, { merge: true });
             } else {
               updateAccountEnablement(false);
@@ -73,10 +67,7 @@ export default function User(props: {
           current: accountEnabled,
           update: updateAccountEnablement,
         },
-        account: {
-          name: accountStatus.name,
-          id: accountStatus.id,
-        },
+        account: accountStatus ?? null,
       }}>
       {/* 読み込み中 */}
       {loginStatus === null && <Spinner />}
