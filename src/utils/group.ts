@@ -30,6 +30,7 @@ export type activity<T> = {
   type: activityType;
   memberId: string;
   content: T;
+  updated?: firebase.firestore.Timestamp;
 };
 
 type workStatus = 'running' | 'done';
@@ -39,6 +40,18 @@ export type work = {
   endTime: Timestamp | null;
   memo: string;
   status: workStatus;
+};
+export const statusToText = (status: workStatus): string => {
+  switch (status) {
+    case 'running':
+      return '進行中';
+
+    case 'done':
+      return '完了';
+
+    default:
+      return '不明';
+  }
 };
 
 const isAccount = (item: { memberId?: unknown }): item is Account => {
@@ -196,6 +209,8 @@ const adminDataConverter = {
 
 const activityDataConverter = {
   toFirestore(activity: activity<work>): firebase.firestore.DocumentData {
+    const data = activity;
+    data.updated = firebase.firestore.Timestamp.now();
     return activity;
   },
   fromFirestore(
@@ -441,12 +456,36 @@ const getAllActivities = async (
       .doc(groupId)
       .collection('activity')
       .withConverter(activityDataConverter)
+      .orderBy('updated', 'desc')
       .get();
     const dataSet: QueryDocumentSnapshot<activity<work>>[] = [];
     query.forEach((data) => {
       dataSet.push(data);
     });
     return dataSet;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const getLatestActivity = async (
+  groupId: string,
+  memberId: string
+): Promise<activity<work>> => {
+  try {
+    const query = await Db.collection('group')
+      .doc(groupId)
+      .collection('activity')
+      .withConverter(activityDataConverter)
+      .where('user', '==', memberId)
+      .orderBy('updated', 'desc')
+      .limit(1)
+      .get();
+    const data: activity<work>[] = [];
+    query.forEach((q) => {
+      data.push(q.data());
+    });
+    return data[0];
   } catch (error) {
     throw new Error(error);
   }
@@ -465,4 +504,5 @@ export {
   getMember,
   getUserActivities,
   getAllActivities,
+  getLatestActivity,
 };

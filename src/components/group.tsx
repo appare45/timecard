@@ -2,6 +2,12 @@ import {
   Box,
   Button,
   Circle,
+  Drawer,
+  DrawerBody,
+  DrawerCloseButton,
+  DrawerContent,
+  DrawerHeader,
+  DrawerOverlay,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -9,7 +15,6 @@ import {
   HStack,
   Icon,
   Input,
-  Link,
   List,
   ListItem,
   Select,
@@ -123,6 +128,7 @@ const GroupSelector: React.FC<{
 const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const [groups, updateGroups] = useState<Group[]>([]);
   const [currentId, updateCurrentId] = useState<string>();
+  const [openScan, setOpenScan] = useState(false);
   useEffect(() => {
     const _groups: Group[] = [];
     groupIds.forEach((groupId) => {
@@ -138,6 +144,21 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
     <>
       {groupIds.length && currentId && (
         <GroupContext.Provider value={{ currentId: currentId, ids: groupIds }}>
+          <Drawer
+            isOpen={openScan}
+            onClose={() => setOpenScan(false)}
+            placement="bottom">
+            <DrawerOverlay />
+            <DrawerContent>
+              <DrawerHeader>
+                QRコードを読み取ってください
+                <DrawerCloseButton />
+              </DrawerHeader>
+              <DrawerBody>
+                <QRCodeScan onClose={() => setOpenScan(false)} />
+              </DrawerBody>
+            </DrawerContent>
+          </Drawer>
           <HStack align="start" h="100vh" py="10" px="5" spacing="5">
             <Box>
               <GroupSelector
@@ -145,33 +166,37 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                 groups={groups}
                 update={updateCurrentId}
               />
-              <Link as={routerLink} to="/qr" wordBreak="keep-all">
-                <Button
-                  size="sm"
-                  mt="5"
-                  mb="3"
-                  colorScheme="red"
-                  leftIcon={<Icon as={IoQrCode} />}>
-                  QRコードをスキャンする
-                </Button>
-              </Link>
+              <Button
+                size="sm"
+                mt="5"
+                mb="3"
+                colorScheme="red"
+                leftIcon={<Icon as={IoQrCode} />}
+                onClick={() => setOpenScan(true)}>
+                QRコードをスキャンする
+              </Button>
               <List spacing="1">
                 <ListItem>
-                  <Link as={routerLink} to="/" wordBreak="keep-all">
-                    <Button leftIcon={<IoHome />} variant="link" color="black">
-                      トップ
-                    </Button>
-                  </Link>
+                  <Button
+                    leftIcon={<IoHome />}
+                    variant="link"
+                    color="black"
+                    as={routerLink}
+                    to="/"
+                    wordBreak="keep-all">
+                    トップ
+                  </Button>
                 </ListItem>
                 <ListItem>
-                  <Link as={routerLink} to="/activity" wordBreak="keep-all">
-                    <Button
-                      leftIcon={<IoAnalytics />}
-                      variant="link"
-                      color="black">
-                      アクティビティー
-                    </Button>
-                  </Link>
+                  <Button
+                    leftIcon={<IoAnalytics />}
+                    variant="link"
+                    color="black"
+                    as={routerLink}
+                    to="/activity"
+                    wordBreak="keep-all">
+                    タイムライン
+                  </Button>
                 </ListItem>
               </List>
             </Box>
@@ -179,9 +204,6 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
               <Switch>
                 <Route exact path="/">
                   <Members />
-                </Route>
-                <Route path="/qr">
-                  <QRCodeScan />
                 </Route>
                 <Route path={`/activity/`}>
                   <Activities />

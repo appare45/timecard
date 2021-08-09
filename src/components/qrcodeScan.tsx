@@ -7,17 +7,11 @@ import {
   AspectRatio,
   Button,
   Circle,
-  Drawer,
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerHeader,
-  DrawerOverlay,
   FormControl,
   FormLabel,
-  Heading,
   HStack,
   Select,
+  useToast,
 } from '@chakra-ui/react';
 import { cardHeight, cardWidth } from './createCard';
 import { useContext } from 'react';
@@ -89,6 +83,7 @@ const detectCode = (
 function Canvas(props: {
   stream: MediaStream;
   videoElement: HTMLVideoElement;
+  onDetect: (e: string) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tracks = props.stream.getTracks();
@@ -96,7 +91,6 @@ function Canvas(props: {
   const groupContext = useContext(GroupContext);
   const notificationAudio = useRef<HTMLAudioElement>(null);
   const errorAudio = useRef<HTMLAudioElement>(null);
-  const [detectedModalId, setDetectedModalId] = useState<null | string>(null);
   useEffect(() => {
     if (canvasRef.current) {
       canvasRef.current.width =
@@ -121,7 +115,7 @@ function Canvas(props: {
               return getMember(e, groupContext.currentId).then((member) => {
                 notificationAudio.current?.play();
                 if (member && groupContext.currentId) {
-                  setDetectedModalId(e);
+                  props.onDetect(e);
                   return false;
                 } else {
                   unknownMemberIds.push(e);
@@ -145,22 +139,24 @@ function Canvas(props: {
     <>
       <audio src="audio/notification_simple-01.wav" ref={notificationAudio} />
       <audio src="audio/alert_error-02.wav" ref={errorAudio} />
-      <FormControl mt="2" mb="5">
-        <HStack align="center">
-          <FormLabel>カメラを選択</FormLabel>
-          <Select
-            w="max-content"
-            onChange={(e) => {
-              updateCurrentTrackIndex(Number(e.target.value));
-            }}>
-            {tracks.map((track, index) => (
-              <option key={track.id} id={index.toString()}>
-                {track.label}
-              </option>
-            ))}
-          </Select>
-        </HStack>
-      </FormControl>
+      {!tracks.length && (
+        <FormControl mt="2" mb="5">
+          <HStack align="center">
+            <FormLabel>カメラを選択</FormLabel>
+            <Select
+              w="max-content"
+              onChange={(e) => {
+                updateCurrentTrackIndex(Number(e.target.value));
+              }}>
+              {tracks.map((track, index) => (
+                <option key={track.id} id={index.toString()}>
+                  {track.label}
+                </option>
+              ))}
+            </Select>
+          </HStack>
+        </FormControl>
+      )}
       <AspectRatio
         maxW="lg"
         maxH="lg"
@@ -169,45 +165,19 @@ function Canvas(props: {
         overflow="hidden">
         <canvas ref={canvasRef} style={{ objectFit: 'cover' }} />
       </AspectRatio>
-      <Drawer
-        isOpen={!!detectedModalId}
-        onClose={() => setDetectedModalId(null)}
-        placement="bottom">
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerCloseButton />
-          <DrawerHeader>登録</DrawerHeader>
-          <DrawerBody>
-            {detectedModalId}
-            <Button
-              onClick={() => {
-                if (groupContext.currentId && detectedModalId) {
-                  addWork(groupContext.currentId, {
-                    type: 'work',
-                    content: {
-                      startTime: firebase.firestore.Timestamp.now(),
-                      endTime: null,
-                      status: 'running',
-                      memo: '',
-                    },
-                    memberId: detectedModalId,
-                  }).then(() => {
-                    setDetectedModalId(null);
-                  });
-                }
-              }}>
-              スタート
-            </Button>
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
     </>
   );
 }
-export default function QRCodeScan(): JSX.Element {
+export default function QRCodeScan(props: {
+  onClose: () => void;
+}): JSX.Element {
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [error, updateError] = useState('');
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [detectedId, setDetectedId] = useState<null | string>(null);
+  const groupContext = useContext(GroupContext);
+  const toast = useToast();
+
   useEffect(() => {
     getUserCamera()
       .then((e) => {
@@ -222,11 +192,45 @@ export default function QRCodeScan(): JSX.Element {
   }, []);
   return (
     <>
-      <Heading>QRコードを読み取ってください</Heading>
-      {mediaStream && mediaStream?.active && videoRef.current ? (
-        <Canvas stream={mediaStream} videoElement={videoRef.current} />
+      {mediaStream && mediaStream?.active && videoRef.current && !detectedId ? (
+        <Canvas
+          stream={mediaStream}
+          videoElement={videoRef.current}
+          onDetect={(e) => setDetectedId(e)}
+        />
       ) : (
         <Circle />
+      )}
+      {detectedId && (
+        <>
+          {detectedId}
+          <Button
+            onClick={() => {
+              if (groupContext.currentId && detectedId) {
+                addWork(groupContext.currentId, {
+                  type: 'work',
+                  content: {
+                    startTime: firebase.firestore.Timestamp.now(),
+                    endTime: null,
+                    status: 'running',
+                    memo: '',
+                  },
+                  memberId: detectedId,
+                }).then(() => {
+                  setDetectedId(null);
+                  toast({
+                    title: '開始しました',
+                    status: 'success',
+                    duration: 3000,
+                    isClosable: true,
+                  });
+                  props.onClose();
+                });
+              }
+            }}>
+            スタート
+          </Button>
+        </>
       )}
       <video
         playsInline

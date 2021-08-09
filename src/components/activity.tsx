@@ -1,11 +1,16 @@
 import {
+  Alert,
+  AlertIcon,
   Avatar,
   Box,
+  Button,
+  Circle,
+  Divider,
   Heading,
-  Link,
-  Tag,
-  TagLabel,
+  HStack,
+  Spinner,
   Text,
+  VStack,
 } from '@chakra-ui/react';
 import React from 'react';
 import { useEffect } from 'react';
@@ -22,6 +27,7 @@ import {
   getMember,
   getUserActivities,
   Member,
+  statusToText,
   work,
 } from '../utils/group';
 
@@ -32,31 +38,65 @@ export const ActivityCard: React.FC<{ data: activity<work> }> = ({ data }) => {
     if (currentId) {
       getMember(data.memberId, currentId).then((e) => setMemberInfo(e));
     }
-  });
+  }, [currentId, data.memberId]);
   return (
-    <Box p="3" shadow="lg" w="lg">
-      {data.content?.status ?? ''}
-      <Link as={RouterLink} to={`/activity/${data.memberId}`}>
-        <Tag py="1">
+    <Box p="3" w="lg">
+      <Button
+        size="sm"
+        my="1"
+        variant="link"
+        as={RouterLink}
+        to={`/activity/${data.memberId}`}
+        leftIcon={
           <Avatar
             src={memberInfo?.photoUrl}
             name={memberInfo?.name}
             size="sm"
           />
-          <TagLabel>{memberInfo?.name}</TagLabel>
-        </Tag>
-      </Link>
-      <Text>
-        {new Date(data.content.startTime.seconds * 1000).toLocaleTimeString()}~
+        }>
+        {memberInfo?.name}
+      </Button>
+      <HStack my="2" spacing="3">
+        <HStack spacing="1">
+          <Circle bg="green.300" size="3" />
+          <Text> {statusToText(data.content?.status ?? '')}</Text>
+        </HStack>
+        <Text>{data.content.startTime.toDate().toLocaleTimeString()}~</Text>
+      </HStack>
+      <Text fontSize="xs" mt="2">
+        最終更新:{data?.updated?.toDate().toLocaleString() ?? ''}
       </Text>
     </Box>
+  );
+};
+
+const DisplayActivities: React.FC<{
+  data: dataWithId<activity<work>>[] | null;
+}> = ({ data }) => {
+  return (
+    <>
+      <VStack spacing="1" w="max-content" divider={<Divider />}>
+        {data?.map((activity) => (
+          <ActivityCard data={activity.data} key={activity.id} />
+        ))}
+      </VStack>
+      {data === null && <Spinner />}
+      {data !== null && !data?.length && (
+        <Alert status="info" mt="3">
+          <AlertIcon />
+          履歴が存在しません
+        </Alert>
+      )}
+    </>
   );
 };
 
 function UserActivity(): JSX.Element {
   const { memberId } = useParams<{ memberId: string }>();
   const [user, setUser] = useState<Member | null>(null);
-  const [activities, setActivities] = useState<dataWithId<activity<work>>[]>();
+  const [activities, setActivities] = useState<
+    dataWithId<activity<work>>[] | null
+  >(null);
   const { currentId } = useContext(GroupContext);
   useEffect(() => {
     if (currentId) {
@@ -82,17 +122,16 @@ function UserActivity(): JSX.Element {
   return (
     <>
       {user?.name && <Heading>{`${user?.name ?? 'ユーザー'}の履歴`}</Heading>}
-      {activities?.map((activity) => (
-        <ActivityCard data={activity.data} key={activity.id} />
-      ))}
-      {!activities?.length && <Text>履歴が存在しません</Text>}
+      <DisplayActivities data={activities} />
     </>
   );
 }
 
 const AllActivity: React.FC = () => {
   const { currentId } = useContext(GroupContext);
-  const [activities, setActivities] = useState<dataWithId<activity<work>>[]>();
+  const [activities, setActivities] = useState<
+    dataWithId<activity<work>>[] | null
+  >(null);
   useEffect(() => {
     if (currentId) {
       getAllActivities(currentId).then((activities) => {
@@ -109,11 +148,11 @@ const AllActivity: React.FC = () => {
   }, [currentId]);
   return (
     <>
-      <Heading>全ての履歴</Heading>
-      {activities?.map((activity) => (
-        <ActivityCard data={activity.data} key={activity.id} />
-      ))}
-      {!activities?.length && <Text>履歴が存在しません</Text>}
+      <Box mb="3">
+        <Heading>タイムライン</Heading>
+        <Text>全てのアクティビティーが時間順で並びます</Text>
+      </Box>
+      <DisplayActivities data={activities} />
     </>
   );
 };
