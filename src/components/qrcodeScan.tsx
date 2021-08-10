@@ -157,14 +157,16 @@ function Canvas(props: {
           </HStack>
         </FormControl>
       )}
-      <AspectRatio
-        maxW="lg"
-        maxH="lg"
-        ratio={cardWidth / cardHeight}
-        borderRadius="lg"
-        overflow="hidden">
-        <canvas ref={canvasRef} style={{ objectFit: 'cover' }} />
-      </AspectRatio>
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          opacity: 0,
+          zIndex: -10,
+        }}
+      />
     </>
   );
 }
@@ -190,14 +192,17 @@ export default function QRCodeScan(props: {
         updateError(e);
       });
   }, []);
+
   return (
     <>
       {mediaStream && mediaStream?.active && videoRef.current && !detectedId ? (
-        <Canvas
-          stream={mediaStream}
-          videoElement={videoRef.current}
-          onDetect={(e) => setDetectedId(e)}
-        />
+        <>
+          <Canvas
+            stream={mediaStream}
+            videoElement={videoRef.current}
+            onDetect={(e) => setDetectedId(e)}
+          />
+        </>
       ) : (
         <Circle />
       )}
@@ -232,22 +237,26 @@ export default function QRCodeScan(props: {
           </Button>
         </>
       )}
-      <video
-        playsInline
-        muted
-        autoPlay
-        ref={videoRef}
-        controlsList="nodownload nofullscreen noremoteplayback"
-        disablePictureInPicture
-        disableRemotePlayback
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          opacity: 0,
-          zIndex: -10,
-        }}
-      />
+      {!detectedId && (
+        <AspectRatio
+          maxW="lg"
+          maxH="lg"
+          ratio={cardWidth / cardHeight}
+          borderRadius="lg"
+          overflow="hidden">
+          <video
+            playsInline
+            muted
+            autoPlay
+            ref={videoRef}
+            controlsList="nodownload nofullscreen noremoteplayback"
+            disablePictureInPicture
+            disableRemotePlayback
+            style={{ objectFit: 'cover' }}
+          />
+        </AspectRatio>
+      )}
+
       {error && (
         <Alert status="error">
           <AlertIcon />
