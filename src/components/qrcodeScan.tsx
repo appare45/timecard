@@ -5,19 +5,31 @@ import {
   AlertDescription,
   AlertIcon,
   AspectRatio,
+  Box,
   Button,
   Circle,
   FormControl,
   FormLabel,
+  Heading,
   HStack,
   Select,
+  Skeleton,
   useToast,
 } from '@chakra-ui/react';
 import { cardHeight, cardWidth } from './createCard';
 import { useContext } from 'react';
 import { GroupContext } from '../contexts/group';
-import { addWork, getMember } from '../utils/group';
-import { firebase } from '../utils/firebase';
+import {
+  activity,
+  addWork,
+  getLatestActivity,
+  getMember,
+  Member,
+  setWork,
+  work,
+} from '../utils/group';
+import { dataWithId, firebase } from '../utils/firebase';
+import { ActivityCard } from './activity';
 
 const getUserCamera = () =>
   new Promise<MediaStream>((resolve, reject) => {
@@ -83,7 +95,7 @@ const detectCode = (
 function Canvas(props: {
   stream: MediaStream;
   videoElement: HTMLVideoElement;
-  onDetect: (e: string) => void;
+  onDetect: (e: dataWithId<Member>) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tracks = props.stream.getTracks();
@@ -115,7 +127,7 @@ function Canvas(props: {
               return getMember(e, groupContext.currentId).then((member) => {
                 notificationAudio.current?.play();
                 if (member && groupContext.currentId) {
-                  props.onDetect(e);
+                  props.onDetect({ id: e, data: member });
                   return false;
                 } else {
                   unknownMemberIds.push(e);
@@ -170,15 +182,109 @@ function Canvas(props: {
     </>
   );
 }
+
+const MemberAction: React.FC<{
+  member: dataWithId<Member>;
+  onClose: () => void;
+}> = ({ member, onClose }) => {
+  const [latestActivity, setLatestActivity] =
+    useState<firebase.firestore.QueryDocumentSnapshot<activity<work>> | null>(
+      null
+    );
+  const { currentId } = useContext(GroupContext);
+  const toast = useToast();
+  useEffect(() => {
+    if (currentId) {
+      getLatestActivity(currentId, member.id).then((activity) =>
+        setLatestActivity(activity)
+      );
+    }
+  }, [currentId, member.id]);
+  return (
+    <>
+      <Box mb="5">
+        {member.data.name ? (
+          <Heading fontSize="2xl">
+            {member.data.name}の最終アクティビティー
+          </Heading>
+        ) : (
+          <Skeleton>
+            <Heading fontSize="2xl">読み込み中</Heading>
+          </Skeleton>
+        )}
+        {latestActivity?.data() ? (
+          <ActivityCard data={latestActivity.data()} member={member.data} />
+        ) : (
+          <Skeleton h="28" w="60" />
+        )}
+      </Box>
+      <HStack>
+        <Button
+          colorScheme={
+            latestActivity?.data().content.status === 'running'
+              ? 'red'
+              : 'green'
+          }
+          onClick={() => {
+            if (currentId && member) {
+              if (latestActivity?.data().content.status === 'done') {
+                addWork(currentId, {
+                  type: 'work',
+                  content: {
+                    startTime: firebase.firestore.Timestamp.now(),
+                    endTime: null,
+                    status: 'running',
+                    memo: '',
+                  },
+                  memberId: member.id,
+                }).then(() => {
+                  onClose();
+                  toast({
+                    title: '開始しました',
+                    status: 'success',
+                    duration: 3000,
+                    isClosable: true,
+                  });
+                });
+              } else if (latestActivity?.id) {
+                const _latestActivity = latestActivity.data();
+                _latestActivity.content.endTime =
+                  firebase.firestore.Timestamp.now();
+                _latestActivity.content.status = 'done';
+                setWork(currentId, latestActivity?.id, _latestActivity, {
+                  merge: true,
+                }).then(() => {
+                  onClose();
+                  toast({
+                    title: '終了しました',
+                    status: 'success',
+                    duration: 3000,
+                    isClosable: true,
+                  });
+                });
+              }
+            }
+          }}>
+          {latestActivity?.data().content.status === 'running'
+            ? '終了'
+            : '開始'}
+        </Button>
+        <Button variant="ghost" colorScheme="red" onClick={() => onClose()}>
+          キャンセル
+        </Button>
+      </HStack>
+    </>
+  );
+};
+
 export default function QRCodeScan(props: {
   onClose: () => void;
 }): JSX.Element {
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [error, updateError] = useState('');
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [detectedId, setDetectedId] = useState<null | string>(null);
-  const groupContext = useContext(GroupContext);
-  const toast = useToast();
+  const [detectedMember, setDetectedMember] =
+    useState<null | dataWithId<Member>>(null);
 
   useEffect(() => {
     getUserCamera()
@@ -195,54 +301,35 @@ export default function QRCodeScan(props: {
 
   return (
     <>
-      {mediaStream && mediaStream?.active && videoRef.current && !detectedId ? (
+      {mediaStream &&
+      mediaStream?.active &&
+      videoRef.current &&
+      !detectedMember ? (
         <>
           <Canvas
             stream={mediaStream}
             videoElement={videoRef.current}
-            onDetect={(e) => setDetectedId(e)}
+            onDetect={(e) => setDetectedMember(e)}
           />
         </>
       ) : (
         <Circle />
       )}
-      {detectedId && (
-        <>
-          {detectedId}
-          <Button
-            onClick={() => {
-              if (groupContext.currentId && detectedId) {
-                addWork(groupContext.currentId, {
-                  type: 'work',
-                  content: {
-                    startTime: firebase.firestore.Timestamp.now(),
-                    endTime: null,
-                    status: 'running',
-                    memo: '',
-                  },
-                  memberId: detectedId,
-                }).then(() => {
-                  setDetectedId(null);
-                  toast({
-                    title: '開始しました',
-                    status: 'success',
-                    duration: 3000,
-                    isClosable: true,
-                  });
-                  props.onClose();
-                });
-              }
-            }}>
-            スタート
-          </Button>
-        </>
-      )}
-      {!detectedId && (
+      {detectedMember ? (
+        <MemberAction
+          member={detectedMember}
+          onClose={() => {
+            setDetectedMember(null);
+            props.onClose();
+          }}
+        />
+      ) : (
         <AspectRatio
           maxW="lg"
           maxH="lg"
           ratio={cardWidth / cardHeight}
           borderRadius="lg"
+          bg="gray.400"
           overflow="hidden">
           <video
             playsInline

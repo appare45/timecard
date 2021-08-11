@@ -208,7 +208,9 @@ const adminDataConverter = {
 };
 
 const activityDataConverter = {
-  toFirestore(activity: activity<work>): firebase.firestore.DocumentData {
+  toFirestore(
+    activity: Partial<activity<work>>
+  ): firebase.firestore.DocumentData {
     const data = activity;
     data.updated = firebase.firestore.Timestamp.now();
     return activity;
@@ -401,6 +403,24 @@ const addWork = async (
     throw new Error(error);
   }
 };
+const setWork = async (
+  groupId: string,
+  workId: string,
+  activity: Partial<activity<work>>,
+  option: firebase.firestore.SetOptions
+): Promise<void> => {
+  try {
+    await Db.collection('group')
+      .doc(groupId)
+      .collection('activity')
+      .doc(workId)
+      .withConverter(activityDataConverter)
+      .set(activity, option);
+    return;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
 
 const getUserActivity = async (
   groupId: string,
@@ -471,7 +491,7 @@ const getAllActivities = async (
 const getLatestActivity = async (
   groupId: string,
   memberId: string
-): Promise<activity<work>> => {
+): Promise<firebase.firestore.QueryDocumentSnapshot<activity<work>>> => {
   try {
     const query = await Db.collection('group')
       .doc(groupId)
@@ -481,9 +501,9 @@ const getLatestActivity = async (
       .orderBy('updated', 'desc')
       .limit(1)
       .get();
-    const data: activity<work>[] = [];
+    const data: firebase.firestore.QueryDocumentSnapshot<activity<work>>[] = [];
     query.forEach((q) => {
-      data.push(q.data());
+      data.push(q);
     });
     return data[0];
   } catch (error) {
@@ -497,6 +517,7 @@ export {
   addAccount,
   addAdmin,
   addMember,
+  setWork,
   createGroup,
   listMembers,
   addWork,

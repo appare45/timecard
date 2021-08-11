@@ -8,6 +8,7 @@ import {
   Divider,
   Heading,
   HStack,
+  Skeleton,
   Spinner,
   Text,
   VStack,
@@ -37,47 +38,62 @@ export const ActivityStatus: React.FC<{ workStatus: workStatus }> = ({
 }) => {
   return (
     <HStack spacing="1">
-      <Circle bg="green.300" size="3" />
+      <Circle bg={workStatus === 'done' ? 'gray.400' : 'green.400'} size="3" />
       <Text> {statusToText(workStatus ?? '')}</Text>
     </HStack>
   );
 };
 
-export const ActivityCard: React.FC<{ data: activity<work> }> = ({ data }) => {
-  const [memberInfo, setMemberInfo] = useState<Member | null>();
-  const { currentId } = useContext(GroupContext);
-  useEffect(() => {
-    if (currentId) {
-      getMember(data.memberId, currentId).then((e) => setMemberInfo(e));
-    }
-  }, [currentId, data.memberId]);
-  return (
-    <Box p="3" w="lg">
-      <Button
-        size="sm"
-        my="1"
-        variant="link"
-        as={RouterLink}
-        to={`/activity/${data.memberId}`}
-        leftIcon={
-          <Avatar
-            src={memberInfo?.photoUrl}
-            name={memberInfo?.name}
+export const ActivityCard: React.FC<{ data: activity<work>; member?: Member }> =
+  ({ data, member }) => {
+    const [memberInfo, setMemberInfo] = useState<Member | null>();
+    const { currentId } = useContext(GroupContext);
+    useEffect(() => {
+      if (member) {
+        setMemberInfo(member);
+      } else if (currentId) {
+        getMember(data.memberId, currentId).then((e) => setMemberInfo(e));
+      }
+    }, [currentId, data.memberId, member]);
+    return (
+      <Box p="3" w="lg">
+        {memberInfo ? (
+          <Button
             size="sm"
-          />
-        }>
-        {memberInfo?.name}
-      </Button>
-      <HStack my="2" spacing="3">
-        <ActivityStatus workStatus={data.content.status} />
-        <Text>{data.content.startTime.toDate().toLocaleTimeString()}~</Text>
-      </HStack>
-      <Text fontSize="xs" mt="2">
-        最終更新:{data?.updated?.toDate().toLocaleString() ?? ''}
-      </Text>
-    </Box>
-  );
-};
+            my="1"
+            variant="link"
+            as={RouterLink}
+            to={`/activity/${data.memberId}`}
+            leftIcon={
+              <Avatar
+                src={memberInfo?.photoUrl}
+                name={memberInfo?.name}
+                size="sm"
+              />
+            }>
+            {memberInfo?.name}
+          </Button>
+        ) : (
+          <Skeleton>
+            <Button
+              size="sm"
+              my="1"
+              variant="link"
+              leftIcon={<Avatar src="" name="読み込み中" size="sm" />}>
+              読み込み中
+            </Button>
+          </Skeleton>
+        )}
+        <HStack my="2" spacing="3">
+          <ActivityStatus workStatus={data.content.status} />
+          <Text>{data.content.startTime.toDate().toLocaleTimeString()}~</Text>
+        </HStack>
+        <Text fontSize="xs" mt="2">
+          最終更新:{data?.updated?.toDate().toLocaleString() ?? ''}
+        </Text>
+      </Box>
+    );
+  };
 
 const DisplayActivities: React.FC<{
   data: dataWithId<activity<work>>[] | null;
