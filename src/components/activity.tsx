@@ -29,7 +29,19 @@ import {
   Member,
   statusToText,
   work,
+  workStatus,
 } from '../utils/group';
+
+export const ActivityStatus: React.FC<{ workStatus: workStatus }> = ({
+  workStatus,
+}) => {
+  return (
+    <HStack spacing="1">
+      <Circle bg="green.300" size="3" />
+      <Text> {statusToText(workStatus ?? '')}</Text>
+    </HStack>
+  );
+};
 
 export const ActivityCard: React.FC<{ data: activity<work> }> = ({ data }) => {
   const [memberInfo, setMemberInfo] = useState<Member | null>();
@@ -57,10 +69,7 @@ export const ActivityCard: React.FC<{ data: activity<work> }> = ({ data }) => {
         {memberInfo?.name}
       </Button>
       <HStack my="2" spacing="3">
-        <HStack spacing="1">
-          <Circle bg="green.300" size="3" />
-          <Text> {statusToText(data.content?.status ?? '')}</Text>
-        </HStack>
+        <ActivityStatus workStatus={data.content.status} />
         <Text>{data.content.startTime.toDate().toLocaleTimeString()}~</Text>
       </HStack>
       <Text fontSize="xs" mt="2">

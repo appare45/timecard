@@ -125,10 +125,42 @@ const GroupSelector: React.FC<{
   );
 };
 
+const ScanButton: React.FC = () => {
+  const [openScan, setOpenScan] = useState(false);
+  return (
+    <>
+      <Drawer
+        isOpen={openScan}
+        onClose={() => setOpenScan(false)}
+        placement="bottom">
+        <DrawerOverlay />
+        <DrawerContent>
+          <DrawerHeader>
+            QRコードを読み取ってください
+            <DrawerCloseButton />
+          </DrawerHeader>
+          <DrawerBody>
+            <QRCodeScan onClose={() => setOpenScan(false)} />
+          </DrawerBody>
+        </DrawerContent>
+      </Drawer>
+      <Button
+        size="sm"
+        mt="5"
+        mb="3"
+        colorScheme="red"
+        leftIcon={<Icon as={IoQrCode} />}
+        onClick={() => setOpenScan(true)}>
+        QRコードをスキャンする
+      </Button>
+    </>
+  );
+};
+
 const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const [groups, updateGroups] = useState<Group[]>([]);
   const [currentId, updateCurrentId] = useState<string>();
-  const [openScan, setOpenScan] = useState(false);
+
   useEffect(() => {
     const _groups: Group[] = [];
     groupIds.forEach((groupId) => {
@@ -144,21 +176,6 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
     <>
       {groupIds.length && currentId && (
         <GroupContext.Provider value={{ currentId: currentId, ids: groupIds }}>
-          <Drawer
-            isOpen={openScan}
-            onClose={() => setOpenScan(false)}
-            placement="bottom">
-            <DrawerOverlay />
-            <DrawerContent>
-              <DrawerHeader>
-                QRコードを読み取ってください
-                <DrawerCloseButton />
-              </DrawerHeader>
-              <DrawerBody>
-                <QRCodeScan onClose={() => setOpenScan(false)} />
-              </DrawerBody>
-            </DrawerContent>
-          </Drawer>
           <HStack align="start" h="100vh" py="10" px="5" spacing="5">
             <Box>
               <GroupSelector
@@ -166,15 +183,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                 groups={groups}
                 update={updateCurrentId}
               />
-              <Button
-                size="sm"
-                mt="5"
-                mb="3"
-                colorScheme="red"
-                leftIcon={<Icon as={IoQrCode} />}
-                onClick={() => setOpenScan(true)}>
-                QRコードをスキャンする
-              </Button>
+              <ScanButton />
               <List spacing="1">
                 <ListItem>
                   <Button

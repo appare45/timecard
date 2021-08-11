@@ -33,7 +33,7 @@ export type activity<T> = {
   updated?: firebase.firestore.Timestamp;
 };
 
-type workStatus = 'running' | 'done';
+export type workStatus = 'running' | 'done';
 
 export type work = {
   startTime: Timestamp;
@@ -477,7 +477,7 @@ const getLatestActivity = async (
       .doc(groupId)
       .collection('activity')
       .withConverter(activityDataConverter)
-      .where('user', '==', memberId)
+      .where('memberId', '==', memberId)
       .orderBy('updated', 'desc')
       .limit(1)
       .get();

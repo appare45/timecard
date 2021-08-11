@@ -33,16 +33,21 @@ import {
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { GroupContext } from '../contexts/group';
 import {
+  activity,
   addMember,
   getGroup,
+  getLatestActivity,
   Group,
   listMembers,
   Member,
+  work,
 } from '../utils/group';
 import { dataWithId } from '../utils/firebase';
 import { IoAnalyticsSharp, IoCard, IoPersonAdd } from 'react-icons/io5';
 import { Card } from './createCard';
 import { Link } from 'react-router-dom';
+import { ReactElement } from 'react';
+import { ActivityStatus } from './activity';
 
 const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
   groupId,
@@ -144,6 +149,34 @@ const MemberCardDrawer: React.FC<{
   );
 };
 
+const MemberRow: React.FC<{
+  data: dataWithId<Member>;
+  buttons: ReactElement;
+}> = ({ data, buttons }) => {
+  const [currentStatus, setCurrentStatus] = useState<activity<work>>();
+  const { currentId } = useContext(GroupContext);
+  useEffect(() => {
+    if (currentId && data.id) {
+      getLatestActivity(currentId, data.id).then((status) =>
+        setCurrentStatus(status)
+      );
+    }
+  }, [currentId, data.id]);
+  return (
+    <Tr>
+      <Td>{data.data.name}</Td>
+      <Td>
+        <HStack>{buttons}</HStack>
+      </Td>
+      <Td>
+        {currentStatus?.content.status && (
+          <ActivityStatus workStatus={currentStatus?.content.status} />
+        )}
+      </Td>
+    </Tr>
+  );
+};
+
 const MembersList: React.FC = () => {
   const groupContext = useContext(GroupContext);
   const [members, setMembers] = useState<dataWithId<Member>[]>();
@@ -199,10 +232,11 @@ const MembersList: React.FC = () => {
           </Thead>
           <Tbody>
             {members?.map((member) => (
-              <Tr key={member.id}>
-                <Td>{member.data.name}</Td>
-                <Td>
-                  <HStack>
+              <MemberRow
+                key={member.id}
+                data={member}
+                buttons={
+                  <>
                     <Tooltip label="カードを表示">
                       <Button
                         colorScheme="gray"
@@ -221,9 +255,9 @@ const MembersList: React.FC = () => {
                         </Button>
                       </Link>
                     </Tooltip>
-                  </HStack>
-                </Td>
-              </Tr>
+                  </>
+                }
+              />
             ))}
           </Tbody>
         </Table>
