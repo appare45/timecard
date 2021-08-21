@@ -63,7 +63,8 @@ const updateCanvas = (
 const detectCode = (
   canvasElement: HTMLCanvasElement,
   fps: number,
-  onDetectCode: (e: string) => Promise<boolean>
+  onDetectCode: (e: string) => Promise<boolean>,
+  setTimerId: (e: NodeJS.Timeout) => void
 ): void => {
   const ctx = canvasElement.getContext('2d');
   if (ctx) {
@@ -77,17 +78,19 @@ const detectCode = (
     if (code && code.data) {
       onDetectCode(code.data).then((e) => {
         if (e) {
-          setTimeout(
-            () => detectCode(canvasElement, fps, onDetectCode),
+          const timerId = setTimeout(
+            () => detectCode(canvasElement, fps, onDetectCode, setTimerId),
             1000 / fps
           );
+          setTimerId(timerId);
         }
       });
     } else {
-      setTimeout(
-        () => detectCode(canvasElement, fps, onDetectCode),
+      const timerId = setTimeout(
+        () => detectCode(canvasElement, fps, onDetectCode, setTimerId),
         1000 / fps
       );
+      setTimerId(timerId);
     }
   }
 };
@@ -96,6 +99,7 @@ function Canvas(props: {
   stream: MediaStream;
   videoElement: HTMLVideoElement;
   onDetect: (e: dataWithId<Member>) => void;
+  setTimeoutId: (e: NodeJS.Timeout) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tracks = props.stream.getTracks();
@@ -141,6 +145,9 @@ function Canvas(props: {
               errorAudio.current?.play();
               return true;
             }
+          },
+          (e: NodeJS.Timeout) => {
+            props.setTimeoutId(e);
           }
         );
       }
@@ -277,79 +284,84 @@ const MemberAction: React.FC<{
   );
 };
 
-export default function QRCodeScan(props: {
-  onClose: () => void;
-}): JSX.Element {
-  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const [error, updateError] = useState('');
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [detectedMember, setDetectedMember] =
-    useState<null | dataWithId<Member>>(null);
+// eslint-disable-next-line react/display-name
+export const QRCodeScan = React.memo(
+  (props: {
+    onClose: () => void;
+    setTimeoutId: (e: NodeJS.Timeout) => void;
+  }): JSX.Element => {
+    const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+    const [error, updateError] = useState('');
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [detectedMember, setDetectedMember] =
+      useState<null | dataWithId<Member>>(null);
 
-  useEffect(() => {
-    getUserCamera()
-      .then((e) => {
-        setMediaStream(e);
-        if (videoRef.current) {
-          videoRef.current.srcObject = e;
-        }
-      })
-      .catch((e) => {
-        updateError(e);
-      });
-  }, []);
+    useEffect(() => {
+      getUserCamera()
+        .then((e) => {
+          setMediaStream(e);
+          if (videoRef.current) {
+            videoRef.current.srcObject = e;
+          }
+        })
+        .catch((e) => {
+          updateError(e);
+        });
+    }, []);
 
-  return (
-    <>
-      {mediaStream &&
-      mediaStream?.active &&
-      videoRef.current &&
-      !detectedMember ? (
-        <>
-          <Canvas
-            stream={mediaStream}
-            videoElement={videoRef.current}
-            onDetect={(e) => setDetectedMember(e)}
+    return (
+      <>
+        {mediaStream &&
+        mediaStream?.active &&
+        videoRef.current &&
+        !detectedMember ? (
+          <>
+            <Canvas
+              stream={mediaStream}
+              videoElement={videoRef.current}
+              onDetect={(e) => setDetectedMember(e)}
+              setTimeoutId={(e) => props.setTimeoutId(e)}
+            />
+          </>
+        ) : (
+          <Circle />
+        )}
+        {detectedMember ? (
+          <MemberAction
+            member={detectedMember}
+            onClose={() => {
+              setDetectedMember(null);
+              props.onClose();
+            }}
           />
-        </>
-      ) : (
-        <Circle />
-      )}
-      {detectedMember ? (
-        <MemberAction
-          member={detectedMember}
-          onClose={() => {
-            setDetectedMember(null);
-            props.onClose();
-          }}
-        />
-      ) : (
-        <AspectRatio
-          maxW="lg"
-          maxH="lg"
-          ratio={cardWidth / cardHeight}
-          borderRadius="lg"
-          bg="gray.400"
-          overflow="hidden">
-          <video
-            playsInline
-            muted
-            autoPlay
-            ref={videoRef}
-            controlsList="nodownload nofullscreen noremoteplayback"
-            disablePictureInPicture
-            disableRemotePlayback
-            style={{ objectFit: 'cover' }}
-          />
-        </AspectRatio>
-      )}
+        ) : (
+          <AspectRatio
+            maxW="lg"
+            maxH="lg"
+            ratio={cardWidth / cardHeight}
+            borderRadius="lg"
+            bg="gray.400"
+            overflow="hidden">
+            <video
+              playsInline
+              muted
+              autoPlay
+              ref={videoRef}
+              controlsList="nodownload nofullscreen noremoteplayback"
+              disablePictureInPicture
+              disableRemotePlayback
+              style={{ objectFit: 'cover' }}
+            />
+          </AspectRatio>
+        )}
 
-      {error && (
-        <Alert status="error">
-          <AlertIcon />
-          <AlertDescription>カメラにアクセスできません</AlertDescription>
-        </Alert>
-      )}
-    </>
-  );
-}
+        {error && (
+          <Alert status="error">
+            <AlertIcon />
+            <AlertDescription>カメラにアクセスできません</AlertDescription>
+          </Alert>
+        )}
+      </>
+    );
+  }
+);

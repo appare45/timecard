@@ -158,7 +158,7 @@ const MemberRow: React.FC<{
   useEffect(() => {
     if (currentId && data.id) {
       getLatestActivity(currentId, data.id).then((status) =>
-        setCurrentStatus(status)
+        setCurrentStatus(status.data())
       );
     }
   }, [currentId, data.id]);
@@ -169,8 +169,10 @@ const MemberRow: React.FC<{
         <HStack>{buttons}</HStack>
       </Td>
       <Td>
-        {currentStatus?.content.status && (
+        {currentStatus?.content.status ? (
           <ActivityStatus workStatus={currentStatus?.content.status} />
+        ) : (
+          <Skeleton width="14" />
         )}
       </Td>
     </Tr>

@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 認証済みユーザーか
+    function isAuthenticated() {
+        return request.auth != null;
+    }
+    // 自分のIDを持っているか
+    function isUserAuthenticated(userId) {
+        return isAuthenticated() && userId == request.auth.uid;
+    }
+    match /{document=**} {
+      match /user/{uid} {
+        allow get, create, update: if isUserAuthenticated(uid)
+      }
+    }
+  }
+}

@@ -30,7 +30,7 @@ import { createGroup, getGroup, Group } from '../utils/group';
 import { setUser } from '../utils/user';
 import { Activities } from './activity';
 import { Members } from './members';
-import QRCodeScan from './qrcodeScan';
+import { QRCodeScan } from './qrcodeScan';
 
 type groupProps = {
   groupIds: string[];
@@ -127,6 +127,13 @@ const GroupSelector: React.FC<{
 
 const ScanButton: React.FC = () => {
   const [openScan, setOpenScan] = useState(false);
+  const [timerId, setTimerId] = useState<NodeJS.Timeout>();
+  useEffect(() => {
+    console.info(openScan, timerId);
+    if (!openScan && timerId) {
+      clearTimeout(timerId);
+    }
+  }, [openScan, timerId]);
   return (
     <>
       <Drawer
@@ -140,7 +147,12 @@ const ScanButton: React.FC = () => {
             <DrawerCloseButton />
           </DrawerHeader>
           <DrawerBody>
-            <QRCodeScan onClose={() => setOpenScan(false)} />
+            <QRCodeScan
+              onClose={() => setOpenScan(false)}
+              setTimeoutId={(
+                e: React.SetStateAction<NodeJS.Timeout | undefined>
+              ) => setTimerId(e)}
+            />
           </DrawerBody>
         </DrawerContent>
       </Drawer>
