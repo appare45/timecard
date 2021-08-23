@@ -18,6 +18,5 @@ jobs:
       - run: npm install -g firebase-tools
       - run: npm install -g yarn
       - run: yarn install --frozen-lockfile
-      - run: firebase emulators:start --only firestore
-      - run: yarn test
+      - run: firebase emulators:start --only firestore || yarn test
         timeout-minutes: 5
