@@ -191,6 +191,38 @@ describe('Group Data', () => {
     });
   });
 
+  describe('グループ情報', () => {
+    beforeEach(async () => {
+      await authDb
+        .collection('group')
+        .doc(groupId)
+        .collection('account')
+        .doc(uid)
+        .set({ memberId: memberId });
+    });
+    const groupRef = authDb.collection('group').doc(groupId);
+
+    test('自分は読み取り可能', async () => {
+      await firebase.assertSucceeds(groupRef.get());
+    });
+
+    test('グループメンバー以外は読み取り・書き込み・削除不可', async () => {
+      const outSideGroupActivityRef = createAuthApp({
+        uid: outsideGroupUserUid,
+      })
+        .collection('group')
+        .doc(groupId);
+      await firebase.assertFails(outSideGroupActivityRef.get());
+      await firebase.assertFails(
+        outSideGroupActivityRef.set({ memberId: memberId })
+      );
+      await firebase.assertFails(
+        outSideGroupActivityRef.update({ memberId: 'updated' })
+      );
+      await firebase.assertFails(outSideGroupActivityRef.delete());
+    });
+  });
+
   describe('メンバーデータ', () => {
     beforeEach(async () => {
       await authDb

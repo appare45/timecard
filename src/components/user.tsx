@@ -51,13 +51,13 @@ const UserDataDisplay: React.FC<{ authData: firebase.User }> = ({
                     <Logout />
                     <Button
                       onClick={() => setOpenInfo(!openInfo)}
-                      variant="link">
+                      variant="ghost">
                       <Icon as={IoChevronBack} h="12" />
                     </Button>
                   </HStack>
                 </>
               ) : (
-                <Button onClick={() => setOpenInfo(!openInfo)} variant="link">
+                <Button onClick={() => setOpenInfo(!openInfo)} variant="ghost">
                   <Icon as={IoChevronForward} h="12" />
                 </Button>
               )}
