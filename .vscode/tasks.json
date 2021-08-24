@@ -26,13 +26,21 @@
     {
       "type": "npm",
       "script": "build",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build",
+      "detail": "react-scripts build"
+    },
+    {
+      "type": "npm",
+      "script": "test",
       "group": {
         "kind": "build",
         "isDefault": true
       },
       "problemMatcher": [],
-      "label": "npm: build",
-      "detail": "react-scripts build"
+      "label": "npm: test",
+      "detail": "jest"
     }
   ]
 }

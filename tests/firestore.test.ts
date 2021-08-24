@@ -103,3 +103,58 @@ describe('User Data', () => {
     });
   });
 });
+
+describe('Group Data', () => {
+  afterEach(async () => {
+    await firebase.clearFirestoreData({ projectId: PROJECT_ID });
+  });
+  const uid = 'alice';
+  const groupId = 'test';
+  const memberId = 'test-alice';
+  const authDb = createAuthApp({ uid: uid });
+  const unAuthDb = createAuthApp();
+  describe('自分のアカウントへのアクセス', () => {
+    const accountRef = authDb
+      .collection('group')
+      .doc(groupId)
+      .collection('account')
+      .doc(uid);
+    beforeEach(() => {
+      accountRef.set({ memberId: memberId });
+    });
+
+    const unAuthAccountRef = unAuthDb
+      .collection('group')
+      .doc(groupId)
+      .collection('account')
+      .doc(uid);
+
+    test('自分は読み取り可能', async () => {
+      await firebase.assertSucceeds(accountRef.get());
+    });
+    test('自分は書き込み可能', async () => {
+      await firebase.assertSucceeds(accountRef.set({ memberId: memberId }));
+    });
+    test('自分は更新可能', async () => {
+      await firebase.assertSucceeds(accountRef.update({ memberId: 'updated' }));
+    });
+    test('自分は削除不可', async () => {
+      await firebase.assertFails(accountRef.delete());
+    });
+
+    test('自分以外は読み取り不可', async () => {
+      await firebase.assertFails(unAuthAccountRef.get());
+    });
+    test('自分以外は書き込み不可', async () => {
+      await firebase.assertFails(unAuthAccountRef.set({ memberId: memberId }));
+    });
+    test('自分以外は更新不可', async () => {
+      await firebase.assertFails(
+        unAuthAccountRef.update({ memberId: 'updated' })
+      );
+    });
+    test('自分以外は削除不可', async () => {
+      await firebase.assertFails(unAuthAccountRef.delete());
+    });
+  });
+});

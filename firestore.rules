@@ -9,9 +9,16 @@ service cloud.firestore {
     function isUserAuthenticated(userId) {
         return isAuthenticated() && userId == request.auth.uid;
     }
+    // グループメンバーか
+    function isGroupMember(groupId) {
+      return isAuthenticated() && exists(/databases/$(database)/documents/group/$(groupId)/account/$(request.auth.uid))
+    }
     match /{document=**} {
       match /user/{uid} {
         allow get, create, update: if isUserAuthenticated(uid)
+      }
+      match /group/{groupId}/account/{accountId} {
+        allow get, create, update: if request.auth.uid == accountId
       }
     }
   }
