@@ -23,6 +23,9 @@ service cloud.firestore {
       match /group/{groupId}/activity/{activity} {
         allow get, list, create, update: if isGroupMember(groupId)
       }
+      match /group/{groupId}/member/{memberId} {
+        allow get, list, create, update: if isGroupMember(groupId)
+      }
     }
   }
 }

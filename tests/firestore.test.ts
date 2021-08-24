@@ -4,7 +4,7 @@ import * as fs from 'fs';
 const PROJECT_ID = 'rule-test';
 const RULES_PATH = 'firestore.rules';
 
-// 認証付きのFreistore appを作成する
+// 認証付きの firestore appを作成する
 // eslint-disable-next-line @typescript-eslint/ban-types
 const createAuthApp = (auth?: object): firebase.firestore.Firestore => {
   return firebase
@@ -186,6 +186,50 @@ describe('Group Data', () => {
       );
       await firebase.assertFails(
         outSideGroupActivityRef.update({ memberId: 'updated' })
+      );
+      await firebase.assertFails(outSideGroupActivityRef.delete());
+    });
+  });
+
+  describe('メンバーデータ', () => {
+    beforeEach(async () => {
+      await authDb
+        .collection('group')
+        .doc(groupId)
+        .collection('account')
+        .doc(uid)
+        .set({ memberId: memberId });
+    });
+    const memberRef = authDb
+      .collection('group')
+      .doc(groupId)
+      .collection('member')
+      .doc(memberId);
+
+    test('自分は作成可能', async () => {
+      await firebase.assertSucceeds(memberRef.set({ name: 'Test' }));
+    });
+
+    test('自分は読み取り・更新・書き込み可能', async () => {
+      memberRef.set({ name: 'Test' });
+      await firebase.assertSucceeds(memberRef.get());
+      await firebase.assertSucceeds(memberRef.update({ name: 'updated' }));
+      await firebase.assertFails(memberRef.delete());
+    });
+
+    test('グループメンバー以外は読み取り・書き込み・削除不可', async () => {
+      const outSideGroupActivityRef = createAuthApp({
+        uid: outsideGroupUserUid,
+      })
+        .collection('group')
+        .doc(groupId)
+        .collection('account')
+        .doc(uid);
+      memberRef.set({ name: 'Test' });
+      await firebase.assertFails(outSideGroupActivityRef.get());
+      await firebase.assertFails(outSideGroupActivityRef.set({ name: 'Test' }));
+      await firebase.assertFails(
+        outSideGroupActivityRef.update({ name: 'updated' })
       );
       await firebase.assertFails(outSideGroupActivityRef.delete());
     });
