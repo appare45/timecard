@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Center,
   Circle,
   Drawer,
   DrawerBody,
@@ -20,6 +21,7 @@ import {
   Select,
   Text,
   useBoolean,
+  VStack,
 } from '@chakra-ui/react';
 import React, { useContext, useEffect, useState } from 'react';
 import { IoAnalytics, IoHome, IoQrCode } from 'react-icons/io5';
@@ -86,6 +88,7 @@ const CreateGroup: React.FC = () => {
           minLength={1}
           maxLength={20}
           value={groupName}
+          autoFocus
           onChange={(e) => {
             if (e.target.value.length <= 20) {
               setGroupName(e.target.value);
@@ -95,7 +98,7 @@ const CreateGroup: React.FC = () => {
         <FormHelperText>
           グループ名は1文字以上20文字以内で入力してください
         </FormHelperText>
-        <Button type="submit" isLoading={isSubmitting}>
+        <Button type="submit" isLoading={isSubmitting} colorScheme="teal">
           作成
         </Button>
       </form>
@@ -186,7 +189,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   }, [groupIds]);
   return (
     <>
-      {groupIds.length && currentId && (
+      {!!groupIds.length && currentId && (
         <GroupContext.Provider value={{ currentId: currentId, ids: groupIds }}>
           <HStack align="start" h="100vh" py="10" px="5" spacing="5">
             <Box>
@@ -236,14 +239,16 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
       )}
       {!currentId && <Circle />}
       {!groupIds.length && (
-        <>
-          <Heading>グループの作成</Heading>
-          <section>
-            <Text>現在では既存のグループに参加することはできません。</Text>
-            <Text>将来的に対応予定なのでしばらくお待ちください</Text>
-          </section>
-          <CreateGroup />
-        </>
+        <Center h="100vh">
+          <VStack p="10" rounded="2xl" shadow="lg">
+            <Heading>グループの作成</Heading>
+            <section>
+              <Text>現在では既存のグループに参加することはできません。</Text>
+              <Text>将来的に対応予定なのでしばらくお待ちください</Text>
+            </section>
+            <CreateGroup />
+          </VStack>
+        </Center>
       )}
     </>
   );

@@ -1,22 +1,73 @@
 import {
   Avatar,
+  Box,
   Button,
+  Center,
   HStack,
-  Popover,
-  PopoverContent,
-  PopoverFooter,
-  PopoverHeader,
-  PopoverTrigger,
+  Icon,
   Spinner,
+  Text,
+  VStack,
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
+import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 import { AuthContext } from '../contexts/user';
+import useIsMobile from '../hooks/media-query';
 import { Auth, firebase } from '../utils/firebase';
 import { getUser, setUser } from '../utils/user';
 import GroupUI from './group';
 import Login from './login';
 import Logout from './logout';
 import NewAccount from './new_account';
+
+const UserDataDisplay: React.FC<{ authData: firebase.User }> = ({
+  authData,
+}) => {
+  const isMobile = useIsMobile();
+  const [openInfo, setOpenInfo] = useState(!isMobile);
+  return (
+    <HStack position="fixed" bottom="0" left="0" p="5">
+      <Center shadow="sm" p="5">
+        <HStack spacing="5">
+          <HStack>
+            <Avatar src={authData.photoURL ?? undefined} />
+            <VStack spacing="0.5" align="start">
+              {openInfo ? (
+                <>
+                  <HStack>
+                    <Box>
+                      <Text maxW="40" textOverflow="ellipsis">
+                        {authData.displayName}
+                      </Text>
+                      <Text
+                        fontSize="xs"
+                        maxW="40"
+                        overflow="hidden"
+                        textOverflow="ellipsis"
+                        whiteSpace="nowrap">
+                        {authData.email}
+                      </Text>
+                    </Box>
+                    <Logout />
+                    <Button
+                      onClick={() => setOpenInfo(!openInfo)}
+                      variant="link">
+                      <Icon as={IoChevronBack} h="12" />
+                    </Button>
+                  </HStack>
+                </>
+              ) : (
+                <Button onClick={() => setOpenInfo(!openInfo)} variant="link">
+                  <Icon as={IoChevronForward} h="12" />
+                </Button>
+              )}
+            </VStack>
+          </HStack>
+        </HStack>
+      </Center>
+    </HStack>
+  );
+};
 
 export default function User(props: {
   children: JSX.Element[] | JSX.Element;
@@ -82,32 +133,8 @@ export default function User(props: {
       {/* ログイン・アカウント登録済 */}
       {loginStatus === true && authData && accountEnabled && (
         <>
+          <UserDataDisplay authData={authData} />
           <GroupUI groupIds={joinedGroups} />
-          <HStack position="fixed" bottom="0" left="0" p="2">
-            <Popover>
-              <PopoverTrigger>
-                <Button
-                  size="lg"
-                  leftIcon={
-                    <Avatar
-                      src={authData.photoURL ?? ''}
-                      name={authData.displayName ?? ''}
-                      size="sm"
-                    />
-                  }>
-                  {authData.displayName}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent>
-                <PopoverHeader>
-                  {authData.displayName}としてログイン中
-                </PopoverHeader>
-                <PopoverFooter>
-                  <Logout />
-                </PopoverFooter>
-              </PopoverContent>
-            </Popover>
-          </HStack>
         </>
       )}
     </AuthContext.Provider>
