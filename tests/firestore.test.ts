@@ -85,21 +85,15 @@ describe('User Data', () => {
     const db2 = createAuthApp({ uid: 'bob' });
     db1.collection('user').doc('alice').set({ name: 'alice' });
     const userRef2 = db2.collection('user').doc('alice');
-    test('読み取り不可', async () => {
-      firebase.assertFails(userRef2.get());
-    });
-    test('書き込み不可', async () => {
-      firebase.assertFails(
+    test('読み取り・書き込み・削除・更新不可', async () => {
+      await firebase.assertFails(userRef2.get());
+      await firebase.assertFails(
         userRef2.set({
           name: 'bob',
         })
       );
-    });
-    test('削除不可', async () => {
-      firebase.assertFails(userRef2.delete());
-    });
-    test('更新不可', async () => {
-      firebase.assertFails(userRef2.update({ name: 'bob' }));
+      await firebase.assertFails(userRef2.delete());
+      await firebase.assertFails(userRef2.update({ name: 'bob' }));
     });
   });
 });
