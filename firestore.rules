@@ -20,6 +20,9 @@ service cloud.firestore {
       match /group/{groupId}/account/{accountId} {
         allow get, create, update: if request.auth.uid == accountId
       }
+      match /group/{groupId}/activity/{activity} {
+        allow get, list, create, update: if isGroupMember(groupId)
+      }
     }
   }
 }

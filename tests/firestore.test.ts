@@ -109,6 +109,7 @@ describe('Group Data', () => {
     await firebase.clearFirestoreData({ projectId: PROJECT_ID });
   });
   const uid = 'alice';
+  const outsideGroupUserUid = 'bob';
   const groupId = 'test';
   const memberId = 'test-alice';
   const authDb = createAuthApp({ uid: uid });
@@ -129,32 +130,70 @@ describe('Group Data', () => {
       .collection('account')
       .doc(uid);
 
-    test('自分は読み取り可能', async () => {
+    test('自分は読み取り・書き込み。更新可能', async () => {
       await firebase.assertSucceeds(accountRef.get());
-    });
-    test('自分は書き込み可能', async () => {
       await firebase.assertSucceeds(accountRef.set({ memberId: memberId }));
-    });
-    test('自分は更新可能', async () => {
       await firebase.assertSucceeds(accountRef.update({ memberId: 'updated' }));
     });
     test('自分は削除不可', async () => {
       await firebase.assertFails(accountRef.delete());
     });
 
-    test('自分以外は読み取り不可', async () => {
+    test('自分以外は読み取り不可・書き込み・更新・削除', async () => {
       await firebase.assertFails(unAuthAccountRef.get());
-    });
-    test('自分以外は書き込み不可', async () => {
       await firebase.assertFails(unAuthAccountRef.set({ memberId: memberId }));
-    });
-    test('自分以外は更新不可', async () => {
       await firebase.assertFails(
         unAuthAccountRef.update({ memberId: 'updated' })
       );
-    });
-    test('自分以外は削除不可', async () => {
       await firebase.assertFails(unAuthAccountRef.delete());
+    });
+  });
+
+  describe('グループ内アクティビティー', () => {
+    beforeEach(async () => {
+      await authDb
+        .collection('group')
+        .doc(groupId)
+        .collection('account')
+        .doc(uid)
+        .set({ memberId: memberId });
+    });
+    const activityRef = authDb
+      .collection('group')
+      .doc(groupId)
+      .collection('activity')
+      .doc(uid);
+
+    test('自分は作成可能', async () => {
+      await firebase.assertSucceeds(activityRef.set({ memberId: memberId }));
+    });
+
+    test('自分は読み取り・更新・書き込み可能', async () => {
+      activityRef.set({ memberId: memberId });
+      await firebase.assertSucceeds(activityRef.get());
+      await firebase.assertSucceeds(
+        activityRef.update({ memberId: 'updated' })
+      );
+      await firebase.assertFails(activityRef.delete());
+    });
+
+    test('グループメンバー以外は読み取り・書き込み・削除不可', async () => {
+      const outSideGroupActivityRef = createAuthApp({
+        uid: outsideGroupUserUid,
+      })
+        .collection('group')
+        .doc(groupId)
+        .collection('account')
+        .doc(uid);
+      activityRef.set({ memberId: memberId });
+      await firebase.assertFails(outSideGroupActivityRef.get());
+      await firebase.assertFails(
+        outSideGroupActivityRef.set({ memberId: memberId })
+      );
+      await firebase.assertFails(
+        outSideGroupActivityRef.update({ memberId: 'updated' })
+      );
+      await firebase.assertFails(outSideGroupActivityRef.delete());
     });
   });
 });
