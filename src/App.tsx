@@ -1,25 +1,28 @@
+import { ChakraProvider } from '@chakra-ui/react';
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import Logout from './components/logout';
+import User from './components/user';
+import Offline from './pages/offline';
 
-function App() {
+function App(): JSX.Element {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Hallo World!
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <div className="App">
+        <ChakraProvider>
+          <Switch>
+            <Route exact path="/">
+              <User path="/">
+                <Logout />
+              </User>
+            </Route>
+            <Route path="/offline">
+              <Offline />
+            </Route>
+          </Switch>
+        </ChakraProvider>
+      </div>
+    </BrowserRouter>
   );
 }
 

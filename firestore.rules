@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 認証済みユーザーか
+    function isAuthenticated() {
+        return request.auth != null;
+    }
+    // 自分のIDを持っているか
+    function isUserAuthenticated(userId) {
+        return isAuthenticated() && userId == request.auth.uid;
+    }
+    // グループメンバーか
+    function isGroupMember(groupId) {
+      return isAuthenticated() && exists(/databases/$(database)/documents/group/$(groupId)/account/$(request.auth.uid))
+    }
+    match /{document=**} {
+      match /user/{uid} {
+        allow get, create, update: if isUserAuthenticated(uid)
+      }
+      match /group/{groupId} {
+        allow get: if isGroupMember(groupId)
+      }
+      match /group/{groupId}/account/{accountId} {
+        allow get, create, update: if request.auth.uid == accountId
+      }
+      match /group/{groupId}/activity/{activity} {
+        allow get, list, create, update: if isGroupMember(groupId)
+      }
+      match /group/{groupId}/member/{memberId} {
+        allow get, list, create, update: if isGroupMember(groupId)
+      }
+      match /group/{groupId}/admin/{memberId} {
+        allow get, list: if isGroupMember(groupId)
+      }
+    }
+  }
+}

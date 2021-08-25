@@ -1,3 +1,8 @@
+| branch  | status                                                                                                                                                                       |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| main    | [![Node.js CI](https://github.com/appare45/timecard/actions/workflows/build.yml/badge.svg)](https://github.com/appare45/timecard/actions/workflows/build.yml)                |
+| develop | [![Node.js CI](https://github.com/appare45/timecard/actions/workflows/build.yml/badge.svg?branch=develop)](https://github.com/appare45/timecard/actions/workflows/build.yml) |
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
