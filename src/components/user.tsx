@@ -2,7 +2,6 @@ import {
   Avatar,
   Box,
   Button,
-  Center,
   HStack,
   Icon,
   Spinner,
@@ -26,45 +25,47 @@ const UserDataDisplay: React.FC<{ authData: firebase.User }> = ({
   const isMobile = useIsMobile();
   const [openInfo, setOpenInfo] = useState(!isMobile);
   return (
-    <HStack position="fixed" bottom="0" left="0" p="5">
-      <Center shadow="sm" p="5">
-        <HStack spacing="5">
-          <HStack>
-            <Avatar src={authData.photoURL ?? undefined} />
-            <VStack spacing="0.5" align="start">
-              {openInfo ? (
-                <>
-                  <HStack>
-                    <Box>
-                      <Text maxW="40" textOverflow="ellipsis">
-                        {authData.displayName}
-                      </Text>
-                      <Text
-                        fontSize="xs"
-                        maxW="40"
-                        overflow="hidden"
-                        textOverflow="ellipsis"
-                        whiteSpace="nowrap">
-                        {authData.email}
-                      </Text>
-                    </Box>
-                    <Logout />
-                    <Button
-                      onClick={() => setOpenInfo(!openInfo)}
-                      variant="ghost">
-                      <Icon as={IoChevronBack} h="12" />
-                    </Button>
-                  </HStack>
-                </>
-              ) : (
-                <Button onClick={() => setOpenInfo(!openInfo)} variant="ghost">
-                  <Icon as={IoChevronForward} h="12" />
-                </Button>
-              )}
-            </VStack>
-          </HStack>
-        </HStack>
-      </Center>
+    <HStack
+      spacing="5"
+      shadow="sm"
+      p="5"
+      pr="0.5"
+      m="5"
+      bottom="0"
+      left="0"
+      pos="fixed"
+      rounded="lg"
+      bg="white">
+      <Avatar src={authData.photoURL ?? undefined} />
+      <VStack spacing="0.5" align="start">
+        {openInfo ? (
+          <>
+            <HStack>
+              <Box>
+                <Text maxW="40" textOverflow="ellipsis">
+                  {authData.displayName}
+                </Text>
+                <Text
+                  fontSize="xs"
+                  maxW="40"
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                  whiteSpace="nowrap">
+                  {authData.email}
+                </Text>
+              </Box>
+              <Logout />
+              <Button onClick={() => setOpenInfo(!openInfo)} variant="ghost">
+                <Icon as={IoChevronBack} h="12" />
+              </Button>
+            </HStack>
+          </>
+        ) : (
+          <Button onClick={() => setOpenInfo(!openInfo)} variant="ghost">
+            <Icon as={IoChevronForward} h="12" />
+          </Button>
+        )}
+      </VStack>
     </HStack>
   );
 };
@@ -133,8 +134,8 @@ export default function User(props: {
       {/* ログイン・アカウント登録済 */}
       {loginStatus === true && authData && accountEnabled && (
         <>
-          <UserDataDisplay authData={authData} />
           <GroupUI groupIds={joinedGroups} />
+          <UserDataDisplay authData={authData} />
         </>
       )}
     </AuthContext.Provider>

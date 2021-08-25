@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import jsQR from 'jsqr';
 import {
   Alert,
@@ -48,58 +48,18 @@ const getUserCamera = () =>
   });
 
 const updateCanvas = (
-  fps: number,
   ctx: CanvasRenderingContext2D,
   videoElement: HTMLVideoElement,
   width: number,
   height: number
 ): void => {
   ctx.drawImage(videoElement, 0, 0, width, height);
-  setTimeout(() => {
-    updateCanvas(fps, ctx, videoElement, width, height);
-  }, fps / 1000);
-};
-
-const detectCode = (
-  canvasElement: HTMLCanvasElement,
-  fps: number,
-  onDetectCode: (e: string) => Promise<boolean>,
-  setTimerId: (e: NodeJS.Timeout) => void
-): void => {
-  const ctx = canvasElement.getContext('2d');
-  if (ctx) {
-    const image = ctx.getImageData(
-      0,
-      0,
-      canvasElement.width,
-      canvasElement.height
-    );
-    const code = jsQR(image.data, image.width, image.height);
-    if (code && code.data) {
-      onDetectCode(code.data).then((e) => {
-        if (e) {
-          const timerId = setTimeout(
-            () => detectCode(canvasElement, fps, onDetectCode, setTimerId),
-            1000 / fps
-          );
-          setTimerId(timerId);
-        }
-      });
-    } else {
-      const timerId = setTimeout(
-        () => detectCode(canvasElement, fps, onDetectCode, setTimerId),
-        1000 / fps
-      );
-      setTimerId(timerId);
-    }
-  }
 };
 
 function Canvas(props: {
   stream: MediaStream;
   videoElement: HTMLVideoElement;
   onDetect: (e: dataWithId<Member>) => void;
-  setTimeoutId: (e: NodeJS.Timeout) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tracks = props.stream.getTracks();
@@ -107,6 +67,28 @@ function Canvas(props: {
   const groupContext = useContext(GroupContext);
   const notificationAudio = useRef<HTMLAudioElement>(null);
   const errorAudio = useRef<HTMLAudioElement>(null);
+  const detectCode = useCallback(
+    (
+      canvasElement: HTMLCanvasElement,
+      onDetectCode: (e: string) => Promise<boolean>
+    ): void => {
+      const ctx = canvasElement.getContext('2d');
+      if (ctx) {
+        const image = ctx.getImageData(
+          0,
+          0,
+          canvasElement.width,
+          canvasElement.height
+        );
+        const code = jsQR(image.data, image.width, image.height);
+        if (code && code.data) {
+          onDetectCode(code.data);
+        }
+      }
+    },
+    []
+  );
+
   useEffect(() => {
     if (canvasRef.current) {
       canvasRef.current.width =
@@ -115,44 +97,40 @@ function Canvas(props: {
         tracks[currentTrackIndex]?.getSettings()?.height ?? 100;
       const canvasContext = canvasRef.current.getContext('2d');
       const unknownMemberIds: string[] = [];
-      if (canvasContext) {
-        updateCanvas(
-          tracks[currentTrackIndex].getSettings()?.frameRate ?? 30,
-          canvasContext,
-          props.videoElement,
-          canvasRef.current?.width,
-          canvasRef.current?.height
-        );
-        detectCode(
-          canvasRef.current,
-          tracks[currentTrackIndex].getSettings()?.frameRate ?? 30,
-          async (e): Promise<boolean> => {
+      const interval = setInterval(() => {
+        if (canvasContext && canvasRef.current) {
+          updateCanvas(
+            canvasContext,
+            props.videoElement,
+            canvasRef.current?.width,
+            canvasRef.current?.height
+          );
+          detectCode(canvasRef.current, async (e): Promise<boolean> => {
             if (groupContext.currentId && !unknownMemberIds.includes(e)) {
               return getMember(e, groupContext.currentId).then((member) => {
-                notificationAudio.current?.play();
                 if (member && groupContext.currentId) {
                   props.onDetect({ id: e, data: member });
+                  clearInterval(interval);
                   return false;
                 } else {
                   unknownMemberIds.push(e);
                   console.error('Unknown member');
-                  errorAudio.current?.play();
                   return true;
                 }
               });
             } else {
               console.error('Unknown member(saved)');
-              errorAudio.current?.play();
               return true;
             }
-          },
-          (e: NodeJS.Timeout) => {
-            props.setTimeoutId(e);
-          }
-        );
-      }
+          });
+        }
+      }, tracks[currentTrackIndex].getSettings()?.frameRate ?? 30);
+
+      return () => {
+        clearInterval(interval);
+      };
     }
-  });
+  }, [currentTrackIndex, detectCode, groupContext.currentId, props, tracks]);
 
   return (
     <>
@@ -286,10 +264,7 @@ const MemberAction: React.FC<{
 
 // eslint-disable-next-line react/display-name
 export const QRCodeScan = React.memo(
-  (props: {
-    onClose: () => void;
-    setTimeoutId: (e: NodeJS.Timeout) => void;
-  }): JSX.Element => {
+  (props: { onClose: () => void }): JSX.Element => {
     const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
     const [error, updateError] = useState('');
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -320,7 +295,6 @@ export const QRCodeScan = React.memo(
               stream={mediaStream}
               videoElement={videoRef.current}
               onDetect={(e) => setDetectedMember(e)}
-              setTimeoutId={(e) => props.setTimeoutId(e)}
             />
           </>
         ) : (
@@ -336,8 +310,8 @@ export const QRCodeScan = React.memo(
           />
         ) : (
           <AspectRatio
-            maxW="lg"
-            maxH="lg"
+            maxH="100vh"
+            h="full"
             ratio={cardWidth / cardHeight}
             borderRadius="lg"
             bg="gray.400"

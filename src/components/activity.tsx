@@ -9,6 +9,7 @@ import {
   Heading,
   HStack,
   Skeleton,
+  SkeletonCircle,
   Spinner,
   Text,
   VStack,
@@ -18,7 +19,13 @@ import { useEffect } from 'react';
 import { useContext } from 'react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
-import { Route, Switch, useRouteMatch } from 'react-router-dom';
+import {
+  Link,
+  Route,
+  Switch,
+  useHistory,
+  useRouteMatch,
+} from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { dataWithId } from '../utils/firebase';
 import { Link as RouterLink } from 'react-router-dom';
@@ -32,6 +39,8 @@ import {
   work,
   workStatus,
 } from '../utils/group';
+import { IoScan } from 'react-icons/io5';
+import { QRCodeScan } from './qrcodeScan';
 
 export const ActivityStatus: React.FC<{ workStatus: workStatus }> = ({
   workStatus,
@@ -74,15 +83,14 @@ export const ActivityCard: React.FC<{ data: activity<work>; member?: Member }> =
             {memberInfo?.name}
           </Button>
         ) : (
-          <Skeleton>
-            <Button
-              size="sm"
-              my="1"
-              variant="link"
-              leftIcon={<Avatar src="" name="読み込み中" size="sm" />}>
-              読み込み中
-            </Button>
-          </Skeleton>
+          <HStack>
+            <SkeletonCircle />
+            <Skeleton>
+              <Button size="sm" my="1" variant="link">
+                読み込み中
+              </Button>
+            </Skeleton>
+          </HStack>
         )}
         <HStack my="2" spacing="3">
           <ActivityStatus workStatus={data.content.status} />
@@ -177,6 +185,9 @@ const AllActivity: React.FC = () => {
         <Heading>タイムライン</Heading>
         <Text>全てのアクティビティーが時間順で並びます</Text>
       </Box>
+      <Button leftIcon={<IoScan />} as={Link} to="/activity/scan">
+        スキャン
+      </Button>
       <DisplayActivities data={activities} />
     </>
   );
@@ -184,11 +195,19 @@ const AllActivity: React.FC = () => {
 
 const Activities: React.FC = () => {
   const { path } = useRouteMatch();
+  const history = useHistory();
   return (
     <>
       <Switch>
         <Route exact path={path}>
           <AllActivity />
+        </Route>
+        <Route exact path={`${path}scan`}>
+          <QRCodeScan
+            onClose={() => {
+              history.push(path);
+            }}
+          />
         </Route>
         <Route path={`${path}:memberId`}>
           <UserActivity />

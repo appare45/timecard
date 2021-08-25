@@ -130,13 +130,6 @@ const GroupSelector: React.FC<{
 
 const ScanButton: React.FC = () => {
   const [openScan, setOpenScan] = useState(false);
-  const [timerId, setTimerId] = useState<NodeJS.Timeout>();
-  useEffect(() => {
-    console.info(openScan, timerId);
-    if (!openScan && timerId) {
-      clearTimeout(timerId);
-    }
-  }, [openScan, timerId]);
   return (
     <>
       <Drawer
@@ -150,12 +143,7 @@ const ScanButton: React.FC = () => {
             <DrawerCloseButton />
           </DrawerHeader>
           <DrawerBody>
-            <QRCodeScan
-              onClose={() => setOpenScan(false)}
-              setTimeoutId={(
-                e: React.SetStateAction<NodeJS.Timeout | undefined>
-              ) => setTimerId(e)}
-            />
+            <QRCodeScan onClose={() => setOpenScan(false)} />
           </DrawerBody>
         </DrawerContent>
       </Drawer>
