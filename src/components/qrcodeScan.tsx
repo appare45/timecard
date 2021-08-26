@@ -136,7 +136,7 @@ function Canvas(props: {
     <>
       <audio src="audio/notification_simple-01.wav" ref={notificationAudio} />
       <audio src="audio/alert_error-02.wav" ref={errorAudio} />
-      {!tracks.length && (
+      {tracks.length > 1 && (
         <FormControl mt="2" mb="5">
           <HStack align="center">
             <FormLabel>カメラを選択</FormLabel>
