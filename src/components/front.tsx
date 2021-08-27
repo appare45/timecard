@@ -91,7 +91,8 @@ export const Front: React.FC = () => {
         isOpen={!!detectedMember}
         motionPreset="slideInBottom"
         isCentered
-        onClose={() => setDetectedMember(null)}>
+        onClose={() => setDetectedMember(null)}
+        size="xl">
         <AlertDialogOverlay />
         <AlertDialogContent>
           <AlertDialogHeader>

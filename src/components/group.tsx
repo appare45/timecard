@@ -128,15 +128,34 @@ const ScanButton: React.FC<{ setFrontMode: () => void }> = ({
   return (
     <>
       <Button
-        size="sm"
         mt="5"
         mb="3"
-        colorScheme="red"
+        colorScheme="cyan"
         leftIcon={<Icon as={IoEasel} />}
         onClick={() => setFrontMode()}>
         フロントモードに切り替える
       </Button>
     </>
+  );
+};
+
+const MenuLink: React.FC<{
+  children: string;
+  to: string;
+  leftIcon: React.ReactElement;
+}> = ({ children, to, leftIcon }) => {
+  return (
+    <Button
+      leftIcon={leftIcon}
+      variant="link"
+      color="black"
+      size="lg"
+      p="1"
+      as={routerLink}
+      to={to}
+      wordBreak="keep-all">
+      {children}
+    </Button>
   );
 };
 
@@ -201,8 +220,8 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
           {frontMode ? (
             <Front />
           ) : (
-            <HStack align="start" h="100vh" py="10" px="5" spacing="5">
-              <Box>
+            <HStack align="start" h="100vh" py="10" px="5" spacing="10">
+              <Box pos="sticky" top="10">
                 <GroupSelector
                   ids={groupIds}
                   groups={groups}
@@ -211,26 +230,14 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                 <ScanButton setFrontMode={() => setFrontMode(true)} />
                 <List spacing="1">
                   <ListItem>
-                    <Button
-                      leftIcon={<IoHome />}
-                      variant="link"
-                      color="black"
-                      as={routerLink}
-                      to="/"
-                      wordBreak="keep-all">
+                    <MenuLink leftIcon={<IoHome />} to="/">
                       トップ
-                    </Button>
+                    </MenuLink>
                   </ListItem>
                   <ListItem>
-                    <Button
-                      leftIcon={<IoAnalytics />}
-                      variant="link"
-                      color="black"
-                      as={routerLink}
-                      to="/activity"
-                      wordBreak="keep-all">
+                    <MenuLink leftIcon={<IoAnalytics />} to="/activity">
                       タイムライン
-                    </Button>
+                    </MenuLink>
                   </ListItem>
                 </List>
               </Box>

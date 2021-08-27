@@ -473,6 +473,7 @@ const getUserActivities = async (
       .collection('activity')
       .withConverter(activityDataConverter)
       .where('memberId', '==', memberId)
+      .orderBy('updated', 'desc')
       .get();
     const dataSet: QueryDocumentSnapshot<activity<work>>[] = [];
     query.forEach((data) => {
