@@ -40,7 +40,7 @@ import {
   workStatus,
 } from '../utils/group';
 import { IoScan } from 'react-icons/io5';
-import { QRCodeScan } from './qrcodeScan';
+import { MemberAction, QRCodeScan } from './qrcodeScan';
 
 export const ActivityStatus: React.FC<{ workStatus: workStatus }> = ({
   workStatus,
@@ -196,6 +196,8 @@ const AllActivity: React.FC = () => {
 const Activities: React.FC = () => {
   const { path } = useRouteMatch();
   const history = useHistory();
+  const [detectedMember, setDetectedMember] =
+    useState<dataWithId<Member> | null>(null);
   return (
     <>
       <Switch>
@@ -203,11 +205,17 @@ const Activities: React.FC = () => {
           <AllActivity />
         </Route>
         <Route exact path={`${path}scan`}>
-          <QRCodeScan
-            onClose={() => {
-              history.push(path);
-            }}
-          />
+          {!detectedMember ? (
+            <QRCodeScan onDetect={(e) => setDetectedMember(e)} />
+          ) : (
+            <MemberAction
+              member={detectedMember}
+              onClose={() => {
+                history.push(path);
+                setDetectedMember(null);
+              }}
+            />
+          )}
         </Route>
         <Route path={`${path}:memberId`}>
           <UserActivity />

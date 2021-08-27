@@ -275,6 +275,22 @@ async function addAccount(
   }
 }
 
+async function getAccount(
+  memberId: string,
+  groupId: string
+): Promise<firebase.firestore.DocumentSnapshot<Account>> {
+  try {
+    return await Db.collection('group')
+      .doc(groupId)
+      .collection('account')
+      .withConverter(accountDataConverter)
+      .doc(memberId)
+      .get();
+  } catch (error) {
+    throw new Error(error);
+  }
+}
+
 /**
  * メンバーを追加する
  * @param member メンバーのデータ
@@ -526,4 +542,5 @@ export {
   getUserActivities,
   getAllActivities,
   getLatestActivity,
+  getAccount,
 };

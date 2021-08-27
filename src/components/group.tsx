@@ -3,12 +3,6 @@ import {
   Button,
   Center,
   Circle,
-  Drawer,
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerHeader,
-  DrawerOverlay,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -24,7 +18,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import React, { useContext, useEffect, useState } from 'react';
-import { IoAnalytics, IoEasel, IoHome, IoQrCode } from 'react-icons/io5';
+import { IoAnalytics, IoEasel, IoHome } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
@@ -33,7 +27,6 @@ import { setUser } from '../utils/user';
 import { Activities } from './activity';
 import { Front } from './front';
 import { Members } from './members';
-import { QRCodeScan } from './qrcodeScan';
 
 type groupProps = {
   groupIds: string[];
@@ -132,25 +125,8 @@ const GroupSelector: React.FC<{
 const ScanButton: React.FC<{ setFrontMode: () => void }> = ({
   setFrontMode,
 }) => {
-  const [openScan, setOpenScan] = useState(false);
-
   return (
     <>
-      <Drawer
-        isOpen={openScan}
-        onClose={() => setOpenScan(false)}
-        placement="bottom">
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerHeader>
-            QRコードを読み取ってください
-            <DrawerCloseButton />
-          </DrawerHeader>
-          <DrawerBody>
-            <QRCodeScan onClose={() => setOpenScan(false)} />
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
       <Button
         size="sm"
         mt="5"
@@ -187,7 +163,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
           const request = transaction.objectStore(dbName).get('frontMode');
           request.onsuccess = () => {
             if (request.result === undefined) {
-              transaction.objectStore(dbName).put(false);
+              transaction.objectStore(dbName).put(false, 'frontMode');
               setFrontMode(false);
             } else if (frontMode === undefined) {
               setFrontMode(request.result);
@@ -216,7 +192,12 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   return (
     <>
       {!!groupIds.length && currentId && (
-        <GroupContext.Provider value={{ currentId: currentId, ids: groupIds }}>
+        <GroupContext.Provider
+          value={{
+            currentId: currentId,
+            ids: groupIds,
+            setFrontMode: (e) => setFrontMode(e),
+          }}>
           {frontMode ? (
             <Front />
           ) : (
