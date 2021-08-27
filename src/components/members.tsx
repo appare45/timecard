@@ -21,9 +21,11 @@ import {
   ModalOverlay,
   Skeleton,
   Spacer,
+  Switch,
   Table,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tooltip,
@@ -152,7 +154,8 @@ const MemberCardDrawer: React.FC<{
 const MemberRow: React.FC<{
   data: dataWithId<Member>;
   buttons: ReactElement;
-}> = ({ data, buttons }) => {
+  isOnline?: boolean;
+}> = ({ data, buttons, isOnline }) => {
   const [currentStatus, setCurrentStatus] = useState<activity<work>>();
   const { currentId } = useContext(GroupContext);
   useEffect(() => {
@@ -163,29 +166,49 @@ const MemberRow: React.FC<{
     }
   }, [currentId, data.id]);
   return (
-    <Tr>
-      <Td>{data.data.name}</Td>
-      <Td>
-        <HStack>{buttons}</HStack>
-      </Td>
-      <Td>
-        {currentStatus?.content.status ? (
-          <ActivityStatus workStatus={currentStatus?.content.status} />
-        ) : (
-          <Skeleton width="14" />
-        )}
-      </Td>
-    </Tr>
+    <>
+      {!isOnline && (
+        <Tr>
+          <Td>{data.data.name}</Td>
+          <Td>
+            <HStack>{buttons}</HStack>
+          </Td>
+          <Td>
+            {currentStatus?.content.status ? (
+              <ActivityStatus workStatus={currentStatus?.content.status} />
+            ) : (
+              <Skeleton width="14" />
+            )}
+          </Td>
+        </Tr>
+      )}
+      {isOnline && currentStatus?.content.status == 'running' && (
+        <Tr>
+          <Td>{data.data.name}</Td>
+          <Td>
+            <HStack>{buttons}</HStack>
+          </Td>
+          <Td>
+            {currentStatus?.content.status ? (
+              <ActivityStatus workStatus={currentStatus?.content.status} />
+            ) : (
+              <Skeleton width="14" />
+            )}
+          </Td>
+        </Tr>
+      )}
+    </>
   );
 };
 
 const MembersList: React.FC = () => {
   const groupContext = useContext(GroupContext);
-  const [members, setMembers] = useState<dataWithId<Member>[]>();
   const [isUpdating, setIsUpdating] = useState(true);
   const [memberCardDisplay, setMemberCardDisplay] = useBoolean(false);
   const [displayCardMember, setDisplayCardMember] =
     useState<dataWithId<Member>>();
+  const [shownMembers, setShownMembers] = useState<dataWithId<Member>[]>();
+  const [sortWithOnline, setSortWithOnline] = useState(false);
   const updateMembersList = useCallback((groupId: string | null) => {
     setIsUpdating(true);
     if (groupId) {
@@ -195,7 +218,7 @@ const MembersList: React.FC = () => {
           members.forEach((member) => {
             _members.push({ id: member.id, data: member.data() });
           });
-          setMembers(_members);
+          setShownMembers(_members);
         }
         setIsUpdating(false);
       });
@@ -225,6 +248,14 @@ const MembersList: React.FC = () => {
           />
         )}
       </HStack>
+      <HStack spacing="2" p="1" my="2">
+        <Text>進行中のみ表示</Text>
+        <Switch
+          isChecked={sortWithOnline}
+          onChange={() => setSortWithOnline(!sortWithOnline)}
+          colorScheme="green"
+        />
+      </HStack>
       <Skeleton isLoaded={!isUpdating}>
         <Table colorScheme="blackAlpha" size="sm" mt="5">
           <Thead>
@@ -233,10 +264,11 @@ const MembersList: React.FC = () => {
             </Tr>
           </Thead>
           <Tbody>
-            {members?.map((member) => (
+            {shownMembers?.map((member) => (
               <MemberRow
                 key={member.id}
                 data={member}
+                isOnline={sortWithOnline}
                 buttons={
                   <>
                     <Tooltip label="カードを表示">
