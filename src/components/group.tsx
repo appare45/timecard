@@ -24,13 +24,14 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import React, { useContext, useEffect, useState } from 'react';
-import { IoAnalytics, IoHome, IoQrCode } from 'react-icons/io5';
+import { IoAnalytics, IoEasel, IoHome, IoQrCode } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { createGroup, getGroup, Group } from '../utils/group';
 import { setUser } from '../utils/user';
 import { Activities } from './activity';
+import { Front } from './front';
 import { Members } from './members';
 import { QRCodeScan } from './qrcodeScan';
 
@@ -128,8 +129,11 @@ const GroupSelector: React.FC<{
   );
 };
 
-const ScanButton: React.FC = () => {
+const ScanButton: React.FC<{ setFrontMode: () => void }> = ({
+  setFrontMode,
+}) => {
   const [openScan, setOpenScan] = useState(false);
+
   return (
     <>
       <Drawer
@@ -152,9 +156,9 @@ const ScanButton: React.FC = () => {
         mt="5"
         mb="3"
         colorScheme="red"
-        leftIcon={<Icon as={IoQrCode} />}
-        onClick={() => setOpenScan(true)}>
-        QRコードをスキャンする
+        leftIcon={<Icon as={IoEasel} />}
+        onClick={() => setFrontMode()}>
+        フロントモードに切り替える
       </Button>
     </>
   );
@@ -163,7 +167,41 @@ const ScanButton: React.FC = () => {
 const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const [groups, updateGroups] = useState<Group[]>([]);
   const [currentId, updateCurrentId] = useState<string>();
-
+  const [frontMode, setFrontMode] = useState<boolean>();
+  useEffect(() => {
+    const dbName = 'Group';
+    if (window.indexedDB) {
+      const DbOpenRequest = indexedDB.open(dbName);
+      DbOpenRequest.onupgradeneeded = () => {
+        const Db = DbOpenRequest.result;
+        try {
+          Db.createObjectStore(dbName).add(frontMode, 'frontMode');
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      DbOpenRequest.onsuccess = () => {
+        const Db = DbOpenRequest.result;
+        try {
+          const transaction = Db.transaction(dbName, 'readwrite');
+          const request = transaction.objectStore(dbName).get('frontMode');
+          request.onsuccess = () => {
+            if (request.result === undefined) {
+              transaction.objectStore(dbName).put(false);
+              setFrontMode(false);
+            } else if (frontMode === undefined) {
+              setFrontMode(request.result);
+            } else {
+              transaction.objectStore(dbName).put(frontMode, 'frontMode');
+            }
+          };
+        } catch (error) {
+          console.error(error);
+        }
+      };
+    }
+    console.info(frontMode);
+  }, [frontMode]);
   useEffect(() => {
     const _groups: Group[] = [];
     groupIds.forEach((groupId) => {
@@ -179,50 +217,54 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
     <>
       {!!groupIds.length && currentId && (
         <GroupContext.Provider value={{ currentId: currentId, ids: groupIds }}>
-          <HStack align="start" h="100vh" py="10" px="5" spacing="5">
-            <Box>
-              <GroupSelector
-                ids={groupIds}
-                groups={groups}
-                update={updateCurrentId}
-              />
-              <ScanButton />
-              <List spacing="1">
-                <ListItem>
-                  <Button
-                    leftIcon={<IoHome />}
-                    variant="link"
-                    color="black"
-                    as={routerLink}
-                    to="/"
-                    wordBreak="keep-all">
-                    トップ
-                  </Button>
-                </ListItem>
-                <ListItem>
-                  <Button
-                    leftIcon={<IoAnalytics />}
-                    variant="link"
-                    color="black"
-                    as={routerLink}
-                    to="/activity"
-                    wordBreak="keep-all">
-                    タイムライン
-                  </Button>
-                </ListItem>
-              </List>
-            </Box>
-            <Box w="full">
-              <Switch>
-                <Route exact path="/">
-                  <Members />
-                </Route>
-                <Route path={`/activity/`}>
-                  <Activities />
-                </Route>
-              </Switch>
-            </Box>
-          </HStack>
+          {frontMode ? (
+            <Front />
+          ) : (
+            <HStack align="start" h="100vh" py="10" px="5" spacing="5">
+              <Box>
+                <GroupSelector
+                  ids={groupIds}
+                  groups={groups}
+                  update={updateCurrentId}
+                />
+                <ScanButton setFrontMode={() => setFrontMode(true)} />
+                <List spacing="1">
+                  <ListItem>
+                    <Button
+                      leftIcon={<IoHome />}
+                      variant="link"
+                      color="black"
+                      as={routerLink}
+                      to="/"
+                      wordBreak="keep-all">
+                      トップ
+                    </Button>
+                  </ListItem>
+                  <ListItem>
+                    <Button
+                      leftIcon={<IoAnalytics />}
+                      variant="link"
+                      color="black"
+                      as={routerLink}
+                      to="/activity"
+                      wordBreak="keep-all">
+                      タイムライン
+                    </Button>
+                  </ListItem>
+                </List>
+              </Box>
+              <Box w="full">
+                <Switch>
+                  <Route exact path="/">
+                    <Members />
+                  </Route>
+                  <Route path={`/activity/`}>
+                    <Activities />
+                  </Route>
+                </Switch>
+              </Box>
+            </HStack>
+          )}
         </GroupContext.Provider>
       )}
       {!currentId && <Circle />}
