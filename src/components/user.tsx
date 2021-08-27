@@ -11,7 +11,6 @@ import {
 import React, { useEffect, useState } from 'react';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 import { AuthContext } from '../contexts/user';
-import useIsMobile from '../hooks/media-query';
 import { Auth, firebase } from '../utils/firebase';
 import { getUser, setUser } from '../utils/user';
 import GroupUI from './group';
@@ -22,8 +21,7 @@ import NewAccount from './new_account';
 const UserDataDisplay: React.FC<{ authData: firebase.User }> = ({
   authData,
 }) => {
-  const isMobile = useIsMobile();
-  const [openInfo, setOpenInfo] = useState(!isMobile);
+  const [openInfo, setOpenInfo] = useState(false);
   return (
     <HStack
       spacing="5"
