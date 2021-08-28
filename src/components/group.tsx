@@ -195,7 +195,6 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
         }
       };
     }
-    console.info(frontMode);
   }, [frontMode]);
   useEffect(() => {
     const _groups: Group[] = [];
@@ -227,7 +226,12 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                   groups={groups}
                   update={updateCurrentId}
                 />
-                <ScanButton setFrontMode={() => setFrontMode(true)} />
+                <ScanButton
+                  setFrontMode={() => {
+                    setFrontMode(true);
+                    document.body.requestFullscreen();
+                  }}
+                />
                 <List spacing="1">
                   <ListItem>
                     <MenuLink leftIcon={<IoHome />} to="/">

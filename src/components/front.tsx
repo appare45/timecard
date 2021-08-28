@@ -40,7 +40,6 @@ const Time: React.FC = () => {
   const [date, setDate] = useState(new Date());
   useEffect(() => {
     const interval = setInterval(() => setDate(new Date()), 1000);
-    console.info('updated');
     return () => clearInterval(interval);
   }, [date]);
 
@@ -105,7 +104,7 @@ export const Front: React.FC = () => {
   }, [currentId, detectedMember]);
 
   return (
-    <Box p="10">
+    <Box p="10" bg="white">
       <HStack>
         <Box>
           <Heading>QRコードをスキャンしてください</Heading>
@@ -214,7 +213,11 @@ export const Front: React.FC = () => {
                   : '開始'}
               </Button>
               {detectedMember?.id === ownerAccount && (
-                <Button onClick={() => setFrontMode(false)}>
+                <Button
+                  onClick={() => {
+                    setFrontMode(false);
+                    document.exitFullscreen();
+                  }}>
                   管理モードに切り替え
                 </Button>
               )}

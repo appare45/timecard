@@ -10,7 +10,6 @@ import {
   Avatar,
   Box,
   Button,
-  ButtonGroup,
   Circle,
   Heading,
   HStack,
@@ -48,13 +47,7 @@ import {
   work,
   workStatus,
 } from '../utils/group';
-import {
-  IoArrowBack,
-  IoPencil,
-  IoQrCode,
-  IoScan,
-  IoSettings,
-} from 'react-icons/io5';
+import { IoArrowBack, IoQrCode, IoScan } from 'react-icons/io5';
 import { MemberAction, QRCodeScan } from './qrcodeScan';
 import { dateToJapaneseTime } from '../utils/time';
 import { useRef } from 'react';
@@ -170,7 +163,7 @@ function UserActivity(): JSX.Element {
     if (currentId) {
       getGroup(currentId).then((group) => setGroup(group));
     }
-  });
+  }, [currentId]);
   useEffect(() => {
     if (currentId) {
       getMember(memberId, currentId).then((member) => {
