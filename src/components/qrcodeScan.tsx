@@ -31,11 +31,12 @@ import {
 import { dataWithId, firebase } from '../utils/firebase';
 import { ActivityCard } from './activity';
 import { MutableRefObject } from 'react';
+import { IoCamera } from 'react-icons/io5';
 
-const getUserCamera = () =>
+const getUserCamera = (facingMode?: VideoFacingModeEnum) =>
   new Promise<MediaStream>((resolve, reject) => {
     navigator.mediaDevices
-      .getUserMedia({ video: true })
+      .getUserMedia({ video: { facingMode: facingMode } })
       .then((e) => {
         if (e) {
           resolve(e);
@@ -136,22 +137,24 @@ function Canvas(props: {
     <>
       <audio src="audio/notification_simple-01.wav" ref={notificationAudio} />
       <audio src="audio/alert_error-02.wav" ref={errorAudio} />
-      <FormControl mt="2" mb="5">
-        <HStack align="center">
-          <FormLabel>カメラを選択</FormLabel>
-          <Select
-            w="max-content"
-            onChange={(e) => {
-              updateCurrentTrackIndex(Number(e.target.value));
-            }}>
-            {tracks.map((track, index) => (
-              <option key={track.id} id={index.toString()}>
-                {track.label}
-              </option>
-            ))}
-          </Select>
-        </HStack>
-      </FormControl>
+      {tracks.length > 1 && (
+        <FormControl mt="2" mb="5">
+          <HStack align="center">
+            <FormLabel>カメラを選択</FormLabel>
+            <Select
+              w="max-content"
+              onChange={(e) => {
+                updateCurrentTrackIndex(Number(e.target.value));
+              }}>
+              {tracks.map((track, index) => (
+                <option key={track.id} id={index.toString()}>
+                  {track.label}
+                </option>
+              ))}
+            </Select>
+          </HStack>
+        </FormControl>
+      )}
       <canvas
         ref={canvasRef}
         style={{
@@ -271,16 +274,18 @@ export const QRCodeScan = React.memo(
     const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
     const [error, updateError] = useState('');
     const videoRef = useRef<HTMLVideoElement>(null);
+    const [facingMode, setFacingMode] =
+      useState<VideoFacingModeEnum>('environment');
 
     useEffect(() => {
-      getUserCamera()
+      getUserCamera(facingMode)
         .then((e) => {
           setMediaStream(e);
         })
         .catch((e) => {
           updateError(e);
         });
-    }, []);
+    }, [facingMode]);
 
     useEffect(() => {
       if (videoRef.current) {
@@ -289,7 +294,7 @@ export const QRCodeScan = React.memo(
     }, [mediaStream]);
 
     return (
-      <>
+      <Box pos="relative">
         {mediaStream && mediaStream?.active && videoRef.current ? (
           <>
             <Canvas
@@ -326,7 +331,20 @@ export const QRCodeScan = React.memo(
             <AlertDescription>カメラにアクセスできません</AlertDescription>
           </Alert>
         )}
-      </>
+        <Button
+          pos="absolute"
+          top="5"
+          left="5"
+          leftIcon={<IoCamera />}
+          onClick={() => {
+            mediaStream?.getTracks().forEach((element) => {
+              element.stop();
+            });
+            setFacingMode(facingMode == 'user' ? 'environment' : 'user');
+          }}>
+          カメラ切り替え
+        </Button>
+      </Box>
     );
   }
 );
