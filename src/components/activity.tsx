@@ -85,7 +85,7 @@ export const ActivityCard: React.FC<{ data: activity<work>; member?: Member }> =
               ml="-1"
               variant="link"
               as={RouterLink}
-              to={`/activity/${data.memberId}`}
+              to={`/member/${data.memberId}`}
               leftIcon={
                 <Avatar
                   src={memberInfo?.photoUrl}
@@ -291,9 +291,6 @@ const Activities: React.FC = () => {
               }}
             />
           )}
-        </Route>
-        <Route path={`${path}:memberId`}>
-          <UserActivity />
         </Route>
       </Switch>
     </>

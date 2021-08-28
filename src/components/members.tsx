@@ -12,6 +12,7 @@ import {
   HStack,
   Icon,
   Input,
+  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -45,11 +46,16 @@ import {
   work,
 } from '../utils/group';
 import { dataWithId } from '../utils/firebase';
-import { IoAnalyticsSharp, IoCard, IoPersonAdd } from 'react-icons/io5';
+import { IoCard, IoPersonAdd } from 'react-icons/io5';
 import { Card } from './createCard';
-import { Link } from 'react-router-dom';
+import {
+  Link as RouterLink,
+  Route,
+  useRouteMatch,
+  Switch as RouteSwitch,
+} from 'react-router-dom';
 import { ReactElement } from 'react';
-import { ActivityStatus } from './activity';
+import { ActivityStatus, UserActivity } from './activity';
 
 const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
   groupId,
@@ -169,7 +175,11 @@ const MemberRow: React.FC<{
     <>
       {!isOnline && (
         <Tr>
-          <Td>{data.data.name}</Td>
+          <Td>
+            <Link as={RouterLink} to={`/member/${data.id}`}>
+              {data.data.name}
+            </Link>
+          </Td>
           <Td>
             <HStack>{buttons}</HStack>
           </Td>
@@ -238,7 +248,7 @@ const MembersList: React.FC = () => {
           onClose={() => setMemberCardDisplay.off()}
         />
       )}
-      <HStack>
+      <HStack w="full">
         <Heading>メンバー一覧</Heading>
         <Spacer />
         {groupContext.currentId && (
@@ -248,7 +258,7 @@ const MembersList: React.FC = () => {
           />
         )}
       </HStack>
-      <HStack spacing="2" p="1" my="2">
+      <HStack spacing="2" p="1" my="2" w="full">
         <Text>進行中のみ表示</Text>
         <Switch
           isChecked={sortWithOnline}
@@ -256,8 +266,8 @@ const MembersList: React.FC = () => {
           colorScheme="green"
         />
       </HStack>
-      <Skeleton isLoaded={!isUpdating}>
-        <Table colorScheme="blackAlpha" size="sm" mt="5">
+      <Skeleton isLoaded={!isUpdating} w="full">
+        <Table colorScheme="blackAlpha" size="sm" mt="5" w="full">
           <Thead>
             <Tr>
               <Th>名前</Th>
@@ -282,13 +292,6 @@ const MembersList: React.FC = () => {
                         <Icon as={IoCard} />
                       </Button>
                     </Tooltip>
-                    <Tooltip label="履歴を見る">
-                      <Link to={`/activity/${member.id}`}>
-                        <Button colorScheme="gray" variant="ghost">
-                          <Icon as={IoAnalyticsSharp} />
-                        </Button>
-                      </Link>
-                    </Tooltip>
                   </>
                 }
               />
@@ -301,9 +304,17 @@ const MembersList: React.FC = () => {
 };
 
 const Members: React.FC = () => {
+  const { path } = useRouteMatch();
   return (
     <>
-      <MembersList />
+      <RouteSwitch>
+        <Route exact path={path}>
+          <MembersList />
+        </Route>
+        <Route path={`${path}:memberId`}>
+          <UserActivity />
+        </Route>
+      </RouteSwitch>
     </>
   );
 };

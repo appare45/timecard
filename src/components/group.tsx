@@ -18,7 +18,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import React, { useContext, useEffect, useState } from 'react';
-import { IoAnalytics, IoEasel, IoHome } from 'react-icons/io5';
+import { IoAnalytics, IoEasel, IoHome, IoPeople } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
@@ -243,15 +243,26 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                       タイムライン
                     </MenuLink>
                   </ListItem>
+                  <ListItem>
+                    <MenuLink leftIcon={<IoPeople />} to="/member">
+                      メンバー
+                    </MenuLink>
+                  </ListItem>
                 </List>
               </Box>
               <Box w="full">
                 <Switch>
                   <Route exact path="/">
-                    <Members />
+                    <VStack spacing="5" align="flex-start" w="full">
+                      <Members />
+                      <Activities />
+                    </VStack>
                   </Route>
                   <Route path={`/activity/`}>
                     <Activities />
+                  </Route>
+                  <Route path={`/member/`}>
+                    <Members />
                   </Route>
                 </Switch>
               </Box>
