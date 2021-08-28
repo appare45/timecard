@@ -13,11 +13,18 @@ import {
   Circle,
   Heading,
   HStack,
+  Icon,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverContent,
+  PopoverTrigger,
   Skeleton,
   SkeletonCircle,
   Spacer,
   Spinner,
   Text,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
 import React from 'react';
@@ -37,6 +44,7 @@ import { dataWithId } from '../utils/firebase';
 import { Link as RouterLink } from 'react-router-dom';
 import {
   activity,
+  getActivitySnapshot,
   getAllActivities,
   getGroup,
   getMember,
@@ -47,11 +55,22 @@ import {
   work,
   workStatus,
 } from '../utils/group';
-import { IoArrowBack, IoQrCode, IoScan } from 'react-icons/io5';
+import {
+  IoArrowBack,
+  IoEllipsisHorizontal,
+  IoLink,
+  IoQrCode,
+  IoScan,
+} from 'react-icons/io5';
 import { MemberAction, QRCodeScan } from './qrcodeScan';
 import { dateToJapaneseTime } from '../utils/time';
 import { useRef } from 'react';
 import { Card } from './createCard';
+import { firebase } from './../utils/firebase';
+import {
+  DocumentSnapshot,
+  QueryDocumentSnapshot,
+} from '@firebase/firestore-types';
 
 export const ActivityStatus: React.FC<{ workStatus: workStatus }> = ({
   workStatus,
@@ -64,28 +83,83 @@ export const ActivityStatus: React.FC<{ workStatus: workStatus }> = ({
   );
 };
 
-export const ActivityCard: React.FC<{ data: activity<work>; member?: Member }> =
-  ({ data, member }) => {
-    const [memberInfo, setMemberInfo] = useState<Member | null>();
-    const { currentId } = useContext(GroupContext);
-    useEffect(() => {
-      if (member) {
-        setMemberInfo(member);
-      } else if (currentId) {
-        getMember(data.memberId, currentId).then((e) => setMemberInfo(e));
-      }
-    }, [currentId, data.memberId, member]);
-    return (
-      <Box w="lg" border="1px" borderColor="gray.200" rounded="base">
-        <Box px="5" py="3">
-          {memberInfo ? (
+const ActivityPopover: React.FC<{ activityId: string }> = ({ activityId }) => {
+  const toast = useToast();
+  return (
+    <Popover>
+      <PopoverTrigger>
+        <Button variant="ghost">
+          <Icon as={IoEllipsisHorizontal} />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent w="min-content">
+        <PopoverArrow />
+        <PopoverBody p="0">
+          <VStack>
+            <Button
+              leftIcon={<IoLink />}
+              onClick={() => {
+                navigator.clipboard
+                  .writeText(
+                    `${location.hostname}:${location.port}/activity/${activityId}`
+                  )
+                  .then(() => {
+                    toast({
+                      title: 'リンクをコピーしました',
+                      isClosable: true,
+                      status: 'success',
+                      duration: 5000,
+                    });
+                  })
+                  .catch(() => {
+                    toast({
+                      title: 'コピーできませんでした',
+                      isClosable: true,
+                      status: 'error',
+                      duration: 5000,
+                    });
+                  });
+              }}
+              variant="ghost"
+              size="sm">
+              リンクをコピー
+            </Button>
+          </VStack>
+        </PopoverBody>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+export const ActivityCard: React.FC<{
+  activitySnapshot:
+    | firebase.firestore.QueryDocumentSnapshot<activity<work>>
+    | DocumentSnapshot<activity<work>>;
+  member?: Member;
+}> = ({ activitySnapshot, member }) => {
+  const [memberInfo, setMemberInfo] = useState<Member | null>();
+  const { currentId } = useContext(GroupContext);
+  useEffect(() => {
+    if (member) {
+      setMemberInfo(member);
+    } else if (currentId) {
+      getMember(activitySnapshot.data()?.memberId ?? '', currentId).then((e) =>
+        setMemberInfo(e)
+      );
+    }
+  }, [currentId, activitySnapshot, member]);
+  return (
+    <Box w="lg" border="1px" borderColor="gray.200" rounded="base">
+      <Box px="5" py="3">
+        {memberInfo && activitySnapshot.data() ? (
+          <HStack>
             <Button
               size="sm"
               my="1"
               ml="-1"
               variant="link"
               as={RouterLink}
-              to={`/member/${data.memberId}`}
+              to={`/member/${activitySnapshot.data()?.memberId}`}
               leftIcon={
                 <Avatar
                   src={memberInfo?.photoUrl}
@@ -95,47 +169,64 @@ export const ActivityCard: React.FC<{ data: activity<work>; member?: Member }> =
               }>
               {memberInfo?.name}
             </Button>
-          ) : (
-            <HStack>
-              <SkeletonCircle />
-              <Skeleton>
-                7
-                <Button size="sm" my="1" variant="link">
-                  読み込み中
-                </Button>
-              </Skeleton>
-            </HStack>
-          )}
-          <HStack my="2" spacing="3">
-            <ActivityStatus workStatus={data.content.status} />
-            <Text>
-              {data.content.startTime &&
-                `00${data.content.startTime.toDate().getHours()}`.slice(-2) +
-                  ':' +
-                  `${data.content.startTime.toDate().getMinutes()}`.slice(-2)}
-              ~
-              {data.content.endTime &&
-                `00${data.content.endTime.toDate().getHours()}`.slice(-2) +
-                  ':' +
-                  `${data.content.endTime.toDate().getMinutes()}`.slice(-2)}
-            </Text>
+            <Spacer />
+            <ActivityPopover activityId={activitySnapshot.id} />
           </HStack>
-        </Box>
-        <Box bg="gray.200" px="2" py="1.5" fontSize="xs" color="gray.600">
-          最終更新 {dateToJapaneseTime(data?.updated?.toDate() ?? null)}
-        </Box>
+        ) : (
+          <HStack>
+            <SkeletonCircle />
+            <Skeleton>
+              7
+              <Button size="sm" my="1" variant="link">
+                読み込み中
+              </Button>
+            </Skeleton>
+          </HStack>
+        )}
+        <HStack my="2" spacing="3">
+          <ActivityStatus
+            workStatus={activitySnapshot.data()?.content.status ?? 'running'}
+          />
+          <Text>
+            {activitySnapshot.data()?.content.startTime &&
+              `00${activitySnapshot
+                .data()
+                ?.content.startTime.toDate()
+                .getHours()}`.slice(-2) +
+                ':' +
+                `${activitySnapshot
+                  .data()
+                  ?.content.startTime.toDate()
+                  .getMinutes()}`.slice(-2)}
+            ~
+            {`00${activitySnapshot
+              .data()
+              ?.content.endTime?.toDate()
+              .getHours()}`.slice(-2) +
+              ':' +
+              `${activitySnapshot
+                .data()
+                ?.content.endTime?.toDate()
+                .getMinutes()}`.slice(-2)}
+          </Text>
+        </HStack>
       </Box>
-    );
-  };
+      <Box bg="gray.200" px="2" py="1.5" fontSize="xs" color="gray.600">
+        最終更新{' '}
+        {dateToJapaneseTime(activitySnapshot.data()?.updated?.toDate() ?? null)}
+      </Box>
+    </Box>
+  );
+};
 
 const DisplayActivities: React.FC<{
-  data: dataWithId<activity<work>>[] | null;
+  data: firebase.firestore.QueryDocumentSnapshot<activity<work>>[] | null;
 }> = ({ data }) => {
   return (
     <>
       <VStack spacing="3" w="max-content" pt="5">
         {data?.map((activity) => (
-          <ActivityCard data={activity.data} key={activity.id} />
+          <ActivityCard activitySnapshot={activity} key={activity.id} />
         ))}
       </VStack>
       {data === null && <Spinner />}
@@ -153,7 +244,7 @@ function UserActivity(): JSX.Element {
   const { memberId } = useParams<{ memberId: string }>();
   const [user, setUser] = useState<Member | null>(null);
   const [activities, setActivities] = useState<
-    dataWithId<activity<work>>[] | null
+    firebase.firestore.QueryDocumentSnapshot<activity<work>>[] | null
   >(null);
   const [group, setGroup] = useState<Group | null>(null);
   const [dialog, setDialog] = useState(false);
@@ -175,14 +266,7 @@ function UserActivity(): JSX.Element {
   useEffect(() => {
     if (currentId) {
       getUserActivities(currentId, memberId).then((activities) => {
-        const data: dataWithId<activity<work>>[] = [];
-        activities?.forEach((activity) => {
-          data.push({
-            data: activity.data(),
-            id: activity.id,
-          });
-        });
-        setActivities(data);
+        setActivities(activities);
       });
     }
   }, [currentId, memberId]);
@@ -238,19 +322,12 @@ function UserActivity(): JSX.Element {
 const AllActivity: React.FC = () => {
   const { currentId } = useContext(GroupContext);
   const [activities, setActivities] = useState<
-    dataWithId<activity<work>>[] | null
+    QueryDocumentSnapshot<activity<work>>[] | null
   >(null);
   useEffect(() => {
     if (currentId) {
       getAllActivities(currentId).then((activities) => {
-        const data: dataWithId<activity<work>>[] = [];
-        activities?.forEach((activity) => {
-          data.push({
-            data: activity.data(),
-            id: activity.id,
-          });
-        });
-        setActivities(data);
+        setActivities(activities);
       });
     }
   }, [currentId]);
@@ -264,6 +341,27 @@ const AllActivity: React.FC = () => {
         スキャン
       </Button>
       <DisplayActivities data={activities} />
+    </>
+  );
+};
+
+const SingleActivity = () => {
+  const { activityId } = useParams<{ activityId: string }>();
+  const [activitySnapshot, setActivitySnapshot] = useState<DocumentSnapshot<
+    activity<work>
+  > | null>(null);
+
+  const { currentId } = useContext(GroupContext);
+  useEffect(() => {
+    if (activityId && currentId) {
+      getActivitySnapshot(activityId, currentId).then((e) =>
+        setActivitySnapshot(e)
+      );
+    }
+  }, [activityId, currentId]);
+  return (
+    <>
+      {activitySnapshot && <ActivityCard activitySnapshot={activitySnapshot} />}
     </>
   );
 };
@@ -291,6 +389,9 @@ const Activities: React.FC = () => {
               }}
             />
           )}
+        </Route>
+        <Route path={`${path}:activityId`}>
+          <SingleActivity />
         </Route>
       </Switch>
     </>

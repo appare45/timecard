@@ -200,7 +200,10 @@ export const MemberAction: React.FC<{
           </Skeleton>
         )}
         {latestActivity?.data() ? (
-          <ActivityCard data={latestActivity.data()} member={member.data} />
+          <ActivityCard
+            activitySnapshot={latestActivity}
+            member={member.data}
+          />
         ) : (
           <Skeleton h="28" w="60" />
         )}

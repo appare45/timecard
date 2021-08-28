@@ -1,4 +1,8 @@
-import { QueryDocumentSnapshot, Timestamp } from '@firebase/firestore-types';
+import {
+  DocumentSnapshot,
+  QueryDocumentSnapshot,
+  Timestamp,
+} from '@firebase/firestore-types';
 import { firebase } from './../utils/firebase';
 import { Db } from './firebase';
 
@@ -461,6 +465,18 @@ const getUserActivity = async (
   } catch (error) {
     throw new Error(error);
   }
+};
+
+export const getActivitySnapshot = async (
+  activityId: string,
+  groupId: string
+): Promise<DocumentSnapshot<activity<work>>> => {
+  return await Db.collection('group')
+    .doc(groupId)
+    .collection('activity')
+    .withConverter(activityDataConverter)
+    .doc(activityId)
+    .get();
 };
 
 const getUserActivities = async (

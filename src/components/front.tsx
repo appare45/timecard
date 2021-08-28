@@ -156,7 +156,7 @@ export const Front: React.FC = () => {
             <Box mb="5">
               {latestActivity?.data() && (
                 <ActivityCard
-                  data={latestActivity.data()}
+                  activitySnapshot={latestActivity}
                   member={detectedMember?.data}
                 />
               )}
