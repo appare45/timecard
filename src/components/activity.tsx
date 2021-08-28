@@ -98,12 +98,15 @@ export const ActivityCard: React.FC<{ data: activity<work>; member?: Member }> =
           <HStack my="2" spacing="3">
             <ActivityStatus workStatus={data.content.status} />
             <Text>
-              {data.content.startTime.toDate().getHours()}:
-              {data.content.startTime.toDate().getMinutes()} ~
+              {data.content.startTime &&
+                `00${data.content.startTime.toDate().getHours()}`.slice(-2) +
+                  ':' +
+                  `${data.content.startTime.toDate().getMinutes()}`.slice(-2)}
+              ~
               {data.content.endTime &&
-                `${data.content.endTime
-                  .toDate()
-                  .getHours()}:${data.content.endTime.toDate().getHours()}`}
+                `00${data.content.endTime.toDate().getHours()}`.slice(-2) +
+                  ':' +
+                  `${data.content.endTime.toDate().getMinutes()}`.slice(-2)}
             </Text>
           </HStack>
         </Box>

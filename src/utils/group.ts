@@ -253,7 +253,7 @@ const createGroup = (
       });
   } catch (error) {
     console.error(error);
-    throw new Error(error);
+    throw new Error(error ?? '');
   }
 };
 
@@ -287,7 +287,7 @@ async function getAccount(
       .doc(memberId)
       .get();
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error ?? '');
   }
 }
 
@@ -307,7 +307,7 @@ async function addMember(member: Member, groupId: string): Promise<string> {
     return group.id;
   } catch (error) {
     console.error(error);
-    throw new Error(error);
+    throw new Error(error ?? '');
   }
 }
 
@@ -350,7 +350,7 @@ async function addAdmin(
     return;
   } catch (error) {
     console.error(error);
-    throw new Error(error);
+    throw new Error(error ?? '');
   }
 }
 
@@ -373,7 +373,7 @@ async function setGroup(
       .withConverter(groupDataConverter)
       .set(group, option ?? {});
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error ?? '');
   }
 }
 
@@ -400,7 +400,7 @@ const listMembers = async (
       .withConverter(memberDataConverter)
       .get(option);
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error ?? '');
   }
 };
 
@@ -416,7 +416,7 @@ const addWork = async (
       .add(activity);
     return data.id;
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error ?? '');
   }
 };
 const setWork = async (
