@@ -136,24 +136,22 @@ function Canvas(props: {
     <>
       <audio src="audio/notification_simple-01.wav" ref={notificationAudio} />
       <audio src="audio/alert_error-02.wav" ref={errorAudio} />
-      {tracks.length > 1 && (
-        <FormControl mt="2" mb="5">
-          <HStack align="center">
-            <FormLabel>カメラを選択</FormLabel>
-            <Select
-              w="max-content"
-              onChange={(e) => {
-                updateCurrentTrackIndex(Number(e.target.value));
-              }}>
-              {tracks.map((track, index) => (
-                <option key={track.id} id={index.toString()}>
-                  {track.label}
-                </option>
-              ))}
-            </Select>
-          </HStack>
-        </FormControl>
-      )}
+      <FormControl mt="2" mb="5">
+        <HStack align="center">
+          <FormLabel>カメラを選択</FormLabel>
+          <Select
+            w="max-content"
+            onChange={(e) => {
+              updateCurrentTrackIndex(Number(e.target.value));
+            }}>
+            {tracks.map((track, index) => (
+              <option key={track.id} id={index.toString()}>
+                {track.label}
+              </option>
+            ))}
+          </Select>
+        </HStack>
+      </FormControl>
       <canvas
         ref={canvasRef}
         style={{
@@ -278,14 +276,17 @@ export const QRCodeScan = React.memo(
       getUserCamera()
         .then((e) => {
           setMediaStream(e);
-          if (videoRef.current) {
-            videoRef.current.srcObject = e;
-          }
         })
         .catch((e) => {
           updateError(e);
         });
     }, []);
+
+    useEffect(() => {
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    }, [mediaStream]);
 
     return (
       <>
