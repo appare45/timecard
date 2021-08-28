@@ -1,14 +1,22 @@
 import {
   Alert,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogCloseButton,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogOverlay,
   AlertIcon,
   Avatar,
   Box,
   Button,
+  ButtonGroup,
   Circle,
   Heading,
   HStack,
   Skeleton,
   SkeletonCircle,
+  Spacer,
   Spinner,
   Text,
   VStack,
@@ -31,16 +39,26 @@ import { Link as RouterLink } from 'react-router-dom';
 import {
   activity,
   getAllActivities,
+  getGroup,
   getMember,
   getUserActivities,
+  Group,
   Member,
   statusToText,
   work,
   workStatus,
 } from '../utils/group';
-import { IoArrowBack, IoScan } from 'react-icons/io5';
+import {
+  IoArrowBack,
+  IoPencil,
+  IoQrCode,
+  IoScan,
+  IoSettings,
+} from 'react-icons/io5';
 import { MemberAction, QRCodeScan } from './qrcodeScan';
 import { dateToJapaneseTime } from '../utils/time';
+import { useRef } from 'react';
+import { Card } from './createCard';
 
 export const ActivityStatus: React.FC<{ workStatus: workStatus }> = ({
   workStatus,
@@ -144,7 +162,15 @@ function UserActivity(): JSX.Element {
   const [activities, setActivities] = useState<
     dataWithId<activity<work>>[] | null
   >(null);
+  const [group, setGroup] = useState<Group | null>(null);
+  const [dialog, setDialog] = useState(false);
+  const dialogCancel = useRef(null);
   const { currentId } = useContext(GroupContext);
+  useEffect(() => {
+    if (currentId) {
+      getGroup(currentId).then((group) => setGroup(group));
+    }
+  });
   useEffect(() => {
     if (currentId) {
       getMember(memberId, currentId).then((member) => {
@@ -176,7 +202,42 @@ function UserActivity(): JSX.Element {
         戻る
       </Button>
       {user?.name && <Heading>{`${user?.name ?? 'ユーザー'}の履歴`}</Heading>}
-      <DisplayActivities data={activities} />
+      <HStack align="flex-start">
+        <DisplayActivities data={activities} />
+        <Spacer />
+        <VStack
+          mt="10"
+          border="1px"
+          bg="gray.50"
+          borderColor="gray.200"
+          p="5"
+          rounded="base"
+          align="flex-start">
+          <Button leftIcon={<IoQrCode />} onClick={() => setDialog(true)}>
+            QRコード表示
+          </Button>
+        </VStack>
+      </HStack>
+      <AlertDialog
+        isOpen={dialog}
+        onClose={() => setDialog(false)}
+        leastDestructiveRef={dialogCancel}>
+        <AlertDialogOverlay />
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            {user?.name}のカード
+            <AlertDialogCloseButton />
+          </AlertDialogHeader>
+          <AlertDialogBody>
+            {user && group && (
+              <Card member={{ data: user, id: memberId }} group={group} />
+            )}
+            <Button ref={dialogCancel} onClick={() => setDialog(false)} mx="5">
+              閉じる
+            </Button>
+          </AlertDialogBody>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

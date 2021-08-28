@@ -1,14 +1,4 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  AlertTitle,
-  AspectRatio,
-  Box,
-  Button,
-  Link,
-  Spinner,
-} from '@chakra-ui/react';
+import { AspectRatio, Box, Button, Link, Skeleton } from '@chakra-ui/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { IoDownload } from 'react-icons/io5';
 import { dataWithId } from '../utils/firebase';
@@ -96,13 +86,11 @@ export const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
         <img alt="qrコード" ref={qrRef} />
       </Box>
       {isLoading && (
-        <Alert status="info">
-          <AlertIcon />
-          <AlertTitle>読み込み中です</AlertTitle>
-          <AlertDescription>
-            <Spinner />
-          </AlertDescription>
-        </Alert>
+        <Skeleton
+          w={`${cardWidth * 4}`}
+          h={`${cardHeight * 4}`}
+          isLoaded={!isLoading}
+        />
       )}
       <AspectRatio
         w="sm"
