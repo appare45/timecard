@@ -291,6 +291,13 @@ export const QRCodeScan = React.memo(
     }, [facingMode]);
 
     useEffect(() => {
+      return () => {
+        mediaStream?.getTracks().forEach((e) => e.stop());
+        console.info('stopped');
+      };
+    }, [mediaStream]);
+
+    useEffect(() => {
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
       }
