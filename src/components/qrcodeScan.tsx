@@ -7,6 +7,7 @@ import {
   AspectRatio,
   Box,
   Button,
+  ButtonGroup,
   Circle,
   FormControl,
   FormLabel,
@@ -14,6 +15,7 @@ import {
   HStack,
   Select,
   Skeleton,
+  Textarea,
   useToast,
 } from '@chakra-ui/react';
 import { cardHeight, cardWidth } from './createCard';
@@ -180,11 +182,15 @@ export const MemberAction: React.FC<{
     );
   const { currentId } = useContext(GroupContext);
   const toast = useToast();
+  const [memo, setMemo] = useState('');
   useEffect(() => {
     if (currentId) {
-      getLatestActivity(currentId, member.id).then((activity) =>
-        setLatestActivity(activity)
-      );
+      getLatestActivity(currentId, member.id).then((activity) => {
+        setLatestActivity(activity);
+        if (activity.data().content.status == 'running') {
+          setMemo(activity.data().content.memo);
+        }
+      });
     }
   }, [currentId, member.id]);
   return (
@@ -208,7 +214,16 @@ export const MemberAction: React.FC<{
           <Skeleton h="28" w="60" />
         )}
       </Box>
-      <HStack>
+      <FormControl>
+        <FormLabel>メモ</FormLabel>
+        <Textarea
+          mb="5"
+          placeholder="活動の記録"
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+        />
+      </FormControl>
+      <ButtonGroup>
         <Button
           colorScheme={
             latestActivity?.data().content.status === 'running'
@@ -224,7 +239,7 @@ export const MemberAction: React.FC<{
                     startTime: firebase.firestore.Timestamp.now(),
                     endTime: null,
                     status: 'running',
-                    memo: '',
+                    memo: memo,
                   },
                   memberId: member.id,
                 }).then(() => {
@@ -241,6 +256,7 @@ export const MemberAction: React.FC<{
                 _latestActivity.content.endTime =
                   firebase.firestore.Timestamp.now();
                 _latestActivity.content.status = 'done';
+                _latestActivity.content.memo = memo;
                 setWork(currentId, latestActivity?.id, _latestActivity, {
                   merge: true,
                 }).then(() => {
@@ -266,7 +282,7 @@ export const MemberAction: React.FC<{
           ref={cancelRef}>
           キャンセル
         </Button>
-      </HStack>
+      </ButtonGroup>
     </>
   );
 };

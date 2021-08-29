@@ -1,4 +1,9 @@
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Alert,
   AlertDialog,
   AlertDialogBody,
@@ -11,6 +16,7 @@ import {
   Box,
   Button,
   Circle,
+  Divider,
   Heading,
   HStack,
   Icon,
@@ -59,6 +65,7 @@ import {
   IoArrowBack,
   IoEllipsisHorizontal,
   IoLink,
+  IoPencil,
   IoQrCode,
   IoScan,
 } from 'react-icons/io5';
@@ -83,53 +90,66 @@ export const ActivityStatus: React.FC<{ workStatus: workStatus }> = ({
   );
 };
 
-const ActivityPopover: React.FC<{ activityId: string }> = ({ activityId }) => {
-  const toast = useToast();
-  return (
-    <Popover>
-      <PopoverTrigger>
-        <Button variant="ghost">
-          <Icon as={IoEllipsisHorizontal} />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent w="min-content">
-        <PopoverArrow />
-        <PopoverBody p="0">
-          <VStack>
-            <Button
-              leftIcon={<IoLink />}
-              onClick={() => {
-                navigator.clipboard
-                  .writeText(
-                    `${location.hostname}:${location.port}/activity/${activityId}`
-                  )
-                  .then(() => {
-                    toast({
-                      title: 'リンクをコピーしました',
-                      isClosable: true,
-                      status: 'success',
-                      duration: 5000,
+const ActivityPopover: React.FC<{ activityId: string; isEditable: boolean }> =
+  ({ activityId, isEditable }) => {
+    const toast = useToast();
+    return (
+      <Popover>
+        <PopoverTrigger>
+          <Button variant="ghost">
+            <Icon as={IoEllipsisHorizontal} />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent w="min-content">
+          <PopoverArrow />
+          <PopoverBody p="0">
+            <VStack spacing="0">
+              <Button
+                leftIcon={<IoLink />}
+                onClick={() => {
+                  navigator.clipboard
+                    .writeText(
+                      `${location.hostname}:${location.port}/activity/${activityId}`
+                    )
+                    .then(() => {
+                      toast({
+                        title: 'リンクをコピーしました',
+                        isClosable: true,
+                        status: 'success',
+                        duration: 5000,
+                      });
+                    })
+                    .catch(() => {
+                      toast({
+                        title: 'コピーできませんでした',
+                        isClosable: true,
+                        status: 'error',
+                        duration: 5000,
+                      });
                     });
-                  })
-                  .catch(() => {
-                    toast({
-                      title: 'コピーできませんでした',
-                      isClosable: true,
-                      status: 'error',
-                      duration: 5000,
-                    });
-                  });
-              }}
-              variant="ghost"
-              size="sm">
-              リンクをコピー
-            </Button>
-          </VStack>
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
-  );
-};
+                }}
+                variant="ghost"
+                size="sm">
+                リンクをコピー
+              </Button>
+              {isEditable && (
+                <Button
+                  leftIcon={<IoPencil />}
+                  onClick={() => {
+                    console.info('');
+                  }}
+                  variant="ghost"
+                  size="sm"
+                  w="full">
+                  編集
+                </Button>
+              )}
+            </VStack>
+          </PopoverBody>
+        </PopoverContent>
+      </Popover>
+    );
+  };
 
 export const ActivityCard: React.FC<{
   activitySnapshot:
@@ -139,6 +159,7 @@ export const ActivityCard: React.FC<{
 }> = ({ activitySnapshot, member }) => {
   const [memberInfo, setMemberInfo] = useState<Member | null>();
   const { currentId } = useContext(GroupContext);
+  const activityData: activity<work> | null = activitySnapshot.data() ?? null;
   useEffect(() => {
     if (member) {
       setMemberInfo(member);
@@ -150,71 +171,83 @@ export const ActivityCard: React.FC<{
   }, [currentId, activitySnapshot, member]);
   return (
     <Box w="lg" border="1px" borderColor="gray.200" rounded="base">
-      <Box px="5" py="3">
-        {memberInfo && activitySnapshot.data() ? (
-          <HStack>
-            <Button
-              size="sm"
-              my="1"
-              ml="-1"
-              variant="link"
-              as={RouterLink}
-              to={`/member/${activitySnapshot.data()?.memberId}`}
-              leftIcon={
-                <Avatar
-                  src={memberInfo?.photoUrl}
-                  name={memberInfo?.name}
-                  size="sm"
+      {activityData && (
+        <>
+          <Box px="5" py="3">
+            {memberInfo ? (
+              <HStack>
+                <RouterLink to={`/member/${activityData.memberId}`}>
+                  <HStack>
+                    <Avatar
+                      src={memberInfo?.photoUrl}
+                      name={memberInfo?.name}
+                      size="sm"
+                    />
+                    <Text>{memberInfo?.name}</Text>
+                  </HStack>
+                </RouterLink>
+                <Spacer />
+                <ActivityPopover
+                  activityId={activitySnapshot.id}
+                  isEditable={true}
                 />
-              }>
-              {memberInfo?.name}
-            </Button>
-            <Spacer />
-            <ActivityPopover activityId={activitySnapshot.id} />
-          </HStack>
-        ) : (
-          <HStack>
-            <SkeletonCircle />
-            <Skeleton>
-              7
-              <Button size="sm" my="1" variant="link">
-                読み込み中
-              </Button>
-            </Skeleton>
-          </HStack>
-        )}
-        <HStack my="2" spacing="3">
-          <ActivityStatus
-            workStatus={activitySnapshot.data()?.content.status ?? 'running'}
-          />
-          <Text>
-            {activitySnapshot.data()?.content.startTime &&
-              `00${activitySnapshot
-                .data()
-                ?.content.startTime.toDate()
-                .getHours()}`.slice(-2) +
-                ':' +
-                `${activitySnapshot
-                  .data()
-                  ?.content.startTime.toDate()
-                  .getMinutes()}`.slice(-2)}
-            ~
-            {`00${activitySnapshot
-              .data()
-              ?.content.endTime?.toDate()
-              .getHours()}`.slice(-2) +
-              ':' +
-              `${activitySnapshot
-                .data()
-                ?.content.endTime?.toDate()
-                .getMinutes()}`.slice(-2)}
-          </Text>
-        </HStack>
-      </Box>
-      <Box bg="gray.200" px="2" py="1.5" fontSize="xs" color="gray.600">
-        最終更新{' '}
-        {dateToJapaneseTime(activitySnapshot.data()?.updated?.toDate() ?? null)}
-      </Box>
+              </HStack>
+            ) : (
+              <HStack>
+                <SkeletonCircle />
+                <Skeleton>
+                  7
+                  <Button size="sm" my="1" variant="link">
+                    読み込み中
+                  </Button>
+                </Skeleton>
+              </HStack>
+            )}
+            <HStack my="2" spacing="3">
+              <ActivityStatus
+                workStatus={activityData.content.status ?? 'running'}
+              />
+              <Text>
+                {activityData.content.startTime &&
+                  `00${activityData?.content.startTime
+                    .toDate()
+                    .getHours()}`.slice(-2) +
+                    ':' +
+                    `00${activityData?.content.startTime
+                      .toDate()
+                      .getMinutes()}`.slice(-2)}
+                ~
+                {activityData.content.endTime &&
+                  `00${activityData?.content.endTime
+                    ?.toDate()
+                    .getHours()}`.slice(-2) +
+                    ':' +
+                    `00${activityData?.content.endTime
+                      ?.toDate()
+                      .getMinutes()}`.slice(-2)}
+              </Text>
+            </HStack>
+            <Accordion allowToggle>
+              {activityData.content.memo && (
+                <AccordionItem>
+                  <AccordionButton>
+                    <HStack w="full">
+                      <Text>メモ</Text>
+                      <Spacer />
+                      <AccordionIcon />
+                    </HStack>
+                  </AccordionButton>
+                  <AccordionPanel>{activityData.content.memo}</AccordionPanel>
+                </AccordionItem>
+              )}
+            </Accordion>
+          </Box>
+          <Box bg="gray.200" px="2" py="1.5" fontSize="xs" color="gray.600">
+            最終更新{' '}
+            {dateToJapaneseTime(activityData.updated?.toDate() ?? null)}
+          </Box>
+        </>
+      )}
     </Box>
   );
 };
@@ -319,7 +352,7 @@ function UserActivity(): JSX.Element {
   );
 }
 
-const AllActivity: React.FC = () => {
+export const AllActivity: React.FC = () => {
   const { currentId } = useContext(GroupContext);
   const [activities, setActivities] = useState<
     QueryDocumentSnapshot<activity<work>>[] | null
@@ -333,13 +366,6 @@ const AllActivity: React.FC = () => {
   }, [currentId]);
   return (
     <>
-      <Box mb="3">
-        <Heading>タイムライン</Heading>
-        <Text>全てのアクティビティーが時間順で並びます</Text>
-      </Box>
-      <Button leftIcon={<IoScan />} as={Link} to="/activity/scan">
-        スキャン
-      </Button>
       <DisplayActivities data={activities} />
     </>
   );
@@ -375,6 +401,13 @@ const Activities: React.FC = () => {
     <>
       <Switch>
         <Route exact path={path}>
+          <Box mb="3">
+            <Heading>タイムライン</Heading>
+            <Text>全てのアクティビティーが時間順で並びます</Text>
+          </Box>
+          <Button leftIcon={<IoScan />} as={Link} to="/activity/scan">
+            スキャン
+          </Button>
           <AllActivity />
         </Route>
         <Route exact path={`${path}scan`}>

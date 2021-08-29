@@ -21,26 +21,29 @@ export const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
       const ctx = canvasRef.current.getContext('2d');
       const canvasWidth = canvasRef.current.width;
       const canvasHeight = canvasRef.current.height;
-      const yMargin = canvasWidth * 0.07;
-      const xMargin = canvasHeight * 0.07; // 単位はpx
+      const yMargin = canvasHeight * 0.07;
+      const xMargin = canvasHeight * 0.07; // 単位はpxx
       ctx?.strokeRect(0, 0, canvasWidth, canvasHeight);
       if (ctx) {
         ctx.fillStyle = 'white';
         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight / 2);
+        ctx.fillStyle = 'white';
         const defaultNameWidth = ctx.measureText(name).width;
         const defaultGroupNameWidth = ctx.measureText(groupName).width;
         ctx.font = `bold ${
-          ((canvasWidth * 0.5) / defaultNameWidth) * 9
+          ((canvasWidth - canvasHeight / 2) / defaultNameWidth) * 9
         }px 'Avenir','Helvetica Neue','Helvetica','Arial','Hiragino Sans','ヒラギノ角ゴシック',YuGothic,'Yu Gothic','メイリオ', Meiryo,'ＭＳ Ｐゴシック','MS PGothic',sans-serif`;
-        ctx.textBaseline = 'middle';
+        // ctx.textBaseline = 'middle';
         ctx.textAlign = 'right';
         ctx.fillText(
           name,
           canvasWidth - yMargin,
-          canvasHeight * 0.49,
+          canvasHeight * 0.4,
           canvasWidth - yMargin
         );
+        ctx.fillStyle = 'black';
         const measuredName = ctx.measureText(name);
         ctx.font = `${
           ((canvasWidth * 0.5) / defaultGroupNameWidth) * 3
@@ -48,11 +51,17 @@ export const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
         ctx.fillText(
           groupName,
           canvasWidth - yMargin,
-          canvasHeight * 0.47 -
+          canvasHeight * 0.5 +
             (measuredName.actualBoundingBoxAscent +
               measuredName.actualBoundingBoxDescent),
           canvasWidth - yMargin
         );
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(0, canvasHeight / 2.1);
+        ctx.lineTo(canvasWidth, canvasHeight / 2.1);
+        ctx.closePath();
+        ctx.stroke();
         import('qrcode')
           .then((QRCode) => {
             QRCode.toDataURL(member.id, {
@@ -65,9 +74,9 @@ export const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
                     ctx.drawImage(
                       qrRef.current,
                       xMargin,
-                      yMargin + 10,
-                      canvasWidth / 2 - 2 * xMargin,
-                      canvasWidth / 2 - 2 * xMargin
+                      canvasHeight / 2,
+                      canvasHeight / 2 - xMargin,
+                      canvasHeight / 2 - xMargin
                     );
                   }
                   setIsLoading(false);

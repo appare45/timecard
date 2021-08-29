@@ -24,7 +24,7 @@ import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { createGroup, getGroup, Group } from '../utils/group';
 import { setUser } from '../utils/user';
-import { Activities } from './activity';
+import { Activities, AllActivity } from './activity';
 import { Front } from './front';
 import { Members } from './members';
 
@@ -150,7 +150,7 @@ const MenuLink: React.FC<{
       variant="link"
       color="black"
       size="lg"
-      p="1"
+      p="1.5"
       as={routerLink}
       to={to}
       wordBreak="keep-all">
@@ -232,7 +232,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                     document.body.requestFullscreen();
                   }}
                 />
-                <List spacing="1">
+                <List spacing="1.5" my="2">
                   <ListItem>
                     <MenuLink leftIcon={<IoHome />} to="/">
                       トップ
@@ -255,7 +255,8 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                   <Route exact path="/">
                     <VStack spacing="5" align="flex-start" w="full">
                       <Members />
-                      <Activities />
+                      <Heading>最近のアクティビティー</Heading>
+                      <AllActivity />
                     </VStack>
                   </Route>
                   <Route path={`/activity/`}>
