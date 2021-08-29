@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Circle,
-  Divider,
   Heading,
   HStack,
   Skeleton,
@@ -39,8 +38,9 @@ import {
   work,
   workStatus,
 } from '../utils/group';
-import { IoScan } from 'react-icons/io5';
-import { QRCodeScan } from './qrcodeScan';
+import { IoArrowBack, IoScan } from 'react-icons/io5';
+import { MemberAction, QRCodeScan } from './qrcodeScan';
+import { dateToJapaneseTime } from '../utils/time';
 
 export const ActivityStatus: React.FC<{ workStatus: workStatus }> = ({
   workStatus,
@@ -65,40 +65,51 @@ export const ActivityCard: React.FC<{ data: activity<work>; member?: Member }> =
       }
     }, [currentId, data.memberId, member]);
     return (
-      <Box p="3" w="lg">
-        {memberInfo ? (
-          <Button
-            size="sm"
-            my="1"
-            variant="link"
-            as={RouterLink}
-            to={`/activity/${data.memberId}`}
-            leftIcon={
-              <Avatar
-                src={memberInfo?.photoUrl}
-                name={memberInfo?.name}
-                size="sm"
-              />
-            }>
-            {memberInfo?.name}
-          </Button>
-        ) : (
-          <HStack>
-            <SkeletonCircle />
-            <Skeleton>
-              <Button size="sm" my="1" variant="link">
-                読み込み中
-              </Button>
-            </Skeleton>
+      <Box w="lg" border="1px" borderColor="gray.200" rounded="base">
+        <Box px="5" py="3">
+          {memberInfo ? (
+            <Button
+              size="sm"
+              my="1"
+              ml="-1"
+              variant="link"
+              as={RouterLink}
+              to={`/activity/${data.memberId}`}
+              leftIcon={
+                <Avatar
+                  src={memberInfo?.photoUrl}
+                  name={memberInfo?.name}
+                  size="sm"
+                />
+              }>
+              {memberInfo?.name}
+            </Button>
+          ) : (
+            <HStack>
+              <SkeletonCircle />
+              <Skeleton>
+                7
+                <Button size="sm" my="1" variant="link">
+                  読み込み中
+                </Button>
+              </Skeleton>
+            </HStack>
+          )}
+          <HStack my="2" spacing="3">
+            <ActivityStatus workStatus={data.content.status} />
+            <Text>
+              {data.content.startTime.toDate().getHours()}:
+              {data.content.startTime.toDate().getMinutes()} ~
+              {data.content.endTime &&
+                `${data.content.endTime
+                  .toDate()
+                  .getHours()}:${data.content.endTime.toDate().getHours()}`}
+            </Text>
           </HStack>
-        )}
-        <HStack my="2" spacing="3">
-          <ActivityStatus workStatus={data.content.status} />
-          <Text>{data.content.startTime.toDate().toLocaleTimeString()}~</Text>
-        </HStack>
-        <Text fontSize="xs" mt="2">
-          最終更新:{data?.updated?.toDate().toLocaleString() ?? ''}
-        </Text>
+        </Box>
+        <Box bg="gray.200" px="2" py="1.5" fontSize="xs" color="gray.600">
+          最終更新 {dateToJapaneseTime(data?.updated?.toDate() ?? null)}
+        </Box>
       </Box>
     );
   };
@@ -108,7 +119,7 @@ const DisplayActivities: React.FC<{
 }> = ({ data }) => {
   return (
     <>
-      <VStack spacing="1" w="max-content" divider={<Divider />}>
+      <VStack spacing="3" w="max-content" pt="5">
         {data?.map((activity) => (
           <ActivityCard data={activity.data} key={activity.id} />
         ))}
@@ -117,7 +128,7 @@ const DisplayActivities: React.FC<{
       {data !== null && !data?.length && (
         <Alert status="info" mt="3">
           <AlertIcon />
-          履歴が存在しません
+          履歴がありません
         </Alert>
       )}
     </>
@@ -138,6 +149,7 @@ function UserActivity(): JSX.Element {
       });
     }
   }, [currentId, memberId]);
+  const history = useHistory();
   useEffect(() => {
     if (currentId) {
       getUserActivities(currentId, memberId).then((activities) => {
@@ -154,6 +166,12 @@ function UserActivity(): JSX.Element {
   }, [currentId, memberId]);
   return (
     <>
+      <Button
+        leftIcon={<IoArrowBack />}
+        onClick={() => history.goBack()}
+        variant="link">
+        戻る
+      </Button>
       {user?.name && <Heading>{`${user?.name ?? 'ユーザー'}の履歴`}</Heading>}
       <DisplayActivities data={activities} />
     </>
@@ -196,6 +214,8 @@ const AllActivity: React.FC = () => {
 const Activities: React.FC = () => {
   const { path } = useRouteMatch();
   const history = useHistory();
+  const [detectedMember, setDetectedMember] =
+    useState<dataWithId<Member> | null>(null);
   return (
     <>
       <Switch>
@@ -203,11 +223,17 @@ const Activities: React.FC = () => {
           <AllActivity />
         </Route>
         <Route exact path={`${path}scan`}>
-          <QRCodeScan
-            onClose={() => {
-              history.push(path);
-            }}
-          />
+          {!detectedMember ? (
+            <QRCodeScan onDetect={(e) => setDetectedMember(e)} />
+          ) : (
+            <MemberAction
+              member={detectedMember}
+              onClose={() => {
+                history.push(path);
+                setDetectedMember(null);
+              }}
+            />
+          )}
         </Route>
         <Route path={`${path}:memberId`}>
           <UserActivity />

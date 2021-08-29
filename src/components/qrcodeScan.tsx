@@ -30,6 +30,7 @@ import {
 } from '../utils/group';
 import { dataWithId, firebase } from '../utils/firebase';
 import { ActivityCard } from './activity';
+import { MutableRefObject } from 'react';
 
 const getUserCamera = () =>
   new Promise<MediaStream>((resolve, reject) => {
@@ -110,7 +111,6 @@ function Canvas(props: {
               return getMember(e, groupContext.currentId).then((member) => {
                 if (member && groupContext.currentId) {
                   props.onDetect({ id: e, data: member });
-                  clearInterval(interval);
                   return false;
                 } else {
                   unknownMemberIds.push(e);
@@ -136,7 +136,7 @@ function Canvas(props: {
     <>
       <audio src="audio/notification_simple-01.wav" ref={notificationAudio} />
       <audio src="audio/alert_error-02.wav" ref={errorAudio} />
-      {!tracks.length && (
+      {tracks.length > 1 && (
         <FormControl mt="2" mb="5">
           <HStack align="center">
             <FormLabel>カメラを選択</FormLabel>
@@ -168,10 +168,11 @@ function Canvas(props: {
   );
 }
 
-const MemberAction: React.FC<{
+export const MemberAction: React.FC<{
   member: dataWithId<Member>;
   onClose: () => void;
-}> = ({ member, onClose }) => {
+  cancelRef?: MutableRefObject<null>;
+}> = ({ member, onClose, cancelRef }) => {
   const [latestActivity, setLatestActivity] =
     useState<firebase.firestore.QueryDocumentSnapshot<activity<work>> | null>(
       null
@@ -254,7 +255,11 @@ const MemberAction: React.FC<{
             ? '終了'
             : '開始'}
         </Button>
-        <Button variant="ghost" colorScheme="red" onClick={() => onClose()}>
+        <Button
+          variant="ghost"
+          colorScheme="red"
+          onClick={() => onClose()}
+          ref={cancelRef}>
           キャンセル
         </Button>
       </HStack>
@@ -264,12 +269,10 @@ const MemberAction: React.FC<{
 
 // eslint-disable-next-line react/display-name
 export const QRCodeScan = React.memo(
-  (props: { onClose: () => void }): JSX.Element => {
+  (props: { onDetect: (e: dataWithId<Member>) => void }): JSX.Element => {
     const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
     const [error, updateError] = useState('');
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [detectedMember, setDetectedMember] =
-      useState<null | dataWithId<Member>>(null);
 
     useEffect(() => {
       getUserCamera()
@@ -286,48 +289,35 @@ export const QRCodeScan = React.memo(
 
     return (
       <>
-        {mediaStream &&
-        mediaStream?.active &&
-        videoRef.current &&
-        !detectedMember ? (
+        {mediaStream && mediaStream?.active && videoRef.current ? (
           <>
             <Canvas
               stream={mediaStream}
               videoElement={videoRef.current}
-              onDetect={(e) => setDetectedMember(e)}
+              onDetect={(e) => props.onDetect(e)}
             />
           </>
         ) : (
           <Circle />
         )}
-        {detectedMember ? (
-          <MemberAction
-            member={detectedMember}
-            onClose={() => {
-              setDetectedMember(null);
-              props.onClose();
-            }}
+        <AspectRatio
+          maxH="100vh"
+          h="full"
+          ratio={cardWidth / cardHeight}
+          borderRadius="lg"
+          bg="gray.400"
+          overflow="hidden">
+          <video
+            playsInline
+            muted
+            autoPlay
+            ref={videoRef}
+            controlsList="nodownload nofullscreen noremoteplayback"
+            disablePictureInPicture
+            disableRemotePlayback
+            style={{ objectFit: 'cover' }}
           />
-        ) : (
-          <AspectRatio
-            maxH="100vh"
-            h="full"
-            ratio={cardWidth / cardHeight}
-            borderRadius="lg"
-            bg="gray.400"
-            overflow="hidden">
-            <video
-              playsInline
-              muted
-              autoPlay
-              ref={videoRef}
-              controlsList="nodownload nofullscreen noremoteplayback"
-              disablePictureInPicture
-              disableRemotePlayback
-              style={{ objectFit: 'cover' }}
-            />
-          </AspectRatio>
-        )}
+        </AspectRatio>
 
         {error && (
           <Alert status="error">

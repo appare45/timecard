@@ -158,7 +158,7 @@ const MemberRow: React.FC<{
   useEffect(() => {
     if (currentId && data.id) {
       getLatestActivity(currentId, data.id).then((status) =>
-        setCurrentStatus(status.data())
+        setCurrentStatus(status?.data())
       );
     }
   }, [currentId, data.id]);
