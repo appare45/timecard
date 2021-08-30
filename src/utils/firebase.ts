@@ -17,7 +17,6 @@ let app: firebase.app.App;
 
 if (firebase.app.length) {
   app = firebase.initializeApp(firebaseConfig);
-  console.info(firebaseConfig);
 }
 
 export type dataWithId<T> = {
