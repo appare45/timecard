@@ -1,9 +1,4 @@
 import {
-  Accordion,
-  AccordionButton,
-  AccordionIcon,
-  AccordionItem,
-  AccordionPanel,
   Alert,
   AlertDialog,
   AlertDialogBody,
@@ -15,21 +10,22 @@ import {
   Avatar,
   Box,
   Button,
+  ButtonGroup,
   Circle,
-  Divider,
   Heading,
   HStack,
-  Icon,
-  Popover,
-  PopoverArrow,
-  PopoverBody,
-  PopoverContent,
-  PopoverTrigger,
+  Link,
   Skeleton,
   SkeletonCircle,
   Spacer,
   Spinner,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Text,
+  Tooltip,
   useToast,
   VStack,
 } from '@chakra-ui/react';
@@ -38,13 +34,7 @@ import { useEffect } from 'react';
 import { useContext } from 'react';
 import { useState } from 'react';
 import { useParams } from 'react-router';
-import {
-  Link,
-  Route,
-  Switch,
-  useHistory,
-  useRouteMatch,
-} from 'react-router-dom';
+import { Route, Switch, useHistory, useRouteMatch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { dataWithId } from '../utils/firebase';
 import { Link as RouterLink } from 'react-router-dom';
@@ -63,9 +53,8 @@ import {
 } from '../utils/group';
 import {
   IoArrowBack,
-  IoEllipsisHorizontal,
-  IoLink,
-  IoPencil,
+  IoClipboardOutline,
+  IoPencilOutline,
   IoQrCode,
   IoScan,
 } from 'react-icons/io5';
@@ -78,6 +67,7 @@ import {
   DocumentSnapshot,
   QueryDocumentSnapshot,
 } from '@firebase/firestore-types';
+import { useMemo } from 'react';
 
 export const ActivityStatus: React.FC<{ workStatus: workStatus }> = ({
   workStatus,
@@ -90,161 +80,221 @@ export const ActivityStatus: React.FC<{ workStatus: workStatus }> = ({
   );
 };
 
-const ActivityPopover: React.FC<{ activityId: string; isEditable: boolean }> =
-  ({ activityId, isEditable }) => {
-    const toast = useToast();
-    return (
-      <Popover>
-        <PopoverTrigger>
-          <Button variant="ghost">
-            <Icon as={IoEllipsisHorizontal} />
+const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
+  activityId,
+  isEditable,
+}) => {
+  const toast = useToast();
+  return (
+    <ButtonGroup
+      variant="outline"
+      size="sm"
+      spacing="0.5"
+      isAttached
+      colorScheme="gray">
+      <Tooltip label="リンクをコピー">
+        <Button
+          onClick={() => {
+            navigator.clipboard
+              .writeText(
+                `${location.hostname}:${location.port}/activity/${activityId}`
+              )
+              .then(() => {
+                toast({
+                  title: 'リンクをコピーしました',
+                  isClosable: true,
+                  status: 'success',
+                  duration: 5000,
+                });
+              })
+              .catch(() => {
+                toast({
+                  title: 'コピーできませんでした',
+                  isClosable: true,
+                  status: 'error',
+                  duration: 5000,
+                });
+              });
+          }}>
+          <IoClipboardOutline />
+        </Button>
+      </Tooltip>
+      {isEditable && (
+        <Tooltip label="編集する">
+          <Button
+            onClick={() => {
+              console.info('');
+            }}>
+            <IoPencilOutline />
           </Button>
-        </PopoverTrigger>
-        <PopoverContent w="min-content">
-          <PopoverArrow />
-          <PopoverBody p="0">
-            <VStack spacing="0">
-              <Button
-                leftIcon={<IoLink />}
-                onClick={() => {
-                  navigator.clipboard
-                    .writeText(
-                      `${location.hostname}:${location.port}/activity/${activityId}`
-                    )
-                    .then(() => {
-                      toast({
-                        title: 'リンクをコピーしました',
-                        isClosable: true,
-                        status: 'success',
-                        duration: 5000,
-                      });
-                    })
-                    .catch(() => {
-                      toast({
-                        title: 'コピーできませんでした',
-                        isClosable: true,
-                        status: 'error',
-                        duration: 5000,
-                      });
-                    });
-                }}
-                variant="ghost"
-                size="sm">
-                リンクをコピー
-              </Button>
-              {isEditable && (
-                <Button
-                  leftIcon={<IoPencil />}
-                  onClick={() => {
-                    console.info('');
-                  }}
-                  variant="ghost"
-                  size="sm"
-                  w="full">
-                  編集
-                </Button>
-              )}
-            </VStack>
-          </PopoverBody>
-        </PopoverContent>
-      </Popover>
-    );
-  };
+        </Tooltip>
+      )}
+    </ButtonGroup>
+  );
+};
 
 export const ActivityCard: React.FC<{
   activitySnapshot:
     | firebase.firestore.QueryDocumentSnapshot<activity<work>>
     | DocumentSnapshot<activity<work>>;
   member?: Member;
-}> = ({ activitySnapshot, member }) => {
+  editable?: boolean;
+  showMemberData?: boolean;
+}> = ({
+  activitySnapshot,
+  member,
+  editable = false,
+  showMemberData = true,
+}) => {
   const [memberInfo, setMemberInfo] = useState<Member | null>();
   const { currentId } = useContext(GroupContext);
   const activityData: activity<work> | null = activitySnapshot.data() ?? null;
   useEffect(() => {
+    const ac = new AbortController();
     if (member) {
       setMemberInfo(member);
-    } else if (currentId) {
+    } else if (currentId && showMemberData) {
       getMember(activitySnapshot.data()?.memberId ?? '', currentId).then((e) =>
         setMemberInfo(e)
       );
     }
-  }, [currentId, activitySnapshot, member]);
+    return () => ac.abort();
+  }, [member, currentId, showMemberData, activitySnapshot]);
+
+  const MemberInfo = () =>
+    useMemo(() => {
+      if (memberInfo && activityData) {
+        return (
+          <HStack>
+            <Avatar
+              src={memberInfo?.photoUrl}
+              name={memberInfo?.name}
+              size="xs"
+            />
+            <Button
+              p={0}
+              as={RouterLink}
+              to={`/member/${activityData.memberId}`}
+              variant="link">
+              <Text>{memberInfo?.name}</Text>
+            </Button>
+          </HStack>
+        );
+      } else {
+        return (
+          <>
+            <SkeletonCircle />
+            <Skeleton>
+              <Button size="sm" my="1" variant="link">
+                読み込み中
+              </Button>
+            </Skeleton>
+          </>
+        );
+      }
+    }, []);
+
+  const ActivityStatusFull: React.FC<{
+    activityData: activity<work>;
+    height?: string;
+  }> = ({ activityData, height = 'auto' }) => {
+    return (
+      <>
+        <HStack height={height} overflow="hidden">
+          <ActivityStatus
+            workStatus={activityData.content.status ?? 'running'}
+          />
+          <Text>
+            {activityData.content.startTime &&
+              `00${activityData?.content.startTime.toDate().getHours()}`.slice(
+                -2
+              ) +
+                ':' +
+                `00${activityData?.content.startTime
+                  .toDate()
+                  .getMinutes()}`.slice(-2)}
+            ~
+            {activityData.content.endTime &&
+              `00${activityData?.content.endTime?.toDate().getHours()}`.slice(
+                -2
+              ) +
+                ':' +
+                `00${activityData?.content.endTime
+                  ?.toDate()
+                  .getMinutes()}`.slice(-2)}
+          </Text>
+        </HStack>
+      </>
+    );
+  };
+  const ActivityMemo = (props: { content: string }) => {
+    if (props.content) {
+      return (
+        <Box h="12" overflow="clip" pos="relative" py="1">
+          <Box
+            w="full"
+            height="full"
+            pos="absolute"
+            top={0}
+            left={0}
+            bgGradient="linear(to-b, #ffffff00, #ffffff30, #ffffffdd)"
+          />
+          <Text textOverflow="ellipsis" wordBreak="break-all" fontSize="sm">
+            {props.content}
+          </Text>
+        </Box>
+      );
+    } else return null;
+  };
   return (
     <Box w="lg" border="1px" borderColor="gray.200" rounded="base">
       {activityData && (
         <>
-          <Box px="5" py="3">
-            {memberInfo ? (
-              <HStack>
-                <RouterLink to={`/member/${activityData.memberId}`}>
-                  <HStack>
-                    <Avatar
-                      src={memberInfo?.photoUrl}
-                      name={memberInfo?.name}
-                      size="sm"
-                    />
-                    <Text>{memberInfo?.name}</Text>
-                  </HStack>
-                </RouterLink>
-                <Spacer />
-                <ActivityPopover
-                  activityId={activitySnapshot.id}
-                  isEditable={true}
-                />
-              </HStack>
-            ) : (
-              <HStack>
-                <SkeletonCircle />
-                <Skeleton>
-                  7
-                  <Button size="sm" my="1" variant="link">
-                    読み込み中
-                  </Button>
-                </Skeleton>
-              </HStack>
-            )}
-            <HStack my="2" spacing="3">
-              <ActivityStatus
-                workStatus={activityData.content.status ?? 'running'}
-              />
-              <Text>
-                {activityData.content.startTime &&
-                  `00${activityData?.content.startTime
-                    .toDate()
-                    .getHours()}`.slice(-2) +
-                    ':' +
-                    `00${activityData?.content.startTime
-                      .toDate()
-                      .getMinutes()}`.slice(-2)}
-                ~
-                {activityData.content.endTime &&
-                  `00${activityData?.content.endTime
-                    ?.toDate()
-                    .getHours()}`.slice(-2) +
-                    ':' +
-                    `00${activityData?.content.endTime
-                      ?.toDate()
-                      .getMinutes()}`.slice(-2)}
-              </Text>
-            </HStack>
-            <Accordion allowToggle>
-              {activityData.content.memo && (
-                <AccordionItem>
-                  <AccordionButton>
-                    <HStack w="full">
-                      <Text>メモ</Text>
-                      <Spacer />
-                      <AccordionIcon />
-                    </HStack>
-                  </AccordionButton>
-                  <AccordionPanel>{activityData.content.memo}</AccordionPanel>
-                </AccordionItem>
-              )}
-            </Accordion>
+          <HStack px="3" py="1" justify="flex-start" bg="gray.100">
+            {showMemberData && <MemberInfo />}
+            <Spacer />
+            <ActivityMenu
+              activityId={activitySnapshot.id}
+              isEditable={editable}
+            />
+          </HStack>
+          <Box px="3" py="3">
+            <Tabs
+              size="sm"
+              isLazy
+              lazyBehavior="keepMounted"
+              variant="soft-rounded"
+              colorScheme="gray">
+              {/* ヘッダー部分 */}
+              <Box>
+                <TabList>
+                  <Tab>情報</Tab>
+                  <Tab
+                    isDisabled={!activityData.content.memo}
+                    _disabled={{ opacity: 0.3, cursor: 'not-allowed' }}>
+                    メモ
+                  </Tab>
+                </TabList>
+                <Link to={`/activity/${activitySnapshot.id}`} as={RouterLink}>
+                  <TabPanels>
+                    <TabPanel px="1" py="0.5">
+                      <ActivityStatusFull
+                        activityData={activityData}
+                        height="12"
+                      />
+                    </TabPanel>
+                    <TabPanel px="1" py="0.5">
+                      <ActivityMemo content={activityData.content.memo} />
+                    </TabPanel>
+                  </TabPanels>
+                </Link>
+              </Box>
+            </Tabs>
           </Box>
           <Box bg="gray.200" px="2" py="1.5" fontSize="xs" color="gray.600">
-            最終更新{' '}
-            {dateToJapaneseTime(activityData.updated?.toDate() ?? null)}
+            <Text>
+              {dateToJapaneseTime(activityData.updated?.toDate() ?? null)}
+            </Text>
           </Box>
         </>
       )}
@@ -254,12 +304,19 @@ export const ActivityCard: React.FC<{
 
 const DisplayActivities: React.FC<{
   data: firebase.firestore.QueryDocumentSnapshot<activity<work>>[] | null;
-}> = ({ data }) => {
+  memberData?: Member;
+  showMemberData?: boolean;
+}> = ({ data, memberData, showMemberData = true }) => {
   return (
     <>
       <VStack spacing="3" w="max-content" pt="5">
         {data?.map((activity) => (
-          <ActivityCard activitySnapshot={activity} key={activity.id} />
+          <ActivityCard
+            activitySnapshot={activity}
+            key={activity.id}
+            member={memberData}
+            showMemberData={showMemberData}
+          />
         ))}
       </VStack>
       {data === null && <Spinner />}
@@ -305,15 +362,17 @@ function UserActivity(): JSX.Element {
   }, [currentId, memberId]);
   return (
     <>
-      <Button
-        leftIcon={<IoArrowBack />}
-        onClick={() => history.goBack()}
-        variant="link">
-        戻る
-      </Button>
+      {history.length > 0 && (
+        <Button
+          leftIcon={<IoArrowBack />}
+          onClick={() => history.goBack()}
+          variant="link">
+          戻る
+        </Button>
+      )}
       {user?.name && <Heading>{`${user?.name ?? 'ユーザー'}の履歴`}</Heading>}
       <HStack align="flex-start">
-        <DisplayActivities data={activities} />
+        <DisplayActivities data={activities} showMemberData={true} />
         <Spacer />
         <VStack
           mt="10"
@@ -405,7 +464,7 @@ const Activities: React.FC = () => {
             <Heading>タイムライン</Heading>
             <Text>全てのアクティビティーが時間順で並びます</Text>
           </Box>
-          <Button leftIcon={<IoScan />} as={Link} to="/activity/scan">
+          <Button leftIcon={<IoScan />} as={RouterLink} to="/activity/scan">
             スキャン
           </Button>
           <AllActivity />

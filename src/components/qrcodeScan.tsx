@@ -34,6 +34,7 @@ import { dataWithId, firebase } from '../utils/firebase';
 import { ActivityCard } from './activity';
 import { MutableRefObject } from 'react';
 import { IoCamera } from 'react-icons/io5';
+import { useMemo } from 'react';
 
 const getUserCamera = (facingMode?: VideoFacingModeEnum) =>
   new Promise<MediaStream>((resolve, reject) => {
@@ -183,7 +184,15 @@ export const MemberAction: React.FC<{
   const { currentId } = useContext(GroupContext);
   const toast = useToast();
   const [memo, setMemo] = useState('');
-  useEffect(() => {
+  const LatestActivityCard = useMemo(() => {
+    return latestActivity?.data() ? (
+      <ActivityCard activitySnapshot={latestActivity} member={member.data} />
+    ) : (
+      <Skeleton h="28" w="60" />
+    );
+  }, [latestActivity, member.data]);
+
+  useMemo(() => {
     if (currentId) {
       getLatestActivity(currentId, member.id).then((activity) => {
         setLatestActivity(activity);
@@ -197,28 +206,19 @@ export const MemberAction: React.FC<{
     <>
       <Box mb="5">
         {member.data.name ? (
-          <Heading fontSize="2xl">
-            {member.data.name}の最終アクティビティー
-          </Heading>
+          <Heading fontSize="2xl">前回のアクティビティー</Heading>
         ) : (
           <Skeleton>
             <Heading fontSize="2xl">読み込み中</Heading>
           </Skeleton>
         )}
-        {latestActivity?.data() ? (
-          <ActivityCard
-            activitySnapshot={latestActivity}
-            member={member.data}
-          />
-        ) : (
-          <Skeleton h="28" w="60" />
-        )}
+        {LatestActivityCard}
       </Box>
       <FormControl>
         <FormLabel>メモ</FormLabel>
         <Textarea
           mb="5"
-          placeholder="活動の記録"
+          placeholder="活動の記録（組織内に公開されます）"
           value={memo}
           onChange={(e) => setMemo(e.target.value)}
         />
