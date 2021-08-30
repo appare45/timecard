@@ -7,6 +7,7 @@ import {
   AspectRatio,
   Box,
   Button,
+  ButtonGroup,
   Circle,
   FormControl,
   FormLabel,
@@ -14,6 +15,7 @@ import {
   HStack,
   Select,
   Skeleton,
+  Textarea,
   useToast,
 } from '@chakra-ui/react';
 import { cardHeight, cardWidth } from './createCard';
@@ -31,11 +33,12 @@ import {
 import { dataWithId, firebase } from '../utils/firebase';
 import { ActivityCard } from './activity';
 import { MutableRefObject } from 'react';
+import { IoCamera } from 'react-icons/io5';
 
-const getUserCamera = () =>
+const getUserCamera = (facingMode?: VideoFacingModeEnum) =>
   new Promise<MediaStream>((resolve, reject) => {
     navigator.mediaDevices
-      .getUserMedia({ video: true })
+      .getUserMedia({ video: { facingMode: facingMode } })
       .then((e) => {
         if (e) {
           resolve(e);
@@ -179,11 +182,15 @@ export const MemberAction: React.FC<{
     );
   const { currentId } = useContext(GroupContext);
   const toast = useToast();
+  const [memo, setMemo] = useState('');
   useEffect(() => {
     if (currentId) {
-      getLatestActivity(currentId, member.id).then((activity) =>
-        setLatestActivity(activity)
-      );
+      getLatestActivity(currentId, member.id).then((activity) => {
+        setLatestActivity(activity);
+        if (activity.data().content.status == 'running') {
+          setMemo(activity.data().content.memo);
+        }
+      });
     }
   }, [currentId, member.id]);
   return (
@@ -199,12 +206,24 @@ export const MemberAction: React.FC<{
           </Skeleton>
         )}
         {latestActivity?.data() ? (
-          <ActivityCard data={latestActivity.data()} member={member.data} />
+          <ActivityCard
+            activitySnapshot={latestActivity}
+            member={member.data}
+          />
         ) : (
           <Skeleton h="28" w="60" />
         )}
       </Box>
-      <HStack>
+      <FormControl>
+        <FormLabel>メモ</FormLabel>
+        <Textarea
+          mb="5"
+          placeholder="活動の記録"
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+        />
+      </FormControl>
+      <ButtonGroup>
         <Button
           colorScheme={
             latestActivity?.data().content.status === 'running'
@@ -220,7 +239,7 @@ export const MemberAction: React.FC<{
                     startTime: firebase.firestore.Timestamp.now(),
                     endTime: null,
                     status: 'running',
-                    memo: '',
+                    memo: memo,
                   },
                   memberId: member.id,
                 }).then(() => {
@@ -237,6 +256,7 @@ export const MemberAction: React.FC<{
                 _latestActivity.content.endTime =
                   firebase.firestore.Timestamp.now();
                 _latestActivity.content.status = 'done';
+                _latestActivity.content.memo = memo;
                 setWork(currentId, latestActivity?.id, _latestActivity, {
                   merge: true,
                 }).then(() => {
@@ -262,7 +282,7 @@ export const MemberAction: React.FC<{
           ref={cancelRef}>
           キャンセル
         </Button>
-      </HStack>
+      </ButtonGroup>
     </>
   );
 };
@@ -273,22 +293,34 @@ export const QRCodeScan = React.memo(
     const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
     const [error, updateError] = useState('');
     const videoRef = useRef<HTMLVideoElement>(null);
+    const [facingMode, setFacingMode] =
+      useState<VideoFacingModeEnum>('environment');
 
     useEffect(() => {
-      getUserCamera()
+      getUserCamera(facingMode)
         .then((e) => {
           setMediaStream(e);
-          if (videoRef.current) {
-            videoRef.current.srcObject = e;
-          }
         })
         .catch((e) => {
           updateError(e);
         });
-    }, []);
+    }, [facingMode]);
+
+    useEffect(() => {
+      return () => {
+        mediaStream?.getTracks().forEach((e) => e.stop());
+        console.info('stopped');
+      };
+    }, [mediaStream]);
+
+    useEffect(() => {
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    }, [mediaStream]);
 
     return (
-      <>
+      <Box pos="relative">
         {mediaStream && mediaStream?.active && videoRef.current ? (
           <>
             <Canvas
@@ -325,7 +357,20 @@ export const QRCodeScan = React.memo(
             <AlertDescription>カメラにアクセスできません</AlertDescription>
           </Alert>
         )}
-      </>
+        <Button
+          pos="absolute"
+          top="5"
+          left="5"
+          leftIcon={<IoCamera />}
+          onClick={() => {
+            mediaStream?.getTracks().forEach((element) => {
+              element.stop();
+            });
+            setFacingMode(facingMode == 'user' ? 'environment' : 'user');
+          }}>
+          カメラ切り替え
+        </Button>
+      </Box>
     );
   }
 );

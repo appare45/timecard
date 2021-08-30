@@ -18,13 +18,13 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import React, { useContext, useEffect, useState } from 'react';
-import { IoAnalytics, IoEasel, IoHome } from 'react-icons/io5';
+import { IoAnalytics, IoEasel, IoHome, IoPeople } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { createGroup, getGroup, Group } from '../utils/group';
 import { setUser } from '../utils/user';
-import { Activities } from './activity';
+import { Activities, AllActivity } from './activity';
 import { Front } from './front';
 import { Members } from './members';
 
@@ -150,7 +150,7 @@ const MenuLink: React.FC<{
       variant="link"
       color="black"
       size="lg"
-      p="1"
+      p="1.5"
       as={routerLink}
       to={to}
       wordBreak="keep-all">
@@ -195,7 +195,6 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
         }
       };
     }
-    console.info(frontMode);
   }, [frontMode]);
   useEffect(() => {
     const _groups: Group[] = [];
@@ -227,8 +226,13 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                   groups={groups}
                   update={updateCurrentId}
                 />
-                <ScanButton setFrontMode={() => setFrontMode(true)} />
-                <List spacing="1">
+                <ScanButton
+                  setFrontMode={() => {
+                    setFrontMode(true);
+                    document.body.requestFullscreen();
+                  }}
+                />
+                <List spacing="1.5" my="2">
                   <ListItem>
                     <MenuLink leftIcon={<IoHome />} to="/">
                       トップ
@@ -239,15 +243,27 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                       タイムライン
                     </MenuLink>
                   </ListItem>
+                  <ListItem>
+                    <MenuLink leftIcon={<IoPeople />} to="/member">
+                      メンバー
+                    </MenuLink>
+                  </ListItem>
                 </List>
               </Box>
               <Box w="full">
                 <Switch>
                   <Route exact path="/">
-                    <Members />
+                    <VStack spacing="5" align="flex-start" w="full">
+                      <Members />
+                      <Heading>最近のアクティビティー</Heading>
+                      <AllActivity />
+                    </VStack>
                   </Route>
                   <Route path={`/activity/`}>
                     <Activities />
+                  </Route>
+                  <Route path={`/member/`}>
+                    <Members />
                   </Route>
                 </Switch>
               </Box>
