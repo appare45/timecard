@@ -4,7 +4,6 @@ import {
   Button,
   HStack,
   Icon,
-  Spinner,
   Text,
   VStack,
 } from '@chakra-ui/react';
@@ -68,10 +67,7 @@ const UserDataDisplay: React.FC<{ authData: firebase.User }> = ({
   );
 };
 
-export default function User(props: {
-  children: JSX.Element[] | JSX.Element;
-  path: string;
-}): JSX.Element {
+export default function User(): JSX.Element {
   const [loginStatus, updateLoginStatus] = useState<boolean | null>(null);
   const [accountEnabled, updateAccountEnablement] = useState<boolean | null>(
     null
@@ -119,11 +115,12 @@ export default function User(props: {
         },
         account: accountStatus ?? null,
       }}>
-      {/* 読み込み中 */}
-      {loginStatus === null && <Spinner />}
       {/* 未ログイン時 */}
-      {loginStatus === false && !authData && (
-        <Login redirectPath={props.path} />
+      {!loginStatus && (
+        <Login
+          redirectUri={`${location.href}`}
+          isLoading={loginStatus === null}
+        />
       )}
       {/* ログイン後アカウント未登録時 */}
       {accountEnabled === false && authData && (
