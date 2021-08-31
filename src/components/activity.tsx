@@ -59,7 +59,7 @@ import {
   IoScan,
 } from 'react-icons/io5';
 import { MemberAction, QRCodeScan } from './qrcodeScan';
-import { dateToJapaneseTime } from '../utils/time';
+import { relativeTimeText } from '../utils/time';
 import { useRef } from 'react';
 import { Card } from './createCard';
 import { firebase } from './../utils/firebase';
@@ -96,9 +96,7 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
         <Button
           onClick={() => {
             navigator.clipboard
-              .writeText(
-                `${location.hostname}:${location.port}/activity/${activityId}`
-              )
+              .writeText(`${location.host}/activity/${activityId}`)
               .then(() => {
                 toast({
                   title: 'リンクをコピーしました',
@@ -296,7 +294,7 @@ export const ActivityCard: React.FC<{
           </Box>
           <Box bg="gray.100" px="2" py="1.5" fontSize="xs" color="gray.600">
             <Text>
-              {dateToJapaneseTime(activityData.updated?.toDate() ?? null)}
+              {relativeTimeText(activityData.updated?.toDate() ?? null) ?? null}
             </Text>
           </Box>
         </>

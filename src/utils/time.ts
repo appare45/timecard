@@ -12,3 +12,26 @@ export const dateToJapaneseTime = (timeObject: Date | null): string => {
   }
   return text;
 };
+
+export const relativeTimeText = (DateObject: Date | null): void | string => {
+  if (DateObject) {
+    const texts: string[] = [];
+    const now = new Date();
+    if (DateObject.getFullYear() != now.getFullYear()) {
+      texts.push(`${DateObject.getFullYear()}年`);
+    }
+    if (
+      DateObject.getMonth() != now.getMonth() ||
+      DateObject.getDate() != now.getDate()
+    ) {
+      texts.push(`${DateObject.getMonth() + 1}月${DateObject.getDate()}日`);
+    } else if (DateObject.getHours() != now.getHours()) {
+      texts.push(`${now.getHours() - DateObject.getHours()}時間前`);
+    } else if (DateObject.getMinutes() != now.getMinutes()) {
+      texts.push(`${now.getMinutes() - DateObject.getMinutes()}分前`);
+    } else {
+      texts.push(`${now.getSeconds() - DateObject.getSeconds()}秒前`);
+    }
+    return texts.join();
+  }
+};
