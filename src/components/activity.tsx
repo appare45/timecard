@@ -60,7 +60,7 @@ import {
   IoScan,
 } from 'react-icons/io5';
 import { MemberAction, QRCodeScan } from './qrcodeScan';
-import { relativeTimeText } from '../utils/time';
+import { dateToJapaneseTime, relativeTimeText } from '../utils/time';
 import { useRef } from 'react';
 import { Card } from './createCard';
 import { firebase } from './../utils/firebase';
@@ -305,10 +305,17 @@ export const ActivityCard: React.FC<{
               workStatus={activityData.content.status ?? 'running'}
               size="2"
             />
-            <Text>
-              {relativeTimeText(activityData.updated?.toDate() ?? null) ?? null}
-              に更新
-            </Text>
+            <Tooltip
+              label={dateToJapaneseTime({
+                timeObject: activityData.updated?.toDate() ?? null,
+                full: true,
+              })}>
+              <Text>
+                {relativeTimeText(activityData.updated?.toDate() ?? null) ??
+                  null}
+                に更新
+              </Text>
+            </Tooltip>
           </HStack>
         </>
       )}

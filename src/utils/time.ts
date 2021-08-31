@@ -1,4 +1,10 @@
-export const dateToJapaneseTime = (timeObject: Date | null): string => {
+export const dateToJapaneseTime = ({
+  timeObject,
+  full = false,
+}: {
+  timeObject: Date | null;
+  full?: boolean | undefined;
+}): string => {
   const today = new Date();
   let text = '';
   if (timeObject) {
@@ -6,9 +12,18 @@ export const dateToJapaneseTime = (timeObject: Date | null): string => {
       text += `${timeObject.getFullYear()}年`;
     }
     text +=
-      `00${timeObject.getMonth()}`.slice(-2) +
+      `00${timeObject.getMonth() + 1}`.slice(-2) +
       '/' +
-      `00${timeObject.getMonth() + 1}`.slice(-2);
+      `00${timeObject.getDate()}`.slice(-2);
+    if (full) {
+      text +=
+        ' ' +
+        `00${timeObject.getHours()}`.slice(-2) +
+        ':' +
+        `00${timeObject.getMinutes()}`.slice(-2) +
+        ':' +
+        `00${timeObject.getSeconds()}`.slice(-2);
+    }
   }
   return text;
 };
