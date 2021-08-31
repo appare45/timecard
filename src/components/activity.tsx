@@ -19,6 +19,7 @@ import {
   SkeletonCircle,
   Spacer,
   Spinner,
+  Stack,
   Tab,
   TabList,
   TabPanel,
@@ -69,12 +70,16 @@ import {
 } from '@firebase/firestore-types';
 import { useMemo } from 'react';
 
-export const ActivityStatus: React.FC<{ workStatus: workStatus }> = ({
-  workStatus,
-}) => {
+export const ActivityStatus: React.FC<{
+  workStatus: workStatus;
+  size?: string | number;
+}> = ({ workStatus, size = '3' }) => {
   return (
     <HStack spacing="1">
-      <Circle bg={workStatus === 'done' ? 'gray.400' : 'green.400'} size="3" />
+      <Circle
+        bg={workStatus === 'done' ? 'gray.400' : 'green.400'}
+        size={size}
+      />
       <Text> {statusToText(workStatus ?? '')}</Text>
     </HStack>
   );
@@ -198,30 +203,36 @@ export const ActivityCard: React.FC<{
   }> = ({ activityData, height = 'auto' }) => {
     return (
       <>
-        <HStack height={height} overflow="hidden">
-          <ActivityStatus
-            workStatus={activityData.content.status ?? 'running'}
-          />
-          <Text>
-            {activityData.content.startTime &&
-              `00${activityData?.content.startTime.toDate().getHours()}`.slice(
-                -2
-              ) +
-                ':' +
-                `00${activityData?.content.startTime
-                  .toDate()
-                  .getMinutes()}`.slice(-2)}
-            ~
-            {activityData.content.endTime &&
-              `00${activityData?.content.endTime?.toDate().getHours()}`.slice(
-                -2
-              ) +
-                ':' +
-                `00${activityData?.content.endTime
+        <Stack height={height} overflow="hidden" pt="2" spacing="-0.5">
+          {activityData.content.endTime && (
+            <HStack>
+              <Text color="gray.500">
+                {`00${activityData?.content.endTime
                   ?.toDate()
-                  .getMinutes()}`.slice(-2)}
-          </Text>
-        </HStack>
+                  .getHours()}`.slice(-2) +
+                  ':' +
+                  `00${activityData?.content.endTime
+                    ?.toDate()
+                    .getMinutes()}`.slice(-2)}
+              </Text>
+              <Text>終了しました</Text>
+            </HStack>
+          )}
+          {activityData.content.startTime && (
+            <HStack>
+              <Text color="gray.500">
+                {`00${activityData?.content.startTime
+                  ?.toDate()
+                  .getHours()}`.slice(-2) +
+                  ':' +
+                  `00${activityData?.content.startTime
+                    ?.toDate()
+                    .getMinutes()}`.slice(-2)}
+              </Text>
+              <Text>開始しました</Text>
+            </HStack>
+          )}
+        </Stack>
       </>
     );
   };
@@ -229,7 +240,12 @@ export const ActivityCard: React.FC<{
     if (props.content) {
       const memoText = props.content.replace(/\\n/g, '\n');
       return (
-        <Box h="12" py="1" wordBreak="break-all" fontSize="sm">
+        <Box
+          h="14"
+          py="1"
+          wordBreak="break-all"
+          fontSize="sm"
+          overflow="hidden">
           <pre>{memoText}</pre>
         </Box>
       );
@@ -257,7 +273,7 @@ export const ActivityCard: React.FC<{
               {/* ヘッダー部分 */}
               <Box>
                 <TabList>
-                  <Tab>情報</Tab>
+                  <Tab>ログ</Tab>
                   <Tab
                     isDisabled={!activityData.content.memo}
                     _disabled={{ opacity: 0.3, cursor: 'not-allowed' }}>
@@ -269,19 +285,11 @@ export const ActivityCard: React.FC<{
                   as={RouterLink}
                   display="block"
                   pos="relative">
-                  <Box
-                    w="full"
-                    height="full"
-                    pos="absolute"
-                    top={0}
-                    left={0}
-                    bgGradient="linear(to-b, #ffffff00, #ffffff30, #ffffffdd)"
-                  />
                   <TabPanels>
                     <TabPanel px="1" py="0.5">
                       <ActivityStatusFull
                         activityData={activityData}
-                        height="12"
+                        height="14"
                       />
                     </TabPanel>
                     <TabPanel px="1" py="0.5">
@@ -292,11 +300,16 @@ export const ActivityCard: React.FC<{
               </Box>
             </Tabs>
           </Box>
-          <Box bg="gray.100" px="2" py="1.5" fontSize="xs" color="gray.600">
+          <HStack bg="gray.100" px="2" py="1.5" fontSize="xs" color="gray.600">
+            <ActivityStatus
+              workStatus={activityData.content.status ?? 'running'}
+              size="2"
+            />
             <Text>
               {relativeTimeText(activityData.updated?.toDate() ?? null) ?? null}
+              に更新
             </Text>
-          </Box>
+          </HStack>
         </>
       )}
     </Box>
