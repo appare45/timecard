@@ -239,7 +239,7 @@ export const MemberAction: React.FC<{
                     startTime: firebase.firestore.Timestamp.now(),
                     endTime: null,
                     status: 'running',
-                    memo: memo,
+                    memo: memo.replace(/\n/g, '\\n'),
                   },
                   memberId: member.id,
                 }).then(() => {

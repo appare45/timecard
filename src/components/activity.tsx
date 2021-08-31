@@ -229,19 +229,10 @@ export const ActivityCard: React.FC<{
   };
   const ActivityMemo = (props: { content: string }) => {
     if (props.content) {
+      const memoText = props.content.replace(/\\n/g, '\n');
       return (
-        <Box h="12" overflow="clip" pos="relative" py="1">
-          <Box
-            w="full"
-            height="full"
-            pos="absolute"
-            top={0}
-            left={0}
-            bgGradient="linear(to-b, #ffffff00, #ffffff30, #ffffffdd)"
-          />
-          <Text textOverflow="ellipsis" wordBreak="break-all" fontSize="sm">
-            {props.content}
-          </Text>
+        <Box h="12" py="1" wordBreak="break-all" fontSize="sm">
+          <pre>{memoText}</pre>
         </Box>
       );
     } else return null;
@@ -275,7 +266,19 @@ export const ActivityCard: React.FC<{
                     メモ
                   </Tab>
                 </TabList>
-                <Link to={`/activity/${activitySnapshot.id}`} as={RouterLink}>
+                <Link
+                  to={`/activity/${activitySnapshot.id}`}
+                  as={RouterLink}
+                  display="block"
+                  pos="relative">
+                  <Box
+                    w="full"
+                    height="full"
+                    pos="absolute"
+                    top={0}
+                    left={0}
+                    bgGradient="linear(to-b, #ffffff00, #ffffff30, #ffffffdd)"
+                  />
                   <TabPanels>
                     <TabPanel px="1" py="0.5">
                       <ActivityStatusFull
@@ -291,7 +294,7 @@ export const ActivityCard: React.FC<{
               </Box>
             </Tabs>
           </Box>
-          <Box bg="gray.200" px="2" py="1.5" fontSize="xs" color="gray.600">
+          <Box bg="gray.100" px="2" py="1.5" fontSize="xs" color="gray.600">
             <Text>
               {dateToJapaneseTime(activityData.updated?.toDate() ?? null)}
             </Text>
