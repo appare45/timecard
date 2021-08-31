@@ -17,12 +17,21 @@ import {
   useBoolean,
   VStack,
 } from '@chakra-ui/react';
+import { DocumentSnapshot } from '@firebase/firestore-types';
 import React, { useContext, useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { IoAnalytics, IoEasel, IoHome, IoPeople } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
-import { createGroup, getGroup, Group } from '../utils/group';
+import {
+  createGroup,
+  getAccount,
+  getGroup,
+  getMember,
+  Group,
+  Member,
+} from '../utils/group';
 import { setUser } from '../utils/user';
 import { Activities, AllActivity } from './activity';
 import { Front } from './front';
@@ -163,6 +172,10 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const [groups, updateGroups] = useState<Group[]>([]);
   const [currentId, updateCurrentId] = useState<string>();
   const [frontMode, setFrontMode] = useState<boolean>();
+  const { account } = useContext(AuthContext);
+  const [currentMemberData, setCurrentMemberData] =
+    useState<DocumentSnapshot<Member> | null>(null);
+  // フロントモードの切り替え
   useEffect(() => {
     const dbName = 'Group';
     if (window.indexedDB) {
@@ -196,7 +209,8 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
       };
     }
   }, [frontMode]);
-  useEffect(() => {
+
+  useMemo(() => {
     const _groups: Group[] = [];
     groupIds.forEach((groupId) => {
       getGroup(groupId).then((group) => {
@@ -207,6 +221,15 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
       });
     });
   }, [groupIds]);
+
+  useMemo(() => {
+    if (account && currentId)
+      getAccount(account.uid, currentId).then((e) => {
+        const memberId = e.data()?.memberId;
+        if (memberId)
+          getMember(memberId, currentId).then((e) => setCurrentMemberData(e));
+      });
+  }, [account, currentId]);
   return (
     <>
       {!!groupIds.length && currentId && (
@@ -214,7 +237,9 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
           value={{
             currentId: currentId,
             ids: groupIds,
-            setFrontMode: (e) => setFrontMode(e),
+            setFrontMode: setFrontMode,
+            currentMember: currentMemberData,
+            updateCurrentMember: setCurrentMemberData,
           }}>
           {frontMode ? (
             <Front />
