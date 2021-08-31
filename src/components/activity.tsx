@@ -149,20 +149,26 @@ export const ActivityCard: React.FC<{
   editable = false,
   showMemberData = true,
 }) => {
-  const [memberInfo, setMemberInfo] = useState<Member | null>();
+  const [memberInfo, setMemberInfo] = useState<Member>();
   const { currentId } = useContext(GroupContext);
   const activityData: activity<work> | null = activitySnapshot.data() ?? null;
+  const { currentMember } = useContext(GroupContext);
   useEffect(() => {
     const ac = new AbortController();
     if (member) {
       setMemberInfo(member);
     } else if (currentId && showMemberData) {
-      getMember(activitySnapshot.data()?.memberId ?? '', currentId).then((e) =>
-        setMemberInfo(e)
-      );
+      const memberId = activitySnapshot.data()?.memberId;
+      if (memberId === currentMember?.id) {
+        setMemberInfo(currentMember?.data());
+      } else if (currentMember?.id && memberId && currentId) {
+        getMember(memberId ?? '', currentId).then((e) =>
+          setMemberInfo(e?.data())
+        );
+      }
     }
     return () => ac.abort();
-  }, [member, currentId, showMemberData, activitySnapshot]);
+  }, [member, currentId, showMemberData, activitySnapshot, currentMember]);
 
   const MemberInfo = () =>
     useMemo(() => {
@@ -353,26 +359,30 @@ const DisplayActivities: React.FC<{
 
 function UserActivity(): JSX.Element {
   const { memberId } = useParams<{ memberId: string }>();
-  const [user, setUser] = useState<Member | null>(null);
+  const [user, setUser] = useState<Member>();
   const [activities, setActivities] = useState<
     firebase.firestore.QueryDocumentSnapshot<activity<work>>[] | null
   >(null);
   const [group, setGroup] = useState<Group | null>(null);
   const [dialog, setDialog] = useState(false);
   const dialogCancel = useRef(null);
-  const { currentId } = useContext(GroupContext);
+  const { currentId, currentMember } = useContext(GroupContext);
   useEffect(() => {
     if (currentId) {
       getGroup(currentId).then((group) => setGroup(group));
     }
   }, [currentId]);
-  useEffect(() => {
-    if (currentId) {
-      getMember(memberId, currentId).then((member) => {
-        setUser(member);
-      });
+  useMemo(() => {
+    if (currentId && !user) {
+      if (currentMember?.id == memberId) {
+        setUser(currentMember.data());
+      } else if (currentMember?.id) {
+        getMember(memberId, currentId).then((member) => {
+          setUser(member?.data());
+        });
+      }
     }
-  }, [currentId, memberId]);
+  }, [currentId, currentMember, memberId, user]);
   const history = useHistory();
   useEffect(() => {
     if (currentId) {
@@ -451,6 +461,33 @@ export const AllActivity: React.FC = () => {
   );
 };
 
+const ActivityDetail: React.FC<{
+  editable?: boolean;
+  activity: DocumentSnapshot<activity<work>>;
+  member: DocumentSnapshot<Member>;
+}> = ({ editable = false, activity, member }) => {
+  const activityData = activity.data();
+  return (
+    <>
+      <Heading>{member.data()?.name}のアクティビティー</Heading>
+      {activityData && (
+        <>
+          {activityData?.content.status === 'done' &&
+          activityData.content.endTime ? (
+            <Text>
+              {activityData.content.endTime.toMillis() -
+                activityData.content.startTime.toMillis()}
+            </Text>
+          ) : (
+            <ActivityStatus workStatus={activityData.content.status} />
+          )}
+          <Text>{activityData.content.memo}</Text>
+        </>
+      )}
+    </>
+  );
+};
+
 const SingleActivity = () => {
   const { activityId } = useParams<{ activityId: string }>();
   const [activitySnapshot, setActivitySnapshot] = useState<DocumentSnapshot<
@@ -465,9 +502,17 @@ const SingleActivity = () => {
       );
     }
   }, [activityId, currentId]);
+  const [member, setMember] = useState<DocumentSnapshot<Member> | null>();
+  useMemo(() => {
+    const activityData = activitySnapshot?.data() ?? null;
+    if (activitySnapshot && activityData && currentId)
+      getMember(activityData.memberId, currentId).then((e) => setMember(e));
+  }, [activitySnapshot, currentId]);
   return (
     <>
-      {activitySnapshot && <ActivityCard activitySnapshot={activitySnapshot} />}
+      {activitySnapshot && member && (
+        <ActivityDetail activity={activitySnapshot} member={member} />
+      )}
     </>
   );
 };

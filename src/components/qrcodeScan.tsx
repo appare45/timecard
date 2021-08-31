@@ -113,8 +113,9 @@ function Canvas(props: {
           detectCode(canvasRef.current, async (e): Promise<boolean> => {
             if (groupContext.currentId && !unknownMemberIds.includes(e)) {
               return getMember(e, groupContext.currentId).then((member) => {
-                if (member && groupContext.currentId) {
-                  props.onDetect({ id: e, data: member });
+                const memberData = member?.data();
+                if (memberData && groupContext.currentId) {
+                  props.onDetect({ id: e, data: memberData });
                   return false;
                 } else {
                   unknownMemberIds.push(e);

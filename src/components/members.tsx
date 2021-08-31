@@ -236,7 +236,7 @@ const MembersList: React.FC = () => {
     setIsUpdating(false);
   }, []);
   useEffect(() => {
-    updateMembersList(groupContext.currentId);
+    if (groupContext?.currentId) updateMembersList(groupContext.currentId);
   }, [groupContext.currentId, updateMembersList]);
   return (
     <>
@@ -254,7 +254,10 @@ const MembersList: React.FC = () => {
         {groupContext.currentId && (
           <AddMember
             groupId={groupContext.currentId}
-            onUpdate={() => updateMembersList(groupContext.currentId)}
+            onUpdate={() => {
+              if (groupContext.currentId)
+                updateMembersList(groupContext.currentId);
+            }}
           />
         )}
       </HStack>
