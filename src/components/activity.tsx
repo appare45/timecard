@@ -31,6 +31,7 @@ import {
   Text,
   Textarea,
   Tooltip,
+  useClipboard,
   useToast,
   VStack,
 } from '@chakra-ui/react';
@@ -59,8 +60,11 @@ import {
 } from '../utils/group';
 import {
   IoArrowBack,
+  IoCheckmarkOutline,
   IoClipboardOutline,
+  IoCreate,
   IoPencilOutline,
+  IoPencilSharp,
   IoQrCode,
   IoScan,
 } from 'react-icons/io5';
@@ -94,7 +98,10 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
   activityId,
   isEditable,
 }) => {
-  const toast = useToast();
+  const { hasCopied, onCopy } = useClipboard(
+    `${location.host}/activity/${activityId}`
+  );
+
   return (
     <ButtonGroup
       variant="outline"
@@ -103,28 +110,8 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
       isAttached
       colorScheme="gray">
       <Tooltip label="リンクをコピー">
-        <Button
-          onClick={() => {
-            navigator.clipboard
-              .writeText(`${location.host}/activity/${activityId}`)
-              .then(() => {
-                toast({
-                  title: 'リンクをコピーしました',
-                  isClosable: true,
-                  status: 'success',
-                  duration: 5000,
-                });
-              })
-              .catch(() => {
-                toast({
-                  title: 'コピーできませんでした',
-                  isClosable: true,
-                  status: 'error',
-                  duration: 5000,
-                });
-              });
-          }}>
-          <IoClipboardOutline />
+        <Button onClick={onCopy}>
+          {hasCopied ? <IoCheckmarkOutline /> : <IoClipboardOutline />}
         </Button>
       </Tooltip>
       {isEditable && (
@@ -485,7 +472,11 @@ const ActivityMemo: React.FC<{
     const ReactMarkdown = React.lazy(() => import('./activity-memo'));
     return (
       <Suspense fallback={<Skeleton />}>
-        <ReactMarkdown draftText={draftText} />
+        {draftText.length ? (
+          <ReactMarkdown draftText={draftText} />
+        ) : (
+          <Text> メモはありません</Text>
+        )}
       </Suspense>
     );
   }, [draftText]);
@@ -493,28 +484,39 @@ const ActivityMemo: React.FC<{
     <FormControl my="2">
       <FormLabel>メモ</FormLabel>
       {editMode ? (
-        <Textarea
-          variant="filled"
-          disabled={!editMode}
-          placeholder="活動の記録を残しましょう（組織内に公開されます）"
-          onChange={(e) => setDraftText(e.target.value)}
-          h="52">
-          {draftText}
-        </Textarea>
+        <>
+          <Textarea
+            autoFocus
+            variant="filled"
+            disabled={!editMode}
+            placeholder="活動の記録を残しましょう（組織内に公開されます）"
+            onChange={(e) => setDraftText(e.target.value)}
+            maxLength={10000}
+            isInvalid={draftText.length > 10000}
+            h="52">
+            {draftText}
+          </Textarea>
+          <FormHelperText>組織内に公開されます</FormHelperText>
+        </>
       ) : (
         RenderedMemo
       )}
-      <FormHelperText>組織内に公開されます</FormHelperText>
       {editable && (
         <ButtonGroup my="2">
           {!editMode ? (
-            <Button onClick={() => setEditMode(true)} variant="solid">
-              編集
+            <Button
+              onClick={() => setEditMode(true)}
+              variant={!draftText.length ? 'solid' : 'outline'}
+              leftIcon={!draftText.length ? <IoCreate /> : <IoPencilSharp />}>
+              {draftText.length ? '編集' : '作成'}
             </Button>
           ) : (
             <>
               <Button
-                isDisabled={draftText === activity.data()?.content.memo}
+                isDisabled={
+                  draftText === activity.data()?.content.memo &&
+                  draftText.length < 10000
+                }
                 onClick={() => {
                   if (currentId)
                     saveMemo(currentId, activity.id)
@@ -569,14 +571,10 @@ const ActivityDetail: React.FC<{
           ) : (
             <ActivityStatus workStatus={activityData.content.status} />
           )}
-          {activityData.content.memo ? (
-            <ActivityMemo
-              editable={currentMember?.id == member.id}
-              activity={activity}
-            />
-          ) : (
-            <Text>メモはありません</Text>
-          )}
+          <ActivityMemo
+            editable={currentMember?.id == member.id}
+            activity={activity}
+          />
         </>
       )}
     </>

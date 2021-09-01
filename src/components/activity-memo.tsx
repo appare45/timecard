@@ -2,6 +2,7 @@ import {
   Box,
   Code,
   Heading,
+  Image,
   Link,
   ListItem,
   OrderedList,
@@ -26,7 +27,9 @@ const ActivityMemo: React.FC<{ draftText: string }> = ({ draftText }) => {
         borderStyle="solid"
         rounded="base"
         px="2"
-        py="1">
+        py="1"
+        w="full"
+        overflow="scroll">
         <ReactMarkdown
           // eslint-disable-next-line react/no-children-prop
           children={draftText}
@@ -35,7 +38,7 @@ const ActivityMemo: React.FC<{ draftText: string }> = ({ draftText }) => {
           remarkPlugins={[remarkBreaks, remarkMath]}
           components={{
             p({ children }) {
-              return <Text>{children}</Text>;
+              return <Text lineHeight="7">{children}</Text>;
             },
             a({ children, href }) {
               return (
@@ -45,22 +48,31 @@ const ActivityMemo: React.FC<{ draftText: string }> = ({ draftText }) => {
               );
             },
             h1({ children }) {
-              return <Heading size="2xl">{children}</Heading>;
+              return (
+                <Heading size="lg" mb="1" mt="0.5">
+                  {children}
+                </Heading>
+              );
             },
             h2({ children }) {
-              return <Heading size="xl">{children}</Heading>;
+              return <Heading size="base">{children}</Heading>;
             },
             pre({ children }) {
               return <Code>{children}</Code>;
             },
             ol({ children }) {
-              return <OrderedList>{children}</OrderedList>;
+              return <OrderedList my="1">{children}</OrderedList>;
             },
             ul({ children }) {
-              return <UnorderedList>{children}</UnorderedList>;
+              return <UnorderedList my="1">{children}</UnorderedList>;
             },
             li({ children }) {
               return <ListItem>{children}</ListItem>;
+            },
+            img({ src, alt }) {
+              return (
+                <Image src={src} alt={alt} boxSize="lg" objectFit="contain" />
+              );
             },
           }}
         />
