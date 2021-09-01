@@ -12,6 +12,9 @@ import {
   Button,
   ButtonGroup,
   Circle,
+  FormControl,
+  FormHelperText,
+  FormLabel,
   Heading,
   HStack,
   Link,
@@ -26,6 +29,7 @@ import {
   TabPanels,
   Tabs,
   Text,
+  Textarea,
   Tooltip,
   useToast,
   VStack,
@@ -48,6 +52,7 @@ import {
   getUserActivities,
   Group,
   Member,
+  setWork,
   statusToText,
   work,
   workStatus,
@@ -461,12 +466,82 @@ export const AllActivity: React.FC = () => {
   );
 };
 
+const ActivityMemo: React.FC<{
+  editable: boolean;
+  activity: DocumentSnapshot<activity<work>>;
+}> = ({ editable, activity }) => {
+  const { currentId } = useContext(GroupContext);
+  const [draftText, setDraftText] = useState(
+    activity.data()?.content.memo.replace(/\\n/g, '\n') ?? ''
+  );
+  const [editMode, setEditMode] = useState(false);
+  const toast = useToast();
+  const saveMemo = (groupId: string, workId: string) => {
+    const _activity = activity.data();
+    if (_activity?.content) _activity.content.memo = draftText;
+    if (_activity) return setWork(groupId, workId, _activity, { merge: true });
+  };
+  return (
+    <FormControl my="2">
+      <FormLabel>メモ</FormLabel>
+      <Textarea
+        variant="filled"
+        disabled={!editMode}
+        placeholder="活動の記録を残しましょう（組織内に公開されます）"
+        onChange={(e) => setDraftText(e.target.value)}
+        h="52">
+        {draftText}
+      </Textarea>
+      <FormHelperText>組織内に公開されます</FormHelperText>
+      {editable && (
+        <ButtonGroup my="2">
+          {!editMode ? (
+            <Button onClick={() => setEditMode(true)} variant="solid">
+              編集
+            </Button>
+          ) : (
+            <>
+              <Button
+                isDisabled={draftText === activity.data()?.content.memo}
+                onClick={() => {
+                  if (currentId)
+                    saveMemo(currentId, activity.id)
+                      ?.then(() => {
+                        toast({
+                          title: '保存しました',
+                          status: 'success',
+                        });
+                        setEditMode(false);
+                      })
+                      .catch(() => {
+                        toast({
+                          title: '保存できませんでした',
+                          status: 'error',
+                        });
+                      });
+                }}>
+                保存
+              </Button>
+              <Button
+                variant="ghost"
+                colorScheme="red"
+                onClick={() => setEditMode(false)}>
+                キャンセル
+              </Button>
+            </>
+          )}
+        </ButtonGroup>
+      )}
+    </FormControl>
+  );
+};
+
 const ActivityDetail: React.FC<{
-  editable?: boolean;
   activity: DocumentSnapshot<activity<work>>;
   member: DocumentSnapshot<Member>;
-}> = ({ editable = false, activity, member }) => {
+}> = ({ activity, member }) => {
   const activityData = activity.data();
+  const { currentMember } = useContext(GroupContext);
   return (
     <>
       <Heading>{member.data()?.name}のアクティビティー</Heading>
@@ -475,13 +550,21 @@ const ActivityDetail: React.FC<{
           {activityData?.content.status === 'done' &&
           activityData.content.endTime ? (
             <Text>
+              {/* ToDo: m秒表示を日本語に変換する */}
               {activityData.content.endTime.toMillis() -
                 activityData.content.startTime.toMillis()}
             </Text>
           ) : (
             <ActivityStatus workStatus={activityData.content.status} />
           )}
-          <Text>{activityData.content.memo}</Text>
+          {activityData.content.memo ? (
+            <ActivityMemo
+              editable={currentMember?.id == member.id}
+              activity={activity}
+            />
+          ) : (
+            <Text>メモはありません</Text>
+          )}
         </>
       )}
     </>
@@ -493,7 +576,7 @@ const SingleActivity = () => {
   const [activitySnapshot, setActivitySnapshot] = useState<DocumentSnapshot<
     activity<work>
   > | null>(null);
-
+  const history = useHistory();
   const { currentId } = useContext(GroupContext);
   useEffect(() => {
     if (activityId && currentId) {
@@ -510,9 +593,22 @@ const SingleActivity = () => {
   }, [activitySnapshot, currentId]);
   return (
     <>
-      {activitySnapshot && member && (
-        <ActivityDetail activity={activitySnapshot} member={member} />
-      )}
+      <Button
+        leftIcon={<IoArrowBack />}
+        variant="link"
+        onClick={history.goBack}>
+        戻る
+      </Button>
+      <Box my="2">
+        {activitySnapshot && member ? (
+          <ActivityDetail activity={activitySnapshot} member={member} />
+        ) : (
+          <HStack>
+            <Spinner />
+            <Text>読み込み中</Text>
+          </HStack>
+        )}
+      </Box>
     </>
   );
 };
