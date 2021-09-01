@@ -50,7 +50,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "@firebase/firestore-types": "^2.3.0",
+    "@firebase/firestore-types": "^2.5.0",
     "@firebase/testing": "^0.20.11",
     "@types/qrcode": "^1.4.1",
     "@typescript-eslint/eslint-plugin": "^4.29.0",

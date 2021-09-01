@@ -1840,9 +1840,10 @@
   version "2.4.0"
   resolved "https://registry.npmjs.org/@firebase/firestore-types/-/firestore-types-2.4.0.tgz"
 
-"@firebase/firestore-types@^2.3.0":
-  version "2.3.0"
-  resolved "https://registry.npmjs.org/@firebase/firestore-types/-/firestore-types-2.3.0.tgz"
+"@firebase/firestore-types@^2.5.0":
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@firebase/firestore-types/-/firestore-types-2.5.0.tgz#16fca40b6980fdb000de86042d7a96635f2bcdd7"
+  integrity sha512-I6c2m1zUhZ5SH0cWPmINabDyH5w0PPFHk2UHsjBpKdZllzJZ2TwTkXbDtpHUZNmnc/zAa0WNMNMvcvbb/xJLKA==
 
 "@firebase/firestore@1.16.4":
   version "1.16.4"
