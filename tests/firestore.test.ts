@@ -1,4 +1,4 @@
-import * as firebase from '@firebase/testing';
+import * as firebase from '@firebase/rules-unit-testing';
 import * as fs from 'fs';
 
 const PROJECT_ID = 'rule-test';
@@ -6,7 +6,7 @@ const RULES_PATH = 'firestore.rules';
 
 // 認証付きの firestore appを作成する
 // eslint-disable-next-line @typescript-eslint/ban-types
-const createAuthApp = (auth?: object): firebase.firestore.Firestore => {
+const createAuthApp = (auth?: object) => {
   return firebase
     .initializeTestApp({ projectId: PROJECT_ID, auth: auth })
     .firestore();
