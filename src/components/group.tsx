@@ -13,20 +13,28 @@ import {
   List,
   ListItem,
   Select,
+  Spinner,
   Text,
   useBoolean,
   VStack,
 } from '@chakra-ui/react';
-import React, { useContext, useEffect, useState } from 'react';
+import { DocumentSnapshot } from '@firebase/firestore-types';
+import React, { Suspense, useContext, useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { IoAnalytics, IoEasel, IoHome, IoPeople } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
-import { createGroup, getGroup, Group } from '../utils/group';
+import {
+  createGroup,
+  getAccount,
+  getGroup,
+  getMember,
+  Group,
+  Member,
+} from '../utils/group';
 import { setUser } from '../utils/user';
 import { Activities, AllActivity } from './activity';
-import { Front } from './front';
-import { Members } from './members';
 
 type groupProps = {
   groupIds: string[];
@@ -163,6 +171,10 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const [groups, updateGroups] = useState<Group[]>([]);
   const [currentId, updateCurrentId] = useState<string>();
   const [frontMode, setFrontMode] = useState<boolean>();
+  const { account } = useContext(AuthContext);
+  const [currentMemberData, setCurrentMemberData] =
+    useState<DocumentSnapshot<Member> | null>(null);
+  // フロントモードの切り替え
   useEffect(() => {
     const dbName = 'Group';
     if (window.indexedDB) {
@@ -196,7 +208,8 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
       };
     }
   }, [frontMode]);
-  useEffect(() => {
+
+  useMemo(() => {
     const _groups: Group[] = [];
     groupIds.forEach((groupId) => {
       getGroup(groupId).then((group) => {
@@ -207,6 +220,17 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
       });
     });
   }, [groupIds]);
+
+  useMemo(() => {
+    if (account && currentId)
+      getAccount(account.uid, currentId).then((e) => {
+        const memberId = e.data()?.memberId;
+        if (memberId)
+          getMember(memberId, currentId).then((e) => setCurrentMemberData(e));
+      });
+  }, [account, currentId]);
+  const Members = React.lazy(() => import('./members'));
+  const Front = React.lazy(() => import('./front'));
   return (
     <>
       {!!groupIds.length && currentId && (
@@ -214,10 +238,14 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
           value={{
             currentId: currentId,
             ids: groupIds,
-            setFrontMode: (e) => setFrontMode(e),
+            setFrontMode: setFrontMode,
+            currentMember: currentMemberData,
+            updateCurrentMember: setCurrentMemberData,
           }}>
           {frontMode ? (
-            <Front />
+            <Suspense fallback={<Spinner />}>
+              <Front />
+            </Suspense>
           ) : (
             <HStack align="start" h="100vh" py="10" px="5" spacing="10">
               <Box pos="sticky" top="10">
@@ -251,21 +279,23 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                 </List>
               </Box>
               <Box w="full">
-                <Switch>
-                  <Route exact path="/">
-                    <VStack spacing="5" align="flex-start" w="full">
+                <Suspense fallback={<Spinner />}>
+                  <Switch>
+                    <Route exact path="/">
+                      <VStack spacing="5" align="flex-start" w="full">
+                        <Members />
+                        <Heading>最近のアクティビティー</Heading>
+                        <AllActivity />
+                      </VStack>
+                    </Route>
+                    <Route path={`/activity/`}>
+                      <Activities />
+                    </Route>
+                    <Route path={`/member/`}>
                       <Members />
-                      <Heading>最近のアクティビティー</Heading>
-                      <AllActivity />
-                    </VStack>
-                  </Route>
-                  <Route path={`/activity/`}>
-                    <Activities />
-                  </Route>
-                  <Route path={`/member/`}>
-                    <Members />
-                  </Route>
-                </Switch>
+                    </Route>
+                  </Switch>
+                </Suspense>
               </Box>
             </HStack>
           )}

@@ -1,14 +1,33 @@
 import React from 'react';
-import * as firebaseui from 'firebaseui';
-import { FirebaseAuth } from 'react-firebaseui';
-import { Auth, firebase } from './../utils/firebase';
-import { Box, Center, Heading, Link, Text } from '@chakra-ui/react';
-export default function Login(props: { redirectPath: string }): JSX.Element {
-  const firebaseUiConfig: firebaseui.auth.Config = {
-    credentialHelper: firebaseui.auth.CredentialHelper.GOOGLE_YOLO,
-    signInOptions: [firebase.auth.GoogleAuthProvider.PROVIDER_ID],
-    signInSuccessUrl: `${process.env.REACT_APP_URL}${props.redirectPath}`,
-  };
+import { firebase } from './../utils/firebase';
+import { Box, Button, Center, Heading, Link, Text } from '@chakra-ui/react';
+import { IoLogoGoogle } from 'react-icons/io5';
+
+const FirebaseAuth: React.FC<{ redirectUri: string; isLoading: boolean }> = ({
+  redirectUri,
+  isLoading,
+}) => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().useDeviceLanguage();
+  provider.setCustomParameters({
+    redirect_uri: redirectUri,
+  });
+  return (
+    <Button
+      leftIcon={<IoLogoGoogle />}
+      colorScheme="blackAlpha"
+      variant="outline"
+      isLoading={isLoading}
+      onClick={() => firebase.auth().signInWithRedirect(provider)}>
+      Googleアカウントでログイン
+    </Button>
+  );
+};
+
+export default function Login(props: {
+  redirectUri: string;
+  isLoading: boolean;
+}): JSX.Element {
   return (
     <>
       <Center
@@ -20,7 +39,10 @@ export default function Login(props: { redirectPath: string }): JSX.Element {
           <Heading textAlign="center" mb="3">
             ログイン
           </Heading>
-          <FirebaseAuth uiConfig={firebaseUiConfig} firebaseAuth={Auth} />
+          <FirebaseAuth
+            redirectUri={props.redirectUri}
+            isLoading={props.isLoading}
+          />
         </Box>
       </Center>
       <Box pos="fixed" bottom="10px" left="10px" fontSize="sm">

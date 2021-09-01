@@ -23,7 +23,6 @@ import { dataWithId, firebase } from '../utils/firebase';
 import {
   activity,
   addWork,
-  getAccount,
   getLatestActivity,
   Member,
   setWork,
@@ -75,7 +74,7 @@ const Time: React.FC = () => {
   );
 };
 
-export const Front: React.FC = () => {
+const Front: React.FC = () => {
   const [detectedMember, setDetectedMember] =
     useState<dataWithId<Member> | null>(null);
   const cancelRef = useRef(null);
@@ -86,13 +85,7 @@ export const Front: React.FC = () => {
   const userContext = useContext(AuthContext);
   const { currentId, setFrontMode } = useContext(GroupContext);
   const toast = useToast();
-  const [ownerAccount, setOwnerAccount] = useState<string>();
-
-  useEffect(() => {
-    getAccount(userContext.account?.uid ?? '', currentId ?? '').then(
-      (account) => setOwnerAccount(account.data()?.memberId)
-    );
-  });
+  const { currentMember } = useContext(GroupContext);
 
   // メンバーの最終活動を表示する
   useEffect(() => {
@@ -212,10 +205,10 @@ export const Front: React.FC = () => {
                   ? '終了'
                   : '開始'}
               </Button>
-              {detectedMember?.id === ownerAccount && (
+              {detectedMember?.id === (currentMember?.id ?? '') && (
                 <Button
                   onClick={() => {
-                    setFrontMode(false);
+                    if (setFrontMode) setFrontMode(false);
                     document.exitFullscreen();
                   }}>
                   管理モードに切り替え
@@ -235,3 +228,5 @@ export const Front: React.FC = () => {
     </Box>
   );
 };
+
+export default Front;
