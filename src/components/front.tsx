@@ -74,7 +74,7 @@ const Time: React.FC = () => {
   );
 };
 
-export const Front: React.FC = () => {
+const Front: React.FC = () => {
   const [detectedMember, setDetectedMember] =
     useState<dataWithId<Member> | null>(null);
   const cancelRef = useRef(null);
@@ -228,3 +228,5 @@ export const Front: React.FC = () => {
     </Box>
   );
 };
+
+export default Front;

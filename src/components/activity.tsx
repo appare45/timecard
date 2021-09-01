@@ -34,7 +34,7 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useEffect } from 'react';
 import { useContext } from 'react';
 import { useState } from 'react';
@@ -64,7 +64,7 @@ import {
   IoQrCode,
   IoScan,
 } from 'react-icons/io5';
-import { MemberAction, QRCodeScan } from './qrcodeScan';
+import { MemberAction } from './qrcodeScan';
 import { dateToJapaneseTime, relativeTimeText } from '../utils/time';
 import { useRef } from 'react';
 import { Card } from './createCard';
@@ -481,17 +481,29 @@ const ActivityMemo: React.FC<{
     if (_activity?.content) _activity.content.memo = draftText;
     if (_activity) return setWork(groupId, workId, _activity, { merge: true });
   };
+  const RenderedMemo = useMemo(() => {
+    const ReactMarkdown = React.lazy(() => import('./activity-memo'));
+    return (
+      <Suspense fallback={<Skeleton />}>
+        <ReactMarkdown draftText={draftText} />
+      </Suspense>
+    );
+  }, [draftText]);
   return (
     <FormControl my="2">
       <FormLabel>メモ</FormLabel>
-      <Textarea
-        variant="filled"
-        disabled={!editMode}
-        placeholder="活動の記録を残しましょう（組織内に公開されます）"
-        onChange={(e) => setDraftText(e.target.value)}
-        h="52">
-        {draftText}
-      </Textarea>
+      {editMode ? (
+        <Textarea
+          variant="filled"
+          disabled={!editMode}
+          placeholder="活動の記録を残しましょう（組織内に公開されます）"
+          onChange={(e) => setDraftText(e.target.value)}
+          h="52">
+          {draftText}
+        </Textarea>
+      ) : (
+        RenderedMemo
+      )}
       <FormHelperText>組織内に公開されます</FormHelperText>
       {editable && (
         <ButtonGroup my="2">
@@ -618,6 +630,7 @@ const Activities: React.FC = () => {
   const history = useHistory();
   const [detectedMember, setDetectedMember] =
     useState<dataWithId<Member> | null>(null);
+  const QRCodeScan = React.lazy(() => import('./qrcodeScan'));
   return (
     <>
       <Switch>

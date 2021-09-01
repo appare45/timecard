@@ -13,12 +13,13 @@ import {
   List,
   ListItem,
   Select,
+  Spinner,
   Text,
   useBoolean,
   VStack,
 } from '@chakra-ui/react';
 import { DocumentSnapshot } from '@firebase/firestore-types';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { Suspense, useContext, useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import { IoAnalytics, IoEasel, IoHome, IoPeople } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
@@ -34,8 +35,6 @@ import {
 } from '../utils/group';
 import { setUser } from '../utils/user';
 import { Activities, AllActivity } from './activity';
-import { Front } from './front';
-import { Members } from './members';
 
 type groupProps = {
   groupIds: string[];
@@ -230,6 +229,8 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
           getMember(memberId, currentId).then((e) => setCurrentMemberData(e));
       });
   }, [account, currentId]);
+  const Members = React.lazy(() => import('./members'));
+  const Front = React.lazy(() => import('./front'));
   return (
     <>
       {!!groupIds.length && currentId && (
@@ -242,7 +243,9 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
             updateCurrentMember: setCurrentMemberData,
           }}>
           {frontMode ? (
-            <Front />
+            <Suspense fallback={<Spinner />}>
+              <Front />
+            </Suspense>
           ) : (
             <HStack align="start" h="100vh" py="10" px="5" spacing="10">
               <Box pos="sticky" top="10">
@@ -276,21 +279,23 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                 </List>
               </Box>
               <Box w="full">
-                <Switch>
-                  <Route exact path="/">
-                    <VStack spacing="5" align="flex-start" w="full">
+                <Suspense fallback={<Spinner />}>
+                  <Switch>
+                    <Route exact path="/">
+                      <VStack spacing="5" align="flex-start" w="full">
+                        <Members />
+                        <Heading>最近のアクティビティー</Heading>
+                        <AllActivity />
+                      </VStack>
+                    </Route>
+                    <Route path={`/activity/`}>
+                      <Activities />
+                    </Route>
+                    <Route path={`/member/`}>
                       <Members />
-                      <Heading>最近のアクティビティー</Heading>
-                      <AllActivity />
-                    </VStack>
-                  </Route>
-                  <Route path={`/activity/`}>
-                    <Activities />
-                  </Route>
-                  <Route path={`/member/`}>
-                    <Members />
-                  </Route>
-                </Switch>
+                    </Route>
+                  </Switch>
+                </Suspense>
               </Box>
             </HStack>
           )}

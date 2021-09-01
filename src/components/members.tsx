@@ -322,4 +322,4 @@ const Members: React.FC = () => {
   );
 };
 
-export { Members };
+export default Members;

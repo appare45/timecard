@@ -375,3 +375,5 @@ export const QRCodeScan = React.memo(
     );
   }
 );
+
+export default QRCodeScan;
