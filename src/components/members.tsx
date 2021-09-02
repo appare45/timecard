@@ -12,6 +12,7 @@ import {
   HStack,
   Icon,
   Input,
+  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -21,9 +22,11 @@ import {
   ModalOverlay,
   Skeleton,
   Spacer,
+  Switch,
   Table,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tooltip,
@@ -43,11 +46,16 @@ import {
   work,
 } from '../utils/group';
 import { dataWithId } from '../utils/firebase';
-import { IoAnalyticsSharp, IoCard, IoPersonAdd } from 'react-icons/io5';
+import { IoCard, IoPersonAdd } from 'react-icons/io5';
 import { Card } from './createCard';
-import { Link } from 'react-router-dom';
+import {
+  Link as RouterLink,
+  Route,
+  useRouteMatch,
+  Switch as RouteSwitch,
+} from 'react-router-dom';
 import { ReactElement } from 'react';
-import { ActivityStatus } from './activity';
+import { ActivityStatus, UserActivity } from './activity';
 
 const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
   groupId,
@@ -152,7 +160,8 @@ const MemberCardDrawer: React.FC<{
 const MemberRow: React.FC<{
   data: dataWithId<Member>;
   buttons: ReactElement;
-}> = ({ data, buttons }) => {
+  isOnline?: boolean;
+}> = ({ data, buttons, isOnline }) => {
   const [currentStatus, setCurrentStatus] = useState<activity<work>>();
   const { currentId } = useContext(GroupContext);
   useEffect(() => {
@@ -163,29 +172,53 @@ const MemberRow: React.FC<{
     }
   }, [currentId, data.id]);
   return (
-    <Tr>
-      <Td>{data.data.name}</Td>
-      <Td>
-        <HStack>{buttons}</HStack>
-      </Td>
-      <Td>
-        {currentStatus?.content.status ? (
-          <ActivityStatus workStatus={currentStatus?.content.status} />
-        ) : (
-          <Skeleton width="14" />
-        )}
-      </Td>
-    </Tr>
+    <>
+      {!isOnline && (
+        <Tr>
+          <Td>
+            <Link as={RouterLink} to={`/member/${data.id}`}>
+              {data.data.name}
+            </Link>
+          </Td>
+          <Td>
+            <HStack>{buttons}</HStack>
+          </Td>
+          <Td>
+            {currentStatus?.content.status ? (
+              <ActivityStatus workStatus={currentStatus?.content.status} />
+            ) : (
+              <Skeleton width="14" />
+            )}
+          </Td>
+        </Tr>
+      )}
+      {isOnline && currentStatus?.content.status == 'running' && (
+        <Tr>
+          <Td>{data.data.name}</Td>
+          <Td>
+            <HStack>{buttons}</HStack>
+          </Td>
+          <Td>
+            {currentStatus?.content.status ? (
+              <ActivityStatus workStatus={currentStatus?.content.status} />
+            ) : (
+              <Skeleton width="14" />
+            )}
+          </Td>
+        </Tr>
+      )}
+    </>
   );
 };
 
 const MembersList: React.FC = () => {
   const groupContext = useContext(GroupContext);
-  const [members, setMembers] = useState<dataWithId<Member>[]>();
   const [isUpdating, setIsUpdating] = useState(true);
   const [memberCardDisplay, setMemberCardDisplay] = useBoolean(false);
   const [displayCardMember, setDisplayCardMember] =
     useState<dataWithId<Member>>();
+  const [shownMembers, setShownMembers] = useState<dataWithId<Member>[]>();
+  const [sortWithOnline, setSortWithOnline] = useState(false);
   const updateMembersList = useCallback((groupId: string | null) => {
     setIsUpdating(true);
     if (groupId) {
@@ -195,7 +228,7 @@ const MembersList: React.FC = () => {
           members.forEach((member) => {
             _members.push({ id: member.id, data: member.data() });
           });
-          setMembers(_members);
+          setShownMembers(_members);
         }
         setIsUpdating(false);
       });
@@ -203,7 +236,7 @@ const MembersList: React.FC = () => {
     setIsUpdating(false);
   }, []);
   useEffect(() => {
-    updateMembersList(groupContext.currentId);
+    if (groupContext?.currentId) updateMembersList(groupContext.currentId);
   }, [groupContext.currentId, updateMembersList]);
   return (
     <>
@@ -215,28 +248,40 @@ const MembersList: React.FC = () => {
           onClose={() => setMemberCardDisplay.off()}
         />
       )}
-      <HStack>
+      <HStack w="full">
         <Heading>メンバー一覧</Heading>
         <Spacer />
         {groupContext.currentId && (
           <AddMember
             groupId={groupContext.currentId}
-            onUpdate={() => updateMembersList(groupContext.currentId)}
+            onUpdate={() => {
+              if (groupContext.currentId)
+                updateMembersList(groupContext.currentId);
+            }}
           />
         )}
       </HStack>
-      <Skeleton isLoaded={!isUpdating}>
-        <Table colorScheme="blackAlpha" size="sm" mt="5">
+      <HStack spacing="2" p="1" my="2" w="full">
+        <Text>進行中のみ表示</Text>
+        <Switch
+          isChecked={sortWithOnline}
+          onChange={() => setSortWithOnline(!sortWithOnline)}
+          colorScheme="green"
+        />
+      </HStack>
+      <Skeleton isLoaded={!isUpdating} w="full">
+        <Table colorScheme="blackAlpha" size="sm" mt="5" w="full">
           <Thead>
             <Tr>
               <Th>名前</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {members?.map((member) => (
+            {shownMembers?.map((member) => (
               <MemberRow
                 key={member.id}
                 data={member}
+                isOnline={sortWithOnline}
                 buttons={
                   <>
                     <Tooltip label="カードを表示">
@@ -250,13 +295,6 @@ const MembersList: React.FC = () => {
                         <Icon as={IoCard} />
                       </Button>
                     </Tooltip>
-                    <Tooltip label="履歴を見る">
-                      <Link to={`/activity/${member.id}`}>
-                        <Button colorScheme="gray" variant="ghost">
-                          <Icon as={IoAnalyticsSharp} />
-                        </Button>
-                      </Link>
-                    </Tooltip>
                   </>
                 }
               />
@@ -269,11 +307,19 @@ const MembersList: React.FC = () => {
 };
 
 const Members: React.FC = () => {
+  const { path } = useRouteMatch();
   return (
     <>
-      <MembersList />
+      <RouteSwitch>
+        <Route exact path={path}>
+          <MembersList />
+        </Route>
+        <Route path={`${path}:memberId`}>
+          <UserActivity />
+        </Route>
+      </RouteSwitch>
     </>
   );
 };
 
-export { Members };
+export default Members;

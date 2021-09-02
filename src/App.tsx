@@ -1,9 +1,8 @@
-import { ChakraProvider } from '@chakra-ui/react';
-import React from 'react';
+import { ChakraProvider, Spinner } from '@chakra-ui/react';
+import React, { Suspense } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import User from './components/user';
 import Offline from './pages/offline';
 
 function App(): JSX.Element {
@@ -11,10 +10,15 @@ function App(): JSX.Element {
   useEffect(() => {
     setIsOffline(navigator.onLine);
   }, []);
+  const User = React.lazy(() => import('./components/user'));
   return (
     <BrowserRouter>
       <div className="App">
-        <ChakraProvider>{isOffline ? <User /> : <Offline />}</ChakraProvider>
+        <ChakraProvider>
+          <Suspense fallback={<Spinner />}>
+            {isOffline ? <User /> : <Offline />}
+          </Suspense>
+        </ChakraProvider>
       </div>
     </BrowserRouter>
   );

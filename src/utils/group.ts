@@ -1,4 +1,8 @@
-import { QueryDocumentSnapshot, Timestamp } from '@firebase/firestore-types';
+import {
+  DocumentSnapshot,
+  QueryDocumentSnapshot,
+  Timestamp,
+} from '@firebase/firestore-types';
 import { firebase } from './../utils/firebase';
 import { Db } from './firebase';
 
@@ -311,7 +315,10 @@ async function addMember(member: Member, groupId: string): Promise<string> {
   }
 }
 
-async function getMember(id: string, groupId: string): Promise<Member | null> {
+async function getMember(
+  id: string,
+  groupId: string
+): Promise<DocumentSnapshot<Member> | null> {
   try {
     const member = await Db.collection('group')
       .doc(groupId)
@@ -319,7 +326,7 @@ async function getMember(id: string, groupId: string): Promise<Member | null> {
       .withConverter(memberDataConverter)
       .doc(id)
       .get();
-    return member.data() ?? null;
+    return member;
   } catch (error) {
     return null;
   }
@@ -461,6 +468,18 @@ const getUserActivity = async (
   } catch (error) {
     throw new Error(error);
   }
+};
+
+export const getActivitySnapshot = async (
+  activityId: string,
+  groupId: string
+): Promise<DocumentSnapshot<activity<work>>> => {
+  return await Db.collection('group')
+    .doc(groupId)
+    .collection('activity')
+    .withConverter(activityDataConverter)
+    .doc(activityId)
+    .get();
 };
 
 const getUserActivities = async (

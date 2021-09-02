@@ -7,6 +7,7 @@ import {
   AspectRatio,
   Box,
   Button,
+  ButtonGroup,
   Circle,
   FormControl,
   FormLabel,
@@ -14,6 +15,7 @@ import {
   HStack,
   Select,
   Skeleton,
+  Textarea,
   useToast,
 } from '@chakra-ui/react';
 import { cardHeight, cardWidth } from './createCard';
@@ -31,11 +33,13 @@ import {
 import { dataWithId, firebase } from '../utils/firebase';
 import { ActivityCard } from './activity';
 import { MutableRefObject } from 'react';
+import { IoCamera } from 'react-icons/io5';
+import { useMemo } from 'react';
 
-const getUserCamera = () =>
+const getUserCamera = (facingMode?: VideoFacingModeEnum) =>
   new Promise<MediaStream>((resolve, reject) => {
     navigator.mediaDevices
-      .getUserMedia({ video: true })
+      .getUserMedia({ video: { facingMode: facingMode } })
       .then((e) => {
         if (e) {
           resolve(e);
@@ -109,8 +113,9 @@ function Canvas(props: {
           detectCode(canvasRef.current, async (e): Promise<boolean> => {
             if (groupContext.currentId && !unknownMemberIds.includes(e)) {
               return getMember(e, groupContext.currentId).then((member) => {
-                if (member && groupContext.currentId) {
-                  props.onDetect({ id: e, data: member });
+                const memberData = member?.data();
+                if (memberData && groupContext.currentId) {
+                  props.onDetect({ id: e, data: memberData });
                   return false;
                 } else {
                   unknownMemberIds.push(e);
@@ -179,32 +184,47 @@ export const MemberAction: React.FC<{
     );
   const { currentId } = useContext(GroupContext);
   const toast = useToast();
-  useEffect(() => {
+  const [memo, setMemo] = useState('');
+  const LatestActivityCard = useMemo(() => {
+    return latestActivity?.data() ? (
+      <ActivityCard activitySnapshot={latestActivity} member={member.data} />
+    ) : (
+      <Skeleton h="28" w="60" />
+    );
+  }, [latestActivity, member.data]);
+
+  useMemo(() => {
     if (currentId) {
-      getLatestActivity(currentId, member.id).then((activity) =>
-        setLatestActivity(activity)
-      );
+      getLatestActivity(currentId, member.id).then((activity) => {
+        setLatestActivity(activity);
+        if (activity.data().content.status == 'running') {
+          setMemo(activity.data().content.memo);
+        }
+      });
     }
   }, [currentId, member.id]);
   return (
     <>
       <Box mb="5">
         {member.data.name ? (
-          <Heading fontSize="2xl">
-            {member.data.name}の最終アクティビティー
-          </Heading>
+          <Heading fontSize="2xl">前回のアクティビティー</Heading>
         ) : (
           <Skeleton>
             <Heading fontSize="2xl">読み込み中</Heading>
           </Skeleton>
         )}
-        {latestActivity?.data() ? (
-          <ActivityCard data={latestActivity.data()} member={member.data} />
-        ) : (
-          <Skeleton h="28" w="60" />
-        )}
+        {LatestActivityCard}
       </Box>
-      <HStack>
+      <FormControl>
+        <FormLabel>メモ</FormLabel>
+        <Textarea
+          mb="5"
+          placeholder="活動の記録（組織内に公開されます）"
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+        />
+      </FormControl>
+      <ButtonGroup>
         <Button
           colorScheme={
             latestActivity?.data().content.status === 'running'
@@ -220,7 +240,7 @@ export const MemberAction: React.FC<{
                     startTime: firebase.firestore.Timestamp.now(),
                     endTime: null,
                     status: 'running',
-                    memo: '',
+                    memo: memo.replace(/\n/g, '\\n'),
                   },
                   memberId: member.id,
                 }).then(() => {
@@ -237,6 +257,7 @@ export const MemberAction: React.FC<{
                 _latestActivity.content.endTime =
                   firebase.firestore.Timestamp.now();
                 _latestActivity.content.status = 'done';
+                _latestActivity.content.memo = memo;
                 setWork(currentId, latestActivity?.id, _latestActivity, {
                   merge: true,
                 }).then(() => {
@@ -262,7 +283,7 @@ export const MemberAction: React.FC<{
           ref={cancelRef}>
           キャンセル
         </Button>
-      </HStack>
+      </ButtonGroup>
     </>
   );
 };
@@ -273,22 +294,34 @@ export const QRCodeScan = React.memo(
     const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
     const [error, updateError] = useState('');
     const videoRef = useRef<HTMLVideoElement>(null);
+    const [facingMode, setFacingMode] =
+      useState<VideoFacingModeEnum>('environment');
 
     useEffect(() => {
-      getUserCamera()
+      getUserCamera(facingMode)
         .then((e) => {
           setMediaStream(e);
-          if (videoRef.current) {
-            videoRef.current.srcObject = e;
-          }
         })
         .catch((e) => {
           updateError(e);
         });
-    }, []);
+    }, [facingMode]);
+
+    useEffect(() => {
+      return () => {
+        mediaStream?.getTracks().forEach((e) => e.stop());
+        console.info('stopped');
+      };
+    }, [mediaStream]);
+
+    useEffect(() => {
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    }, [mediaStream]);
 
     return (
-      <>
+      <Box pos="relative">
         {mediaStream && mediaStream?.active && videoRef.current ? (
           <>
             <Canvas
@@ -325,7 +358,22 @@ export const QRCodeScan = React.memo(
             <AlertDescription>カメラにアクセスできません</AlertDescription>
           </Alert>
         )}
-      </>
+        <Button
+          pos="absolute"
+          top="5"
+          left="5"
+          leftIcon={<IoCamera />}
+          onClick={() => {
+            mediaStream?.getTracks().forEach((element) => {
+              element.stop();
+            });
+            setFacingMode(facingMode == 'user' ? 'environment' : 'user');
+          }}>
+          カメラ切り替え
+        </Button>
+      </Box>
     );
   }
 );
+
+export default QRCodeScan;

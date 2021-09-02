@@ -4,18 +4,16 @@ import {
   Button,
   HStack,
   Icon,
+  Spinner,
   Text,
   VStack,
 } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 import { AuthContext } from '../contexts/user';
 import { Auth, firebase } from '../utils/firebase';
 import { getUser, setUser } from '../utils/user';
-import GroupUI from './group';
-import Login from './login';
 import Logout from './logout';
-import NewAccount from './new_account';
 
 const UserDataDisplay: React.FC<{ authData: firebase.User }> = ({
   authData,
@@ -102,6 +100,9 @@ export default function User(): JSX.Element {
     });
     return unregisterAuthObserver;
   }, [updateLoginStatus]);
+  const Login = React.lazy(() => import('./login'));
+  const NewAccount = React.lazy(() => import('./new_account'));
+  const GroupUI = React.lazy(() => import('./group'));
   return (
     <AuthContext.Provider
       value={{
@@ -115,24 +116,26 @@ export default function User(): JSX.Element {
         },
         account: accountStatus ?? null,
       }}>
-      {/* 未ログイン時 */}
-      {!loginStatus && (
-        <Login
-          redirectUri={`${location.href}`}
-          isLoading={loginStatus === null}
-        />
-      )}
-      {/* ログイン後アカウント未登録時 */}
-      {accountEnabled === false && authData && (
-        <NewAccount name={defaultName} id={authData.uid} />
-      )}
-      {/* ログイン・アカウント登録済 */}
-      {loginStatus === true && authData && accountEnabled && (
-        <>
-          <GroupUI groupIds={joinedGroups} />
-          <UserDataDisplay authData={authData} />
-        </>
-      )}
+      <Suspense fallback={<Spinner />}>
+        {/* 未ログイン時 */}
+        {!loginStatus && (
+          <Login
+            redirectUri={`${location.href}`}
+            isLoading={loginStatus === null}
+          />
+        )}
+        {/* ログイン後アカウント未登録時 */}
+        {accountEnabled === false && authData && (
+          <NewAccount name={defaultName} id={authData.uid} />
+        )}
+        {/* ログイン・アカウント登録済 */}
+        {loginStatus === true && authData && accountEnabled && (
+          <>
+            <GroupUI groupIds={joinedGroups} />
+            <UserDataDisplay authData={authData} />
+          </>
+        )}
+      </Suspense>
     </AuthContext.Provider>
   );
 }
