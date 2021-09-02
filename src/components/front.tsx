@@ -32,15 +32,15 @@ import { AuthContext } from '../contexts/user';
 import { GroupContext } from '../contexts/group';
 import { ActivityCard } from './activity';
 import { cardHeight, cardWidth } from './createCard';
+import { QueryDocumentSnapshot } from '@firebase/firestore-types';
 
 export const Front: React.FC = () => {
   const [detectedMember, setDetectedMember] =
     useState<dataWithId<Member> | null>(null);
   const cancelRef = useRef(null);
-  const [latestActivity, setLatestActivity] =
-    useState<firebase.firestore.QueryDocumentSnapshot<activity<work>> | null>(
-      null
-    );
+  const [latestActivity, setLatestActivity] = useState<QueryDocumentSnapshot<
+    activity<work>
+  > | null>(null);
   const userContext = useContext(AuthContext);
   const { currentId, setFrontMode } = useContext(GroupContext);
   const toast = useToast();

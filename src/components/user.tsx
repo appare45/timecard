@@ -7,19 +7,19 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import React, { useState } from 'react';
+import { useMemo } from 'react';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 import { AuthContext } from '../contexts/user';
-import { Auth, firebase } from '../utils/firebase';
+import { app } from '../utils/firebase';
 import { getUser, setUser } from '../utils/user';
 import GroupUI from './group';
 import Login from './login';
 import Logout from './logout';
 import NewAccount from './new_account';
 
-const UserDataDisplay: React.FC<{ authData: firebase.User }> = ({
-  authData,
-}) => {
+const UserDataDisplay: React.FC<{ authData: User }> = ({ authData }) => {
   const [openInfo, setOpenInfo] = useState(false);
   return (
     <HStack
@@ -72,12 +72,13 @@ export default function User(): JSX.Element {
   const [accountEnabled, updateAccountEnablement] = useState<boolean | null>(
     null
   );
+  const Auth = getAuth(app);
   const [joinedGroups, updateJoinedGroups] = useState<string[]>([]);
-  const [authData, setAuthData] = useState<firebase.User>();
+  const [authData, setAuthData] = useState<User>();
   const [defaultName, setDefaultName] = useState<string | null>(null);
-  const [accountStatus, updateAccountStatus] = useState<firebase.User>();
-  useEffect(() => {
-    const unregisterAuthObserver = Auth.onAuthStateChanged((account) => {
+  const [accountStatus, updateAccountStatus] = useState<User>();
+  useMemo(() => {
+    const unregisterAuthObserver = onAuthStateChanged(Auth, (account) => {
       if (updateLoginStatus) {
         updateLoginStatus(account === null ? false : true);
       }
@@ -101,7 +102,7 @@ export default function User(): JSX.Element {
       }
     });
     return unregisterAuthObserver;
-  }, [updateLoginStatus]);
+  }, [Auth, updateLoginStatus]);
   return (
     <AuthContext.Provider
       value={{

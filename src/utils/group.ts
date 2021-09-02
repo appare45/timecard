@@ -1,6 +1,14 @@
 import { QueryDocumentSnapshot, Timestamp } from '@firebase/firestore-types';
-import { firebase } from './../utils/firebase';
-import { Db } from './firebase';
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+} from 'firebase/firestore';
+import { app, firebase } from './../utils/firebase';
+const Db = getFirestore(app);
 
 type Admin = {
   upGraded: firebase.firestore.FieldValue;
@@ -238,19 +246,16 @@ const createGroup = (
       authorId: author.id,
       created: firebase.firestore.FieldValue.serverTimestamp(),
     };
-    return Db.collection('group')
-      .withConverter(groupDataConverter)
-      .add(_group)
-      .then((group_1) => {
-        addMember(
-          { name: author.name, photoUrl: author.photoUrl },
-          group_1.id
-        ).then((memberId) => {
-          addAccount(author.id, { memberId: memberId }, group_1.id);
-          addAdmin(memberId, memberId, group_1.id);
-        });
-        return group_1.id;
+    return addDoc(collection(Db, 'group'), _group).then((group_1) => {
+      addMember(
+        { name: author.name, photoUrl: author.photoUrl },
+        group_1.id
+      ).then((memberId) => {
+        addAccount(author.id, { memberId: memberId }, group_1.id);
+        addAdmin(memberId, memberId, group_1.id);
       });
+      return group_1.id;
+    });
   } catch (error) {
     console.error(error);
     throw new Error(error);
@@ -263,7 +268,8 @@ async function addAccount(
   groupId: string
 ): Promise<void> {
   try {
-    await Db.collection('group')
+    await addDoc(Db, 'group/account');
+    Db.collection('group')
       .doc(groupId)
       .collection('account')
       .doc(accountId)
