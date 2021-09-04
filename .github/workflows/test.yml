@@ -7,9 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: test
-      - run: npm install -g firebase-tools
-      - run: npm install -g yarn
-      - run: yarn install --frozen-lockfile
-      - run: firebase emulators:exec --only firestore 'yarn jest --silent'
+      - name: test firebase rules
+        run: npm install -g firebase-tools
+        run: npm install -g yarn
+        run: yarn install --frozen-lockfile
+        run: firebase emulators:exec --only firestore 'yarn jest --silent'
         timeout-minutes: 5
