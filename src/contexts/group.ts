@@ -1,4 +1,4 @@
-import { DocumentSnapshot } from '@firebase/firestore-types';
+import { DocumentSnapshot } from 'firebase/firestore';
 import { createContext } from 'react';
 import { Member } from '../utils/group';
 

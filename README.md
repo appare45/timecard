@@ -1,6 +1,7 @@
-| branch  | status                                                                                                                                                                       |
-| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| main    | [![Node.js CI](https://github.com/appare45/timecard/actions/workflows/build.yml/badge.svg)](https://github.com/appare45/timecard/actions/workflows/build.yml)                |
+[![Deploy to Firebase Hosting on merge](https://github.com/appare45/Clubroom/actions/workflows/firebase-hosting-merge.yml/badge.svg?branch=main)](https://github.com/appare45/Clubroom/actions/workflows/firebase-hosting-merge.yml)
+| branch  | CI status |
+| --- | --- |
+| main    | [![Node.js CI](https://github.com/appare45/timecard/actions/workflows/build.yml/badge.svg)](https://github.com/appare45/timecard/actions/workflows/build.yml) |
 | develop | [![Node.js CI](https://github.com/appare45/timecard/actions/workflows/build.yml/badge.svg?branch=develop)](https://github.com/appare45/timecard/actions/workflows/build.yml) |
 
 # Getting Started with Create React App

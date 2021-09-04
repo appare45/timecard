@@ -30,11 +30,12 @@ import {
   setWork,
   work,
 } from '../utils/group';
-import { dataWithId, firebase } from '../utils/firebase';
+import { dataWithId } from '../utils/firebase';
 import { ActivityCard } from './activity';
 import { MutableRefObject } from 'react';
 import { IoCamera } from 'react-icons/io5';
 import { useMemo } from 'react';
+import { QueryDocumentSnapshot, Timestamp } from 'firebase/firestore';
 
 const getUserCamera = (facingMode?: VideoFacingModeEnum) =>
   new Promise<MediaStream>((resolve, reject) => {
@@ -178,10 +179,9 @@ export const MemberAction: React.FC<{
   onClose: () => void;
   cancelRef?: MutableRefObject<null>;
 }> = ({ member, onClose, cancelRef }) => {
-  const [latestActivity, setLatestActivity] =
-    useState<firebase.firestore.QueryDocumentSnapshot<activity<work>> | null>(
-      null
-    );
+  const [latestActivity, setLatestActivity] = useState<QueryDocumentSnapshot<
+    activity<work>
+  > | null>(null);
   const { currentId } = useContext(GroupContext);
   const toast = useToast();
   const [memo, setMemo] = useState('');
@@ -237,7 +237,7 @@ export const MemberAction: React.FC<{
                 addWork(currentId, {
                   type: 'work',
                   content: {
-                    startTime: firebase.firestore.Timestamp.now(),
+                    startTime: Timestamp.now(),
                     endTime: null,
                     status: 'running',
                     memo: memo.replace(/\n/g, '\\n'),
@@ -254,8 +254,7 @@ export const MemberAction: React.FC<{
                 });
               } else if (latestActivity?.id) {
                 const _latestActivity = latestActivity.data();
-                _latestActivity.content.endTime =
-                  firebase.firestore.Timestamp.now();
+                _latestActivity.content.endTime = Timestamp.now();
                 _latestActivity.content.status = 'done';
                 _latestActivity.content.memo = memo;
                 setWork(currentId, latestActivity?.id, _latestActivity, {

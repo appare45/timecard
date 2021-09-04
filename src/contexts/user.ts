@@ -1,5 +1,5 @@
 import React, { createContext } from 'react';
-import firebase from 'firebase/compat';
+import { User } from 'firebase/auth';
 
 export const AuthContext = createContext<{
   loginStatus: {
@@ -10,7 +10,7 @@ export const AuthContext = createContext<{
     current: boolean | null;
     update?: React.Dispatch<React.SetStateAction<boolean | null>>;
   };
-  account: firebase.User | null;
+  account: User | null;
 }>({
   loginStatus: { current: false },
   accountEnablement: { current: false },

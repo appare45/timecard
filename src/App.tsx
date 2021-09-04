@@ -10,13 +10,13 @@ function App(): JSX.Element {
   useEffect(() => {
     setIsOffline(navigator.onLine);
   }, []);
-  const User = React.lazy(() => import('./components/user'));
+  const UserUI = React.lazy(() => import('./components/user'));
   return (
     <BrowserRouter>
       <div className="App">
         <ChakraProvider>
           <Suspense fallback={<Spinner />}>
-            {isOffline ? <User /> : <Offline />}
+            {isOffline ? <UserUI /> : <Offline />}
           </Suspense>
         </ChakraProvider>
       </div>

@@ -1,14 +1,21 @@
 import React from 'react';
-import { firebase } from './../utils/firebase';
 import { Box, Button, Center, Heading, Link, Text } from '@chakra-ui/react';
 import { IoLogoGoogle } from 'react-icons/io5';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  useDeviceLanguage,
+} from 'firebase/auth';
+import { app } from '../utils/firebase';
 
 const FirebaseAuth: React.FC<{ redirectUri: string; isLoading: boolean }> = ({
   redirectUri,
   isLoading,
 }) => {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().useDeviceLanguage();
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+  useDeviceLanguage(auth);
   provider.setCustomParameters({
     redirect_uri: redirectUri,
   });
@@ -18,7 +25,7 @@ const FirebaseAuth: React.FC<{ redirectUri: string; isLoading: boolean }> = ({
       colorScheme="blackAlpha"
       variant="outline"
       isLoading={isLoading}
-      onClick={() => firebase.auth().signInWithRedirect(provider)}>
+      onClick={() => signInWithRedirect(auth, provider)}>
       Googleアカウントでログイン
     </Button>
   );

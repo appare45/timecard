@@ -8,16 +8,16 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useState } from 'react';
+import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import { useMemo } from 'react';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 import { AuthContext } from '../contexts/user';
-import { Auth, firebase } from '../utils/firebase';
+import { app } from '../utils/firebase';
 import { getUser, setUser } from '../utils/user';
 import Logout from './logout';
 
-const UserDataDisplay: React.FC<{ authData: firebase.User }> = ({
-  authData,
-}) => {
+const UserDataDisplay: React.FC<{ authData: User }> = ({ authData }) => {
   const [openInfo, setOpenInfo] = useState(false);
   return (
     <HStack
@@ -65,17 +65,18 @@ const UserDataDisplay: React.FC<{ authData: firebase.User }> = ({
   );
 };
 
-export default function User(): JSX.Element {
+export default function UserUI(): JSX.Element {
   const [loginStatus, updateLoginStatus] = useState<boolean | null>(null);
   const [accountEnabled, updateAccountEnablement] = useState<boolean | null>(
     null
   );
+  const Auth = getAuth(app);
   const [joinedGroups, updateJoinedGroups] = useState<string[]>([]);
-  const [authData, setAuthData] = useState<firebase.User>();
+  const [authData, setAuthData] = useState<User>();
   const [defaultName, setDefaultName] = useState<string | null>(null);
-  const [accountStatus, updateAccountStatus] = useState<firebase.User>();
-  useEffect(() => {
-    const unregisterAuthObserver = Auth.onAuthStateChanged((account) => {
+  const [accountStatus, updateAccountStatus] = useState<User>();
+  useMemo(() => {
+    const unregisterAuthObserver = onAuthStateChanged(Auth, (account) => {
       if (updateLoginStatus) {
         updateLoginStatus(account === null ? false : true);
       }
@@ -99,7 +100,7 @@ export default function User(): JSX.Element {
       }
     });
     return unregisterAuthObserver;
-  }, [updateLoginStatus]);
+  }, [Auth]);
   const Login = React.lazy(() => import('./login'));
   const NewAccount = React.lazy(() => import('./new_account'));
   const GroupUI = React.lazy(() => import('./group'));

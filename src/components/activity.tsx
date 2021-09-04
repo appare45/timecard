@@ -72,12 +72,8 @@ import { MemberAction } from './qrcodeScan';
 import { dateToJapaneseTime, relativeTimeText } from '../utils/time';
 import { useRef } from 'react';
 import { Card } from './createCard';
-import { firebase } from './../utils/firebase';
-import {
-  DocumentSnapshot,
-  QueryDocumentSnapshot,
-} from '@firebase/firestore-types';
 import { useMemo } from 'react';
+import { DocumentSnapshot, QueryDocumentSnapshot } from 'firebase/firestore';
 
 export const ActivityStatus: React.FC<{
   workStatus: workStatus;
@@ -130,7 +126,7 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
 
 export const ActivityCard: React.FC<{
   activitySnapshot:
-    | firebase.firestore.QueryDocumentSnapshot<activity<work>>
+    | QueryDocumentSnapshot<activity<work>>
     | DocumentSnapshot<activity<work>>;
   member?: Member;
   editable?: boolean;
@@ -141,7 +137,7 @@ export const ActivityCard: React.FC<{
   editable = false,
   showMemberData = true,
 }) => {
-  const [memberInfo, setMemberInfo] = useState<Member>();
+  const [memberInfo, setMemberInfo] = useState<Member | null>(null);
   const { currentId } = useContext(GroupContext);
   const activityData: activity<work> | null = activitySnapshot.data() ?? null;
   const { currentMember } = useContext(GroupContext);
@@ -152,10 +148,10 @@ export const ActivityCard: React.FC<{
     } else if (currentId && showMemberData) {
       const memberId = activitySnapshot.data()?.memberId;
       if (memberId === currentMember?.id) {
-        setMemberInfo(currentMember?.data());
+        setMemberInfo(currentMember?.data() ?? null);
       } else if (currentMember?.id && memberId && currentId) {
         getMember(memberId ?? '', currentId).then((e) =>
-          setMemberInfo(e?.data())
+          setMemberInfo(e?.data() ?? null)
         );
       }
     }
@@ -322,7 +318,7 @@ export const ActivityCard: React.FC<{
 };
 
 const DisplayActivities: React.FC<{
-  data: firebase.firestore.QueryDocumentSnapshot<activity<work>>[] | null;
+  data: QueryDocumentSnapshot<activity<work>>[] | null;
   memberData?: Member;
   showMemberData?: boolean;
 }> = ({ data, memberData, showMemberData = true }) => {
@@ -351,9 +347,9 @@ const DisplayActivities: React.FC<{
 
 function UserActivity(): JSX.Element {
   const { memberId } = useParams<{ memberId: string }>();
-  const [user, setUser] = useState<Member>();
+  const [user, setUser] = useState<Member | null>(null);
   const [activities, setActivities] = useState<
-    firebase.firestore.QueryDocumentSnapshot<activity<work>>[] | null
+    QueryDocumentSnapshot<activity<work>>[] | null
   >(null);
   const [group, setGroup] = useState<Group | null>(null);
   const [dialog, setDialog] = useState(false);
@@ -367,10 +363,10 @@ function UserActivity(): JSX.Element {
   useMemo(() => {
     if (currentId && !user) {
       if (currentMember?.id == memberId) {
-        setUser(currentMember.data());
+        setUser(currentMember.data() ?? null);
       } else if (currentMember?.id) {
         getMember(memberId, currentId).then((member) => {
-          setUser(member?.data());
+          setUser(member?.data() ?? null);
         });
       }
     }
@@ -599,7 +595,9 @@ const SingleActivity = () => {
   useMemo(() => {
     const activityData = activitySnapshot?.data() ?? null;
     if (activitySnapshot && activityData && currentId)
-      getMember(activityData.memberId, currentId).then((e) => setMember(e));
+      getMember(activityData.memberId, currentId).then((e) =>
+        setMember(e ?? null)
+      );
   }, [activitySnapshot, currentId]);
   return (
     <>

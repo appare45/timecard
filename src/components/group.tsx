@@ -18,7 +18,7 @@ import {
   useBoolean,
   VStack,
 } from '@chakra-ui/react';
-import { DocumentSnapshot } from '@firebase/firestore-types';
+import { DocumentSnapshot } from 'firebase/firestore';
 import React, { Suspense, useContext, useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import { IoAnalytics, IoEasel, IoHome, IoPeople } from 'react-icons/io5';
@@ -226,7 +226,9 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
       getAccount(account.uid, currentId).then((e) => {
         const memberId = e.data()?.memberId;
         if (memberId)
-          getMember(memberId, currentId).then((e) => setCurrentMemberData(e));
+          getMember(memberId, currentId).then((e) =>
+            setCurrentMemberData(e ?? null)
+          );
       });
   }, [account, currentId]);
   const Members = React.lazy(() => import('./members'));

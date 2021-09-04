@@ -19,7 +19,7 @@ import {
 } from '@chakra-ui/react';
 import { QRCodeScan } from './qrcodeScan';
 import { useState } from 'react';
-import { dataWithId, firebase } from '../utils/firebase';
+import { dataWithId } from '../utils/firebase';
 import {
   activity,
   addWork,
@@ -34,6 +34,7 @@ import { AuthContext } from '../contexts/user';
 import { GroupContext } from '../contexts/group';
 import { ActivityCard } from './activity';
 import { cardHeight, cardWidth } from './createCard';
+import { Timestamp, QueryDocumentSnapshot } from 'firebase/firestore';
 
 const Time: React.FC = () => {
   const [date, setDate] = useState(new Date());
@@ -78,10 +79,9 @@ const Front: React.FC = () => {
   const [detectedMember, setDetectedMember] =
     useState<dataWithId<Member> | null>(null);
   const cancelRef = useRef(null);
-  const [latestActivity, setLatestActivity] =
-    useState<firebase.firestore.QueryDocumentSnapshot<activity<work>> | null>(
-      null
-    );
+  const [latestActivity, setLatestActivity] = useState<QueryDocumentSnapshot<
+    activity<work>
+  > | null>(null);
   const userContext = useContext(AuthContext);
   const { currentId, setFrontMode } = useContext(GroupContext);
   const toast = useToast();
@@ -90,9 +90,9 @@ const Front: React.FC = () => {
   // メンバーの最終活動を表示する
   useEffect(() => {
     if (currentId && detectedMember) {
-      getLatestActivity(currentId, detectedMember.id).then((activity) => {
-        setLatestActivity(activity);
-      });
+      getLatestActivity(currentId, detectedMember.id).then((activity) =>
+        setLatestActivity(activity)
+      );
     }
   }, [currentId, detectedMember]);
 
@@ -165,8 +165,7 @@ const Front: React.FC = () => {
                   if (currentId && detectedMember) {
                     if (latestActivity?.data().content.status === 'running') {
                       const _latestActivity = latestActivity.data();
-                      _latestActivity.content.endTime =
-                        firebase.firestore.Timestamp.now();
+                      _latestActivity.content.endTime = Timestamp.now();
                       _latestActivity.content.status = 'done';
                       setWork(currentId, latestActivity?.id, _latestActivity, {
                         merge: true,
@@ -183,7 +182,7 @@ const Front: React.FC = () => {
                       addWork(currentId, {
                         type: 'work',
                         content: {
-                          startTime: firebase.firestore.Timestamp.now(),
+                          startTime: Timestamp.now(),
                           endTime: null,
                           status: 'running',
                           memo: '',
