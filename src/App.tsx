@@ -3,7 +3,7 @@ import React from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import User from './components/user';
+import UserUI from './components/user';
 import Offline from './pages/offline';
 
 function App(): JSX.Element {
@@ -14,7 +14,7 @@ function App(): JSX.Element {
   return (
     <BrowserRouter>
       <div className="App">
-        <ChakraProvider>{isOffline ? <User /> : <Offline />}</ChakraProvider>
+        <ChakraProvider>{isOffline ? <UserUI /> : <Offline />}</ChakraProvider>
       </div>
     </BrowserRouter>
   );

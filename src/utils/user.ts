@@ -1,6 +1,14 @@
 import { app, firebase } from '../utils/firebase';
 import { FieldValue } from '@firebase/firestore-types';
-import { collection, getFirestore, setDoc } from 'firebase/firestore';
+import {
+  doc,
+  DocumentData,
+  getDoc,
+  getFirestore,
+  QueryDocumentSnapshot,
+  setDoc,
+  SnapshotOptions,
+} from 'firebase/firestore';
 
 const Db = getFirestore(app);
 
@@ -36,14 +44,14 @@ const isUser = (item: {
 };
 
 const userDataConverter = {
-  toFirestore(user: User): firebase.firestore.DocumentData {
+  toFirestore(user: User): DocumentData {
     const data: User = user;
     user.updated = firebase.firestore.FieldValue.serverTimestamp();
     return data;
   },
   fromFirestore(
-    snapshot: firebase.firestore.QueryDocumentSnapshot,
-    option: firebase.firestore.SnapshotOptions
+    snapshot: QueryDocumentSnapshot,
+    option: SnapshotOptions
   ): User {
     const data = snapshot.data(option);
     if (!isUser(data)) {
@@ -64,7 +72,7 @@ async function setUser(
 ): Promise<void> {
   try {
     return await setDoc(
-      collection(Db, `user/${id}`).withConverter(userDataConverter),
+      doc(Db, `user/${id}`).withConverter(userDataConverter),
       user,
       option ?? {}
     );
@@ -76,13 +84,14 @@ async function setUser(
 
 const getUser = async (id: string): Promise<Readonly<User> | null> => {
   try {
-    const data = await Db.collection('user')
-      .doc(id)
-      .withConverter(userDataConverter)
-      .get();
+    const data = await getDoc(
+      doc(Db, `user/${id}`).withConverter(userDataConverter)
+    );
+
     return data.data() ?? null;
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    throw new Error();
   }
 };
 export { setUser, getUser };

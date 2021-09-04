@@ -32,8 +32,7 @@ import { AuthContext } from '../contexts/user';
 import { GroupContext } from '../contexts/group';
 import { ActivityCard } from './activity';
 import { cardHeight, cardWidth } from './createCard';
-import { QueryDocumentSnapshot } from '@firebase/firestore-types';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, QueryDocumentSnapshot } from 'firebase/firestore';
 
 export const Front: React.FC = () => {
   const [detectedMember, setDetectedMember] =
@@ -56,9 +55,9 @@ export const Front: React.FC = () => {
   // メンバーの最終活動を表示する
   useEffect(() => {
     if (currentId && detectedMember) {
-      getLatestActivity(currentId, detectedMember.id).then((activity) => {
-        setLatestActivity(activity);
-      });
+      getLatestActivity(currentId, detectedMember.id).then((activity) =>
+        setLatestActivity(activity)
+      );
     }
   }, [currentId, detectedMember]);
 

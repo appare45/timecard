@@ -67,7 +67,7 @@ const UserDataDisplay: React.FC<{ authData: User }> = ({ authData }) => {
   );
 };
 
-export default function User(): JSX.Element {
+export default function UserUI(): JSX.Element {
   const [loginStatus, updateLoginStatus] = useState<boolean | null>(null);
   const [accountEnabled, updateAccountEnablement] = useState<boolean | null>(
     null

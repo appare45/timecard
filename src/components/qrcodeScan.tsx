@@ -28,10 +28,10 @@ import {
   setWork,
   work,
 } from '../utils/group';
-import { dataWithId, firebase } from '../utils/firebase';
+import { dataWithId } from '../utils/firebase';
 import { ActivityCard } from './activity';
 import { MutableRefObject } from 'react';
-import { Timestamp } from 'firebase/firestore';
+import { QueryDocumentSnapshot, Timestamp } from 'firebase/firestore';
 
 const getUserCamera = () =>
   new Promise<MediaStream>((resolve, reject) => {
@@ -174,10 +174,9 @@ export const MemberAction: React.FC<{
   onClose: () => void;
   cancelRef?: MutableRefObject<null>;
 }> = ({ member, onClose, cancelRef }) => {
-  const [latestActivity, setLatestActivity] =
-    useState<firebase.firestore.QueryDocumentSnapshot<activity<work>> | null>(
-      null
-    );
+  const [latestActivity, setLatestActivity] = useState<QueryDocumentSnapshot<
+    activity<work>
+  > | null>(null);
   const { currentId } = useContext(GroupContext);
   const toast = useToast();
   useEffect(() => {

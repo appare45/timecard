@@ -1,9 +1,11 @@
+import { OrderByDirection } from '@firebase/firestore-types';
 import {
   Timestamp,
   QueryDocumentSnapshot,
   getFirestore,
   collection,
   query,
+  Query,
   where,
   getDocs,
   addDoc,
@@ -19,6 +21,8 @@ import {
   QuerySnapshot,
   orderBy,
   limit,
+  QueryConstraint,
+  FieldPath,
 } from 'firebase/firestore';
 import { app, firebase } from './../utils/firebase';
 const Db = getFirestore(app);
@@ -36,11 +40,11 @@ class Account {
 }
 
 export class Member {
-  public set name(v: string) {
-    if (v.length < 20) this.name = v;
-  }
-  constructor(name: string, readonly photoUrl: string | null = null) {
+  name = '';
+  photoUrl = '';
+  constructor(name: string, photoUrl: string | null = null) {
     this.name = name;
+    if (photoUrl) this.photoUrl = photoUrl;
   }
 }
 
@@ -59,7 +63,7 @@ export type activity<T> = {
   type: activityType;
   memberId: string;
   content: T;
-  updated?: FieldValue;
+  updated?: Timestamp;
 };
 
 export type workStatus = 'running' | 'done';
@@ -212,7 +216,7 @@ const adminDataConverter = {
 const activityDataConverter = {
   toFirestore(activity: activity<work>): firebase.firestore.DocumentData {
     const data = activity;
-    data.updated = firebase.firestore.Timestamp.now();
+    data.updated = Timestamp.now();
     return activity;
   },
   fromFirestore(
@@ -395,16 +399,24 @@ const getGroup = async (id: string): Promise<Readonly<Group> | null> => {
 
 const listMembers = async (
   id: string,
-  limitNumber: number
+  limitNumber?: number,
+  order?: [fieldPath: string | FieldPath, directionStr?: OrderByDirection]
 ): Promise<Readonly<QuerySnapshot<Member> | null> | null> => {
   try {
-    return await getDocs(
-      query(
-        collection(Db, `group/${id}/member`),
-        orderBy(''),
-        limit(limitNumber)
-      ).withConverter(memberDataConverter)
-    );
+    if (limitNumber || orderBy) {
+      const qcs: QueryConstraint[] = [];
+      if (limitNumber) qcs.push(limit(limitNumber));
+      if (order) qcs.push(orderBy(...order));
+      const q: Query<Member> = query(
+        collection(Db, `group/${id}/member`).withConverter(memberDataConverter),
+        ...qcs
+      );
+      return await getDocs(q);
+    } else {
+      return await getDocs(
+        collection(Db, `group/${id}/member`).withConverter(memberDataConverter)
+      );
+    }
   } catch (error) {
     console.error(error);
     throw new Error();
@@ -511,10 +523,8 @@ const getAllActivities = async (
 ): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
   try {
     const q = await getDocs(
-      query(
-        collection(Db, `group/${groupId}/activity/`).withConverter(
-          activityDataConverter
-        )
+      collection(Db, `group/${groupId}/activity/`).withConverter(
+        activityDataConverter
       )
     );
 

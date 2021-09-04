@@ -1,7 +1,8 @@
 import { Button } from '@chakra-ui/react';
 import React, { useContext } from 'react';
 import { AuthContext } from '../contexts/user';
-import { Auth } from '../utils/firebase';
+import { app } from '../utils/firebase';
+const Auth = app.auth();
 export default function Logout(props: {
   onSignOut?: () => void;
   onError?: (e: unknown) => void;
