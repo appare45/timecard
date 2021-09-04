@@ -1,11 +1,24 @@
-import { QueryDocumentSnapshot, Timestamp } from '@firebase/firestore-types';
 import {
+  Timestamp,
+  QueryDocumentSnapshot,
   getFirestore,
   collection,
   query,
   where,
   getDocs,
   addDoc,
+  setDoc,
+  FirestoreDataConverter,
+  SnapshotOptions,
+  WithFieldValue,
+  serverTimestamp,
+  FieldValue,
+  getDoc,
+  doc,
+  DocumentSnapshot,
+  QuerySnapshot,
+  orderBy,
+  limit,
 } from 'firebase/firestore';
 import { app, firebase } from './../utils/firebase';
 const Db = getFirestore(app);
@@ -16,21 +29,29 @@ type Admin = {
 };
 
 //** 管理はメンバーベースで行う */
-type Account = {
-  memberId: string;
-};
+class Account {
+  constructor(readonly memberId: string) {
+    this.memberId = memberId;
+  }
+}
 
-export type Member = {
-  name: string;
-  photoUrl?: string;
-};
+export class Member {
+  public set name(v: string) {
+    if (v.length < 20) this.name = v;
+  }
+  constructor(name: string, readonly photoUrl: string | null = null) {
+    this.name = name;
+  }
+}
 
-export type Group = {
-  name: string;
-  joinStatus: boolean;
-  created: firebase.firestore.FieldValue;
-  authorId: string;
-};
+export class Group {
+  constructor(
+    readonly name: string,
+    readonly joinStatus: boolean,
+    readonly created: FieldValue,
+    readonly authorId: string
+  ) {}
+}
 
 type activityType = 'work';
 
@@ -38,7 +59,7 @@ export type activity<T> = {
   type: activityType;
   memberId: string;
   content: T;
-  updated?: firebase.firestore.Timestamp;
+  updated?: FieldValue;
 };
 
 export type workStatus = 'running' | 'done';
@@ -61,21 +82,6 @@ export const statusToText = (status: workStatus): string => {
       return '不明';
   }
 };
-
-const isAccount = (item: { memberId?: unknown }): item is Account => {
-  if (!(item.memberId && typeof item.memberId == 'string')) {
-    return false;
-  }
-  return true;
-};
-
-const isMember = (item: { name?: unknown }): item is Member => {
-  if (!(item.name && typeof item.name == 'string')) {
-    return false;
-  }
-  return true;
-};
-
 const isAdmin = (item: {
   upGraded?: unknown;
   upGradedBy?: unknown;
@@ -130,13 +136,13 @@ const isGroup = (item: {
   return true;
 };
 
-const groupDataConverter = {
-  toFirestore(group: Partial<Group>): firebase.firestore.DocumentData {
+const groupDataConverter: FirestoreDataConverter<Group> = {
+  toFirestore(group: Group): firebase.firestore.DocumentData {
     return group;
   },
   fromFirestore(
-    snapshot: firebase.firestore.QueryDocumentSnapshot,
-    option: firebase.firestore.SnapshotOptions
+    snapshot: QueryDocumentSnapshot,
+    option: SnapshotOptions
   ): Group {
     const data = snapshot.data(option);
     if (isGroup(data)) {
@@ -156,40 +162,28 @@ const memberDataConverter = {
     return member;
   },
   fromFirestore(
-    snapshot: firebase.firestore.QueryDocumentSnapshot,
-    option?: firebase.firestore.SnapshotOptions
+    snapshot: QueryDocumentSnapshot,
+    option?: SnapshotOptions
   ): Member {
     const data = snapshot.data(option);
-    if (!isMember(data)) {
-      console.error('Invalid member data');
-      throw new Error('データの取得に失敗しました');
-    }
-    return {
-      name: data.name,
-    };
+    return new Member(data.name);
   },
 };
 
-const accountDataConverter = {
-  toFirestore(account: Account): firebase.firestore.DocumentData {
-    if (!isAccount(account)) {
-      throw new Error('データ設定中にエラーが発生しました');
-    }
+const accountDataConverter: FirestoreDataConverter<Account> = {
+  toFirestore(
+    account: WithFieldValue<Account>
+  ): firebase.firestore.DocumentData {
     return {
       memberId: account.memberId,
     };
   },
   fromFirestore(
-    snapshot: firebase.firestore.QueryDocumentSnapshot,
-    option?: firebase.firestore.SnapshotOptions
+    snapshot: QueryDocumentSnapshot,
+    option?: SnapshotOptions
   ): Account {
     const data = snapshot.data(option);
-    if (!isAccount(data)) {
-      throw new Error('データ取得時にエラーが発生しました');
-    }
-    return {
-      memberId: data.memberId,
-    };
+    return new Account(data.memberId);
   },
 };
 
@@ -201,8 +195,8 @@ const adminDataConverter = {
     };
   },
   fromFirestore(
-    snapshot: firebase.firestore.QueryDocumentSnapshot,
-    option?: firebase.firestore.SnapshotOptions
+    snapshot: QueryDocumentSnapshot,
+    option?: SnapshotOptions
   ): Admin {
     const data = snapshot.data(option);
     if (!isAdmin(data)) {
@@ -216,16 +210,14 @@ const adminDataConverter = {
 };
 
 const activityDataConverter = {
-  toFirestore(
-    activity: Partial<activity<work>>
-  ): firebase.firestore.DocumentData {
+  toFirestore(activity: activity<work>): firebase.firestore.DocumentData {
     const data = activity;
     data.updated = firebase.firestore.Timestamp.now();
     return activity;
   },
   fromFirestore(
-    snapshot: firebase.firestore.QueryDocumentSnapshot,
-    option?: firebase.firestore.SnapshotOptions
+    snapshot: QueryDocumentSnapshot,
+    option?: SnapshotOptions
   ): activity<work> {
     const data = snapshot.data(option);
     if (!isActivity(data)) {
@@ -244,7 +236,7 @@ const createGroup = (
       name: group.name,
       joinStatus: group.joinStatus,
       authorId: author.id,
-      created: firebase.firestore.FieldValue.serverTimestamp(),
+      created: serverTimestamp(),
     };
     return addDoc(collection(Db, 'group'), _group).then((group_1) => {
       addMember(
@@ -258,7 +250,7 @@ const createGroup = (
     });
   } catch (error) {
     console.error(error);
-    throw new Error(error);
+    throw new Error();
   }
 };
 
@@ -268,32 +260,32 @@ async function addAccount(
   groupId: string
 ): Promise<void> {
   try {
-    await addDoc(Db, 'group/account');
-    Db.collection('group')
-      .doc(groupId)
-      .collection('account')
-      .doc(accountId)
-      .withConverter(accountDataConverter)
-      .set(account);
+    await setDoc(
+      doc(Db, `group/${groupId}/account/`, accountId).withConverter<Account>(
+        accountDataConverter
+      ),
+      account
+    );
     return;
   } catch (e) {
-    throw new Error(e);
+    console.error(e);
+    throw new Error();
   }
 }
 
 async function getAccount(
   memberId: string,
   groupId: string
-): Promise<firebase.firestore.DocumentSnapshot<Account>> {
+): Promise<DocumentSnapshot<Account>> {
   try {
-    return await Db.collection('group')
-      .doc(groupId)
-      .collection('account')
-      .withConverter(accountDataConverter)
-      .doc(memberId)
-      .get();
+    return await getDoc<Account>(
+      doc(Db, `group/${groupId}/account/`, memberId).withConverter<Account>(
+        accountDataConverter
+      )
+    );
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    throw new Error();
   }
 }
 
@@ -305,27 +297,31 @@ async function getAccount(
  */
 async function addMember(member: Member, groupId: string): Promise<string> {
   try {
-    const group = await Db.collection('group')
-      .doc(groupId)
-      .collection('member')
-      .withConverter(memberDataConverter)
-      .add(member);
+    const group = await addDoc<Member>(
+      collection(Db, `group/${groupId}/member/`).withConverter(
+        memberDataConverter
+      ),
+      member
+    );
     return group.id;
   } catch (error) {
     console.error(error);
-    throw new Error(error);
+    throw new Error();
   }
 }
 
-async function getMember(id: string, groupId: string): Promise<Member | null> {
+async function getMember(
+  memberId: string,
+  groupId: string
+): Promise<Member | null> {
   try {
-    const member = await Db.collection('group')
-      .doc(groupId)
-      .collection('member')
-      .withConverter(memberDataConverter)
-      .doc(id)
-      .get();
-    return member.data() ?? null;
+    const member = getDoc(
+      doc(Db, `group/${groupId}/member/${memberId}`).withConverter(
+        memberDataConverter
+      )
+    );
+
+    return (await member).data() ?? null;
   } catch (error) {
     return null;
   }
@@ -347,16 +343,17 @@ async function addAdmin(
       upGraded: firebase.firestore.FieldValue.serverTimestamp(),
       upGradedBy: upGradedBy,
     };
-    Db.collection('group')
-      .doc(groupId)
-      .collection('admin')
-      .doc(memberId)
-      .withConverter(adminDataConverter)
-      .set(admin);
+    setDoc(
+      doc(Db, `group/${groupId}/admin/${memberId}`).withConverter(
+        adminDataConverter
+      ),
+      admin
+    );
+
     return;
   } catch (error) {
     console.error(error);
-    throw new Error(error);
+    throw new Error();
   }
 }
 
@@ -374,21 +371,22 @@ async function setGroup(
   option?: firebase.firestore.SetOptions
 ): Promise<void> {
   try {
-    return await Db.collection('group')
-      .doc(id)
-      .withConverter(groupDataConverter)
-      .set(group, option ?? {});
+    return await setDoc(
+      doc(Db, `group/${id}`).withConverter(groupDataConverter),
+      group,
+      option ?? {}
+    );
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    throw new Error();
   }
 }
 
 const getGroup = async (id: string): Promise<Readonly<Group> | null> => {
   try {
-    const group = await Db.collection('group')
-      .doc(id)
-      .withConverter(groupDataConverter)
-      .get();
+    const group = await getDoc(
+      doc(Db, `group/${id}`).withConverter(groupDataConverter)
+    );
     return group.data() ?? null;
   } catch (error) {
     throw new Error(`Invalid data: ${error}`);
@@ -397,16 +395,19 @@ const getGroup = async (id: string): Promise<Readonly<Group> | null> => {
 
 const listMembers = async (
   id: string,
-  option?: firebase.firestore.GetOptions
-): Promise<Readonly<firebase.firestore.QuerySnapshot<Member> | null> | null> => {
+  limitNumber: number
+): Promise<Readonly<QuerySnapshot<Member> | null> | null> => {
   try {
-    return await Db.collection('group')
-      .doc(id)
-      .collection('member')
-      .withConverter(memberDataConverter)
-      .get(option);
+    return await getDocs(
+      query(
+        collection(Db, `group/${id}/member`),
+        orderBy(''),
+        limit(limitNumber)
+      ).withConverter(memberDataConverter)
+    );
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    throw new Error();
   }
 };
 
@@ -415,14 +416,16 @@ const addWork = async (
   activity: activity<work>
 ): Promise<string> => {
   try {
-    const data = await Db.collection('group')
-      .doc(groupId)
-      .collection('activity')
-      .withConverter(activityDataConverter)
-      .add(activity);
+    const data = await addDoc(
+      collection(Db, `group/${groupId}/activity`).withConverter(
+        accountDataConverter
+      ),
+      activity
+    );
     return data.id;
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    throw new Error();
   }
 };
 const setWork = async (
@@ -432,40 +435,48 @@ const setWork = async (
   option: firebase.firestore.SetOptions
 ): Promise<void> => {
   try {
-    await Db.collection('group')
-      .doc(groupId)
-      .collection('activity')
-      .doc(workId)
-      .withConverter(activityDataConverter)
-      .set(activity, option);
+    await setDoc(
+      doc(Db, `group/${groupId}/activity/${workId}`).withConverter(
+        accountDataConverter
+      ),
+      activity,
+      option
+    );
+
     return;
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    throw new Error();
   }
 };
 
 const getUserActivity = async (
   groupId: string,
-  limit: number,
+  count: number,
   memberId?: string,
   type?: activityType
 ): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
   try {
-    const query = await Db.collection('group')
-      .doc(groupId)
-      .collection('activity')
-      .withConverter(activityDataConverter)
-      .where('type', '==', type)
-      .where('memberId', '==', memberId)
-      .limit(limit)
-      .get();
+    const q = await getDocs(
+      query(
+        collection(Db, `group/${groupId}/activity/`).withConverter(
+          activityDataConverter
+        ),
+        where('type', '==', type),
+        where('memberId', '==', memberId),
+        orderBy(''),
+        limit(count)
+      )
+    );
+
     const data: QueryDocumentSnapshot<activity<work>>[] = [];
-    query.forEach((activity) => {
+    q.forEach((activity) => {
       data.push(activity);
     });
     return data;
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    throw new Error();
   }
 };
 
@@ -474,20 +485,24 @@ const getUserActivities = async (
   memberId: string
 ): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
   try {
-    const query = await Db.collection('group')
-      .doc(groupId)
-      .collection('activity')
-      .withConverter(activityDataConverter)
-      .where('memberId', '==', memberId)
-      .orderBy('updated', 'desc')
-      .get();
+    const q = await getDocs(
+      query(
+        collection(Db, `group/${groupId}/activity/`).withConverter(
+          activityDataConverter
+        ),
+        where('memberId', '==', memberId),
+        orderBy('updated', 'desc')
+      )
+    );
+
     const dataSet: QueryDocumentSnapshot<activity<work>>[] = [];
-    query.forEach((data) => {
+    q.forEach((data) => {
       dataSet.push(data);
     });
     return dataSet;
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    throw new Error();
   }
 };
 
@@ -495,42 +510,48 @@ const getAllActivities = async (
   groupId: string
 ): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
   try {
-    const query = await Db.collection('group')
-      .doc(groupId)
-      .collection('activity')
-      .withConverter(activityDataConverter)
-      .orderBy('updated', 'desc')
-      .get();
+    const q = await getDocs(
+      query(
+        collection(Db, `group/${groupId}/activity/`).withConverter(
+          activityDataConverter
+        )
+      )
+    );
+
     const dataSet: QueryDocumentSnapshot<activity<work>>[] = [];
-    query.forEach((data) => {
+    q.forEach((data) => {
       dataSet.push(data);
     });
     return dataSet;
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    throw new Error();
   }
 };
 
 const getLatestActivity = async (
   groupId: string,
   memberId: string
-): Promise<firebase.firestore.QueryDocumentSnapshot<activity<work>>> => {
+): Promise<QueryDocumentSnapshot<activity<work>>> => {
   try {
-    const query = await Db.collection('group')
-      .doc(groupId)
-      .collection('activity')
-      .withConverter(activityDataConverter)
-      .where('memberId', '==', memberId)
-      .orderBy('updated', 'desc')
-      .limit(1)
-      .get();
-    const data: firebase.firestore.QueryDocumentSnapshot<activity<work>>[] = [];
-    query.forEach((q) => {
-      data.push(q);
+    const q = await getDocs(
+      query(
+        collection(Db, `group/${groupId}/activity/`).withConverter(
+          activityDataConverter
+        ),
+        where('memberId', '==', memberId),
+        orderBy('updated', 'desc'),
+        limit(1)
+      )
+    );
+    const data: QueryDocumentSnapshot<activity<work>>[] = [];
+    q.forEach((s) => {
+      data.push(s);
     });
     return data[0];
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    throw new Error();
   }
 };
 

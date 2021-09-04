@@ -1,6 +1,8 @@
-import { Db } from './firebase';
-import { firebase } from '../utils/firebase';
+import { app, firebase } from '../utils/firebase';
 import { FieldValue } from '@firebase/firestore-types';
+import { collection, getFirestore, setDoc } from 'firebase/firestore';
+
+const Db = getFirestore(app);
 
 export type User = {
   name: string;
@@ -61,10 +63,11 @@ async function setUser(
   option?: firebase.firestore.SetOptions
 ): Promise<void> {
   try {
-    return await Db.collection('user')
-      .doc(id)
-      .withConverter(userDataConverter)
-      .set(user, option ?? {});
+    return await setDoc(
+      collection(Db, `user/${id}`).withConverter(userDataConverter),
+      user,
+      option ?? {}
+    );
   } catch (error) {
     console.error(error);
     throw new Error(`Invalid data: ${error}`);

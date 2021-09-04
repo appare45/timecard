@@ -77,7 +77,7 @@ export const ActivityCard: React.FC<{ data: activity<work>; member?: Member }> =
               to={`/activity/${data.memberId}`}
               leftIcon={
                 <Avatar
-                  src={memberInfo?.photoUrl}
+                  src={memberInfo?.photoUrl ?? undefined}
                   name={memberInfo?.name}
                   size="sm"
                 />
@@ -169,7 +169,8 @@ function UserActivity(): JSX.Element {
       <Button
         leftIcon={<IoArrowBack />}
         onClick={() => history.goBack()}
-        variant="link">
+        variant="link"
+        name="戻る">
         戻る
       </Button>
       {user?.name && <Heading>{`${user?.name ?? 'ユーザー'}の履歴`}</Heading>}
@@ -203,7 +204,11 @@ const AllActivity: React.FC = () => {
         <Heading>タイムライン</Heading>
         <Text>全てのアクティビティーが時間順で並びます</Text>
       </Box>
-      <Button leftIcon={<IoScan />} as={Link} to="/activity/scan">
+      <Button
+        leftIcon={<IoScan />}
+        name="スキャン"
+        as={Link}
+        to="/activity/scan">
         スキャン
       </Button>
       <DisplayActivities data={activities} />

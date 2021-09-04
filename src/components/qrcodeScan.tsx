@@ -31,6 +31,7 @@ import {
 import { dataWithId, firebase } from '../utils/firebase';
 import { ActivityCard } from './activity';
 import { MutableRefObject } from 'react';
+import { Timestamp } from 'firebase/firestore';
 
 const getUserCamera = () =>
   new Promise<MediaStream>((resolve, reject) => {
@@ -217,7 +218,7 @@ export const MemberAction: React.FC<{
                 addWork(currentId, {
                   type: 'work',
                   content: {
-                    startTime: firebase.firestore.Timestamp.now(),
+                    startTime: Timestamp.now(),
                     endTime: null,
                     status: 'running',
                     memo: '',
@@ -234,8 +235,7 @@ export const MemberAction: React.FC<{
                 });
               } else if (latestActivity?.id) {
                 const _latestActivity = latestActivity.data();
-                _latestActivity.content.endTime =
-                  firebase.firestore.Timestamp.now();
+                _latestActivity.content.endTime = Timestamp.now();
                 _latestActivity.content.status = 'done';
                 setWork(currentId, latestActivity?.id, _latestActivity, {
                   merge: true,

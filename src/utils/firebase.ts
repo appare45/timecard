@@ -2,7 +2,6 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/firestore';
-import { getFirestore } from 'firebase/firestore';
 import 'firebase/compat/analytics';
 
 const firebaseConfig = {

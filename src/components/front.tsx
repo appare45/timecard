@@ -16,7 +16,7 @@ import {
 } from '@chakra-ui/react';
 import { QRCodeScan } from './qrcodeScan';
 import { useState } from 'react';
-import { dataWithId, firebase } from '../utils/firebase';
+import { dataWithId } from '../utils/firebase';
 import {
   activity,
   addWork,
@@ -33,6 +33,7 @@ import { GroupContext } from '../contexts/group';
 import { ActivityCard } from './activity';
 import { cardHeight, cardWidth } from './createCard';
 import { QueryDocumentSnapshot } from '@firebase/firestore-types';
+import { Timestamp } from 'firebase/firestore';
 
 export const Front: React.FC = () => {
   const [detectedMember, setDetectedMember] =
@@ -122,8 +123,7 @@ export const Front: React.FC = () => {
                   if (currentId && detectedMember) {
                     if (latestActivity?.data().content.status === 'running') {
                       const _latestActivity = latestActivity.data();
-                      _latestActivity.content.endTime =
-                        firebase.firestore.Timestamp.now();
+                      _latestActivity.content.endTime = Timestamp.now();
                       _latestActivity.content.status = 'done';
                       setWork(currentId, latestActivity?.id, _latestActivity, {
                         merge: true,
@@ -140,7 +140,7 @@ export const Front: React.FC = () => {
                       addWork(currentId, {
                         type: 'work',
                         content: {
-                          startTime: firebase.firestore.Timestamp.now(),
+                          startTime: Timestamp.now(),
                           endTime: null,
                           status: 'running',
                           memo: '',
