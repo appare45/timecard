@@ -6,7 +6,7 @@ import { Group, Member } from '../utils/group';
 
 export const cardWidth = 91;
 export const cardHeight = 55;
-export const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
+const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
   member,
   group,
 }) => {
@@ -122,3 +122,5 @@ export const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
     </>
   );
 };
+
+export default Card;

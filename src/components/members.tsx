@@ -33,7 +33,13 @@ import {
   Tr,
   useBoolean,
 } from '@chakra-ui/react';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { GroupContext } from '../contexts/group';
 import {
   activity,
@@ -47,7 +53,6 @@ import {
 } from '../utils/group';
 import { dataWithId } from '../utils/firebase';
 import { IoCard, IoPersonAdd } from 'react-icons/io5';
-import { Card } from './createCard';
 import {
   Link as RouterLink,
   Route,
@@ -141,6 +146,7 @@ const MemberCardDrawer: React.FC<{
   useEffect(() => {
     getGroup(groupId).then((group) => setGroup(group));
   }, [groupId]);
+  const Card = React.lazy(() => import('./createCard'));
   return (
     <Drawer placement="bottom" isOpen={isOpen} onClose={onClose}>
       <DrawerOverlay />
@@ -150,7 +156,9 @@ const MemberCardDrawer: React.FC<{
           <DrawerCloseButton />
         </DrawerHeader>
         <DrawerBody>
-          {group && <Card member={member} group={group} />}
+          <Suspense fallback={<Skeleton />}>
+            {group && <Card member={member} group={group} />}
+          </Suspense>
         </DrawerBody>
       </DrawerContent>
     </Drawer>

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import {
   AlertDialog,
   AlertDialogBody,
@@ -32,7 +32,6 @@ import { useRef } from 'react';
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/user';
 import { GroupContext } from '../contexts/group';
-import { ActivityCard } from './activity';
 import { cardHeight, cardWidth } from './createCard';
 import { Timestamp, QueryDocumentSnapshot } from 'firebase/firestore';
 
@@ -86,6 +85,7 @@ const Front: React.FC = () => {
   const { currentId, setFrontMode } = useContext(GroupContext);
   const toast = useToast();
   const { currentMember } = useContext(GroupContext);
+  const ActivityCard = React.lazy(() => import('./activity-card'));
 
   // メンバーの最終活動を表示する
   useEffect(() => {
@@ -146,14 +146,16 @@ const Front: React.FC = () => {
             )}
           </AlertDialogHeader>
           <AlertDialogBody>
-            <Box mb="5">
-              {latestActivity?.data() && (
-                <ActivityCard
-                  activitySnapshot={latestActivity}
-                  member={detectedMember?.data}
-                />
-              )}
-            </Box>
+            <Suspense fallback={<Skeleton />}>
+              <Box mb="5">
+                {latestActivity?.data() && (
+                  <ActivityCard
+                    activitySnapshot={latestActivity}
+                    member={detectedMember?.data}
+                  />
+                )}
+              </Box>
+            </Suspense>
             <ButtonGroup>
               <Button
                 colorScheme={

@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import jsQR from 'jsqr';
 import {
   Alert,
@@ -31,7 +37,6 @@ import {
   work,
 } from '../utils/group';
 import { dataWithId } from '../utils/firebase';
-import { ActivityCard } from './activity';
 import { MutableRefObject } from 'react';
 import { IoCamera } from 'react-icons/io5';
 import { useMemo } from 'react';
@@ -185,13 +190,14 @@ export const MemberAction: React.FC<{
   const { currentId } = useContext(GroupContext);
   const toast = useToast();
   const [memo, setMemo] = useState('');
+  const ActivityCard = React.lazy(() => import('./activity-card'));
   const LatestActivityCard = useMemo(() => {
     return latestActivity?.data() ? (
       <ActivityCard activitySnapshot={latestActivity} member={member.data} />
     ) : (
       <Skeleton h="28" w="60" />
     );
-  }, [latestActivity, member.data]);
+  }, [ActivityCard, latestActivity, member.data]);
 
   useMemo(() => {
     if (currentId) {
@@ -213,7 +219,7 @@ export const MemberAction: React.FC<{
             <Heading fontSize="2xl">読み込み中</Heading>
           </Skeleton>
         )}
-        {LatestActivityCard}
+        <Suspense fallback={<Skeleton />}>{LatestActivityCard}</Suspense>
       </Box>
       <FormControl>
         <FormLabel>メモ</FormLabel>

@@ -1,13 +1,10 @@
 import {
-  Alert,
   AlertDialog,
   AlertDialogBody,
   AlertDialogCloseButton,
   AlertDialogContent,
   AlertDialogHeader,
   AlertDialogOverlay,
-  AlertIcon,
-  Avatar,
   Box,
   Button,
   ButtonGroup,
@@ -17,21 +14,11 @@ import {
   FormLabel,
   Heading,
   HStack,
-  Link,
   Skeleton,
-  SkeletonCircle,
   Spacer,
   Spinner,
-  Stack,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
   Text,
   Textarea,
-  Tooltip,
-  useClipboard,
   useToast,
   VStack,
 } from '@chakra-ui/react';
@@ -60,20 +47,16 @@ import {
 } from '../utils/group';
 import {
   IoArrowBack,
-  IoCheckmarkOutline,
-  IoClipboardOutline,
   IoCreate,
-  IoPencilOutline,
   IoPencilSharp,
   IoQrCode,
   IoScan,
 } from 'react-icons/io5';
 import { MemberAction } from './qrcodeScan';
-import { dateToJapaneseTime, relativeTimeText } from '../utils/time';
 import { useRef } from 'react';
-import { Card } from './createCard';
 import { useMemo } from 'react';
 import { DocumentSnapshot, QueryDocumentSnapshot } from 'firebase/firestore';
+import DisplayActivities from './display-activities';
 
 export const ActivityStatus: React.FC<{
   workStatus: workStatus;
@@ -87,261 +70,6 @@ export const ActivityStatus: React.FC<{
       />
       <Text> {statusToText(workStatus ?? '')}</Text>
     </HStack>
-  );
-};
-
-const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
-  activityId,
-  isEditable,
-}) => {
-  const { hasCopied, onCopy } = useClipboard(
-    `${location.host}/activity/${activityId}`
-  );
-
-  return (
-    <ButtonGroup
-      variant="outline"
-      size="sm"
-      spacing="0.5"
-      isAttached
-      colorScheme="gray">
-      <Tooltip label="リンクをコピー">
-        <Button onClick={onCopy}>
-          {hasCopied ? <IoCheckmarkOutline /> : <IoClipboardOutline />}
-        </Button>
-      </Tooltip>
-      {isEditable && (
-        <Tooltip label="編集する">
-          <Button
-            onClick={() => {
-              console.info('');
-            }}>
-            <IoPencilOutline />
-          </Button>
-        </Tooltip>
-      )}
-    </ButtonGroup>
-  );
-};
-
-export const ActivityCard: React.FC<{
-  activitySnapshot:
-    | QueryDocumentSnapshot<activity<work>>
-    | DocumentSnapshot<activity<work>>;
-  member?: Member;
-  editable?: boolean;
-  showMemberData?: boolean;
-}> = ({
-  activitySnapshot,
-  member,
-  editable = false,
-  showMemberData = true,
-}) => {
-  const [memberInfo, setMemberInfo] = useState<Member | null>(null);
-  const { currentId } = useContext(GroupContext);
-  const activityData: activity<work> | null = activitySnapshot.data() ?? null;
-  const { currentMember } = useContext(GroupContext);
-  useEffect(() => {
-    const ac = new AbortController();
-    if (member) {
-      setMemberInfo(member);
-    } else if (currentId && showMemberData) {
-      const memberId = activitySnapshot.data()?.memberId;
-      if (memberId === currentMember?.id) {
-        setMemberInfo(currentMember?.data() ?? null);
-      } else if (currentMember?.id && memberId && currentId) {
-        getMember(memberId ?? '', currentId).then((e) =>
-          setMemberInfo(e?.data() ?? null)
-        );
-      }
-    }
-    return () => ac.abort();
-  }, [member, currentId, showMemberData, activitySnapshot, currentMember]);
-
-  const MemberInfo = () =>
-    useMemo(() => {
-      if (memberInfo && activityData) {
-        return (
-          <HStack>
-            <Avatar
-              src={memberInfo?.photoUrl}
-              name={memberInfo?.name}
-              size="xs"
-            />
-            <Button
-              p={0}
-              as={RouterLink}
-              to={`/member/${activityData.memberId}`}
-              variant="link">
-              <Text>{memberInfo?.name}</Text>
-            </Button>
-          </HStack>
-        );
-      } else {
-        return (
-          <>
-            <SkeletonCircle />
-            <Skeleton>
-              <Button size="sm" my="1" variant="link">
-                読み込み中
-              </Button>
-            </Skeleton>
-          </>
-        );
-      }
-    }, []);
-
-  const ActivityStatusFull: React.FC<{
-    activityData: activity<work>;
-    height?: string;
-  }> = ({ activityData, height = 'auto' }) => {
-    return (
-      <>
-        <Stack height={height} overflow="hidden" pt="2" spacing="-0.5">
-          {activityData.content.endTime && (
-            <HStack>
-              <Text color="gray.500">
-                {`00${activityData?.content.endTime
-                  ?.toDate()
-                  .getHours()}`.slice(-2) +
-                  ':' +
-                  `00${activityData?.content.endTime
-                    ?.toDate()
-                    .getMinutes()}`.slice(-2)}
-              </Text>
-              <Text>終了しました</Text>
-            </HStack>
-          )}
-          {activityData.content.startTime && (
-            <HStack>
-              <Text color="gray.500">
-                {`00${activityData?.content.startTime
-                  ?.toDate()
-                  .getHours()}`.slice(-2) +
-                  ':' +
-                  `00${activityData?.content.startTime
-                    ?.toDate()
-                    .getMinutes()}`.slice(-2)}
-              </Text>
-              <Text>開始しました</Text>
-            </HStack>
-          )}
-        </Stack>
-      </>
-    );
-  };
-  const ActivityMemo = (props: { content: string }) => {
-    if (props.content) {
-      const memoText = props.content.replace(/\\n/g, '\n');
-      return (
-        <Box
-          h="14"
-          py="1"
-          wordBreak="break-all"
-          fontSize="sm"
-          overflow="hidden">
-          <pre>{memoText}</pre>
-        </Box>
-      );
-    } else return null;
-  };
-  return (
-    <Box w="lg" border="1px" borderColor="gray.200" rounded="base">
-      {activityData && (
-        <>
-          <HStack px="3" py="1" justify="flex-start" bg="gray.100">
-            {showMemberData && <MemberInfo />}
-            <Spacer />
-            <ActivityMenu
-              activityId={activitySnapshot.id}
-              isEditable={editable}
-            />
-          </HStack>
-          <Box px="3" py="3">
-            <Tabs
-              size="sm"
-              isLazy
-              lazyBehavior="keepMounted"
-              variant="soft-rounded"
-              colorScheme="gray">
-              {/* ヘッダー部分 */}
-              <Box>
-                <TabList>
-                  <Tab>ログ</Tab>
-                  <Tab
-                    isDisabled={!activityData.content.memo}
-                    _disabled={{ opacity: 0.3, cursor: 'not-allowed' }}>
-                    メモ
-                  </Tab>
-                </TabList>
-                <Link
-                  to={`/activity/${activitySnapshot.id}`}
-                  as={RouterLink}
-                  display="block"
-                  pos="relative">
-                  <TabPanels>
-                    <TabPanel px="1" py="0.5">
-                      <ActivityStatusFull
-                        activityData={activityData}
-                        height="14"
-                      />
-                    </TabPanel>
-                    <TabPanel px="1" py="0.5">
-                      <ActivityMemo content={activityData.content.memo} />
-                    </TabPanel>
-                  </TabPanels>
-                </Link>
-              </Box>
-            </Tabs>
-          </Box>
-          <HStack bg="gray.100" px="2" py="1.5" fontSize="xs" color="gray.600">
-            <ActivityStatus
-              workStatus={activityData.content.status ?? 'running'}
-              size="2"
-            />
-            <Tooltip
-              label={dateToJapaneseTime({
-                timeObject: activityData.updated?.toDate() ?? null,
-                full: true,
-              })}>
-              <Text>
-                {relativeTimeText(activityData.updated?.toDate() ?? null) ??
-                  null}
-                に更新
-              </Text>
-            </Tooltip>
-          </HStack>
-        </>
-      )}
-    </Box>
-  );
-};
-
-const DisplayActivities: React.FC<{
-  data: QueryDocumentSnapshot<activity<work>>[] | null;
-  memberData?: Member;
-  showMemberData?: boolean;
-}> = ({ data, memberData, showMemberData = true }) => {
-  return (
-    <>
-      <VStack spacing="3" w="max-content" pt="5">
-        {data?.map((activity) => (
-          <ActivityCard
-            activitySnapshot={activity}
-            key={activity.id}
-            member={memberData}
-            showMemberData={showMemberData}
-          />
-        ))}
-      </VStack>
-      {data === null && <Spinner />}
-      {data !== null && !data?.length && (
-        <Alert status="info" mt="3">
-          <AlertIcon />
-          履歴がありません
-        </Alert>
-      )}
-    </>
   );
 };
 
@@ -379,6 +107,7 @@ function UserActivity(): JSX.Element {
       });
     }
   }, [currentId, memberId]);
+  const Card = React.lazy(() => import('./createCard'));
   return (
     <>
       {history.length > 0 && (
@@ -390,6 +119,7 @@ function UserActivity(): JSX.Element {
         </Button>
       )}
       {user?.name && <Heading>{`${user?.name ?? 'ユーザー'}の履歴`}</Heading>}
+
       <HStack align="flex-start">
         <DisplayActivities data={activities} showMemberData={true} />
         <Spacer />
@@ -418,7 +148,9 @@ function UserActivity(): JSX.Element {
           </AlertDialogHeader>
           <AlertDialogBody>
             {user && group && (
-              <Card member={{ data: user, id: memberId }} group={group} />
+              <Suspense fallback={<Skeleton />}>
+                <Card member={{ data: user, id: memberId }} group={group} />
+              </Suspense>
             )}
             <Button ref={dialogCancel} onClick={() => setDialog(false)} mx="5">
               閉じる
@@ -442,10 +174,11 @@ export const AllActivity: React.FC = () => {
       });
     }
   }, [currentId]);
+  const DisplayActivities = React.lazy(() => import('./display-activities'));
   return (
-    <>
+    <Suspense fallback={<Skeleton />}>
       <DisplayActivities data={activities} />
-    </>
+    </Suspense>
   );
 };
 
