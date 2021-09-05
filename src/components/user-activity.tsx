@@ -61,12 +61,19 @@ function UserActivity(): JSX.Element {
   const history = useHistory();
   useEffect(() => {
     if (currentId) {
-      getUserActivities(currentId, memberId).then((activities) => {
+      getUserActivities(currentId, memberId, 2).then((activities) => {
         setActivities(activities);
       });
     }
   }, [currentId, memberId]);
   const Card = React.lazy(() => import('./createCard'));
+  const Activities: React.FC<{
+    data: QueryDocumentSnapshot<activity<work>>[];
+  }> = ({ data }) =>
+    useMemo(
+      () => <DisplayActivities data={data} showMemberData editable />,
+      [data]
+    );
   return (
     <>
       {history.length > 0 && (
@@ -80,7 +87,7 @@ function UserActivity(): JSX.Element {
       {user?.name && <Heading>{`${user?.name ?? 'ユーザー'}の履歴`}</Heading>}
 
       <HStack align="flex-start">
-        <DisplayActivities data={activities} showMemberData editable />
+        {activities && <Activities data={activities} />}
         <Spacer />
         <VStack
           mt="10"
@@ -97,6 +104,8 @@ function UserActivity(): JSX.Element {
       </HStack>
       <AlertDialog
         isOpen={dialog}
+        closeOnEsc
+        closeOnOverlayClick
         onClose={() => setDialog(false)}
         leastDestructiveRef={dialogCancel}>
         <AlertDialogOverlay />

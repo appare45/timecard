@@ -497,16 +497,21 @@ export const getActivitySnapshot = async (
 
 const getUserActivities = async (
   groupId: string,
-  memberId: string
+  memberId: string,
+  limitCount?: number
 ): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
   try {
+    const filters = [
+      where('memberId', '==', memberId),
+      orderBy('updated', 'desc'),
+    ];
+    if (limitCount) filters.push(limit(limitCount));
     const q = await getDocs(
       query(
         collection(Db, `group/${groupId}/activity/`).withConverter(
           activityDataConverter
         ),
-        where('memberId', '==', memberId),
-        orderBy('updated', 'desc')
+        ...filters
       )
     );
 

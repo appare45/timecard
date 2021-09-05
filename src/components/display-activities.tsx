@@ -6,6 +6,7 @@ import { GroupContext } from '../contexts/group';
 
 const DisplayActivities: React.FC<{
   data: QueryDocumentSnapshot<activity<work>>[] | null;
+  limit?: number;
   memberData?: Member;
   showMemberData?: boolean;
   editable?: boolean;
