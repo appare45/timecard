@@ -22,7 +22,7 @@ import { DocumentSnapshot, QueryDocumentSnapshot } from 'firebase/firestore';
 import React, { useContext, useMemo, useState } from 'react';
 import { GroupContext } from '../contexts/group';
 import { activity, getMember, Member, work } from '../utils/group';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useHistory } from 'react-router-dom';
 import {
   IoCheckmarkOutline,
   IoClipboardOutline,
@@ -37,25 +37,28 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
   const { hasCopied, onCopy } = useClipboard(
     `${location.host}/activity/${activityId}`
   );
+  const history = useHistory();
 
   return (
     <ButtonGroup
       variant="outline"
       size="sm"
-      spacing="0.5"
-      isAttached
+      isAttached={true}
       colorScheme="gray">
       <Tooltip label="リンクをコピー">
-        <Button onClick={onCopy}>
-          {hasCopied ? <IoCheckmarkOutline /> : <IoClipboardOutline />}
+        <Button
+          onClick={onCopy}
+          colorScheme={hasCopied ? 'green' : 'gray'}
+          disabled={hasCopied}>
+          <HStack>
+            {hasCopied && <Text>コピーしました</Text>}
+            {hasCopied ? <IoCheckmarkOutline /> : <IoClipboardOutline />}
+          </HStack>
         </Button>
       </Tooltip>
       {isEditable && (
-        <Tooltip label="編集する">
-          <Button
-            onClick={() => {
-              console.info('');
-            }}>
+        <Tooltip label="編集">
+          <Button onClick={() => history.push(`/activity/${activityId}`)}>
             <IoPencilOutline />
           </Button>
         </Tooltip>

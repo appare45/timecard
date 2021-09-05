@@ -1,5 +1,5 @@
 import { useBoolean } from '@chakra-ui/hooks';
-import { HStack, Heading, Spacer } from '@chakra-ui/layout';
+import { HStack } from '@chakra-ui/layout';
 import {
   Skeleton,
   Table,
@@ -20,16 +20,6 @@ import {
   DrawerOverlay,
   Link,
   Td,
-  FormControl,
-  FormLabel,
-  Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Alert,
   AlertIcon,
 } from '@chakra-ui/react';
@@ -41,7 +31,7 @@ import React, {
   ReactElement,
   Suspense,
 } from 'react';
-import { IoCard, IoPersonAdd } from 'react-icons/io5';
+import { IoCard } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { Link as RouterLink } from 'react-router-dom';
 import { dataWithId } from '../utils/firebase';
@@ -53,83 +43,8 @@ import {
   getLatestActivity,
   Group,
   work,
-  addMember,
 } from '../utils/group';
 import { ActivityStatus } from './activity';
-
-const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
-  groupId,
-  onUpdate,
-}) => {
-  const [memberData, setMemberData] = useState<Member>();
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useBoolean(false);
-  return (
-    <>
-      <Button
-        colorScheme="blackAlpha"
-        color="black"
-        size="sm"
-        onClick={() => setModalIsOpen(true)}
-        leftIcon={<IoPersonAdd />}
-        variant="outline">
-        メンバーを追加
-      </Button>
-      <Modal onClose={() => setModalIsOpen(false)} isOpen={modalIsOpen}>
-        <ModalOverlay />
-        <ModalContent>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              setIsSubmitting.on();
-              if (memberData && memberData.name.length < 20) {
-                addMember(memberData, groupId)
-                  .then(() => {
-                    setIsSubmitting.off();
-                    setModalIsOpen(false);
-                    onUpdate();
-                  })
-                  .catch((error) => {
-                    console.error(error);
-                  });
-              }
-              setIsSubmitting.off();
-            }}>
-            <ModalHeader>メンバーを追加</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <FormControl isRequired>
-                <FormLabel>名前</FormLabel>
-                <Input
-                  colorScheme="blackAlpha"
-                  maxLength={20}
-                  autoFocus
-                  value={memberData?.name ?? ''}
-                  onChange={(e) => {
-                    const _data: Member = Object.assign({}, memberData);
-                    if (e.target.value.length <= 20) {
-                      _data.name = e.target.value;
-                    }
-                    setMemberData(_data);
-                  }}
-                />
-              </FormControl>
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                colorScheme="blackAlpha"
-                bg="black"
-                type="submit"
-                isLoading={isSubmitting}>
-                作成
-              </Button>
-            </ModalFooter>
-          </form>
-        </ModalContent>
-      </Modal>
-    </>
-  );
-};
 
 const MemberCardDrawer: React.FC<{
   isOpen: boolean;
@@ -201,7 +116,11 @@ const MemberRow: React.FC<{
       )}
       {isOnline && currentStatus?.content.status == 'running' && (
         <Tr>
-          <Td>{data.data.name}</Td>
+          <Td>
+            <Link as={RouterLink} to={`/member/${data.id}`}>
+              {data.data.name}
+            </Link>
+          </Td>
           <Td>
             <HStack>{buttons}</HStack>
           </Td>
@@ -218,8 +137,9 @@ const MemberRow: React.FC<{
   );
 };
 
-const MembersList: React.FC<{ onlyOnline?: boolean }> = ({
+const MembersList: React.FC<{ onlyOnline?: boolean; update?: boolean }> = ({
   onlyOnline = false,
+  update,
 }) => {
   const groupContext = useContext(GroupContext);
   const [isUpdating, setIsUpdating] = useState(true);
@@ -228,22 +148,26 @@ const MembersList: React.FC<{ onlyOnline?: boolean }> = ({
     useState<dataWithId<Member>>();
   const [shownMembers, setShownMembers] = useState<dataWithId<Member>[]>([]);
   const [sortWithOnline, setSortWithOnline] = useState(onlyOnline);
-  const updateMembersList = useCallback((groupId: string | null) => {
-    setIsUpdating(true);
-    if (groupId) {
-      listMembers(groupId).then((members) => {
-        if (members) {
-          const _members: dataWithId<Member>[] = [];
-          members.forEach((member) => {
-            _members.push({ id: member.id, data: member.data() });
-          });
-          setShownMembers(_members);
-        }
-        setIsUpdating(false);
-      });
-    }
-    setIsUpdating(false);
-  }, []);
+  const updateMembersList = useCallback(
+    (groupId: string | null) => {
+      setIsUpdating(true);
+      console.info(update);
+      if (groupId) {
+        listMembers(groupId).then((members) => {
+          if (members) {
+            const _members: dataWithId<Member>[] = [];
+            members.forEach((member) => {
+              _members.push({ id: member.id, data: member.data() });
+            });
+            setShownMembers(_members);
+          }
+          setIsUpdating(false);
+        });
+      }
+      setIsUpdating(false);
+    },
+    [update]
+  );
   useEffect(() => {
     if (groupContext?.currentId) updateMembersList(groupContext.currentId);
   }, [groupContext.currentId, updateMembersList]);
@@ -257,19 +181,6 @@ const MembersList: React.FC<{ onlyOnline?: boolean }> = ({
           onClose={() => setMemberCardDisplay.off()}
         />
       )}
-      <HStack w="full">
-        <Heading>メンバー一覧</Heading>
-        <Spacer />
-        {groupContext.currentId && (
-          <AddMember
-            groupId={groupContext.currentId}
-            onUpdate={() => {
-              if (groupContext.currentId)
-                updateMembersList(groupContext.currentId);
-            }}
-          />
-        )}
-      </HStack>
       {!onlyOnline && (
         <HStack spacing="2" p="1" my="2" w="full">
           <Text>進行中のみ表示</Text>

@@ -80,7 +80,7 @@ function UserActivity(): JSX.Element {
       {user?.name && <Heading>{`${user?.name ?? 'ユーザー'}の履歴`}</Heading>}
 
       <HStack align="flex-start">
-        <DisplayActivities data={activities} showMemberData={true} />
+        <DisplayActivities data={activities} showMemberData editable />
         <Spacer />
         <VStack
           mt="10"

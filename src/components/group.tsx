@@ -202,10 +202,11 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                 </List>
               </Box>
               <Box w="full">
-                <Suspense fallback={<Spinner />}>
+                <Suspense fallback={null}>
                   <Switch>
                     <Route exact path="/">
                       <VStack spacing="5" align="flex-start" w="full">
+                        <Heading>オンラインのメンバー</Heading>
                         <MembersList onlyOnline />
                         <Heading>最近のアクティビティー</Heading>
                         <AllActivity />

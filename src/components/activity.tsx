@@ -9,7 +9,6 @@ import {
   Heading,
   HStack,
   Skeleton,
-  Spinner,
   Text,
   Textarea,
   useToast,
@@ -69,7 +68,7 @@ export const AllActivity: React.FC = () => {
   const DisplayActivities = React.lazy(() => import('./display-activities'));
   return (
     <Suspense fallback={null}>
-      <DisplayActivities data={activities} />
+      <DisplayActivities data={activities} editable />
     </Suspense>
   );
 };
@@ -237,13 +236,8 @@ const SingleActivity = () => {
         戻る
       </Button>
       <Box my="2">
-        {activitySnapshot && member ? (
+        {activitySnapshot && member && (
           <ActivityDetail activity={activitySnapshot} member={member} />
-        ) : (
-          <HStack>
-            <Spinner />
-            <Text>読み込み中</Text>
-          </HStack>
         )}
       </Box>
     </>
