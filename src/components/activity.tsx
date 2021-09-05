@@ -1,10 +1,4 @@
 import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogCloseButton,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogOverlay,
   Box,
   Button,
   ButtonGroup,
@@ -15,12 +9,10 @@ import {
   Heading,
   HStack,
   Skeleton,
-  Spacer,
   Spinner,
   Text,
   Textarea,
   useToast,
-  VStack,
 } from '@chakra-ui/react';
 import React, { Suspense } from 'react';
 import { useEffect } from 'react';
@@ -35,28 +27,17 @@ import {
   activity,
   getActivitySnapshot,
   getAllActivities,
-  getGroup,
   getMember,
-  getUserActivities,
-  Group,
   Member,
   setWork,
   statusToText,
   work,
   workStatus,
 } from '../utils/group';
-import {
-  IoArrowBack,
-  IoCreate,
-  IoPencilSharp,
-  IoQrCode,
-  IoScan,
-} from 'react-icons/io5';
+import { IoArrowBack, IoCreate, IoPencilSharp, IoScan } from 'react-icons/io5';
 import { MemberAction } from './qrcodeScan';
-import { useRef } from 'react';
 import { useMemo } from 'react';
 import { DocumentSnapshot, QueryDocumentSnapshot } from 'firebase/firestore';
-import DisplayActivities from './display-activities';
 
 export const ActivityStatus: React.FC<{
   workStatus: workStatus;
@@ -73,95 +54,6 @@ export const ActivityStatus: React.FC<{
   );
 };
 
-function UserActivity(): JSX.Element {
-  const { memberId } = useParams<{ memberId: string }>();
-  const [user, setUser] = useState<Member | null>(null);
-  const [activities, setActivities] = useState<
-    QueryDocumentSnapshot<activity<work>>[] | null
-  >(null);
-  const [group, setGroup] = useState<Group | null>(null);
-  const [dialog, setDialog] = useState(false);
-  const dialogCancel = useRef(null);
-  const { currentId, currentMember } = useContext(GroupContext);
-  useEffect(() => {
-    if (currentId) {
-      getGroup(currentId).then((group) => setGroup(group));
-    }
-  }, [currentId]);
-  useMemo(() => {
-    if (currentId && !user) {
-      if (currentMember?.id == memberId) {
-        setUser(currentMember.data() ?? null);
-      } else if (currentMember?.id) {
-        getMember(memberId, currentId).then((member) => {
-          setUser(member?.data() ?? null);
-        });
-      }
-    }
-  }, [currentId, currentMember, memberId, user]);
-  const history = useHistory();
-  useEffect(() => {
-    if (currentId) {
-      getUserActivities(currentId, memberId).then((activities) => {
-        setActivities(activities);
-      });
-    }
-  }, [currentId, memberId]);
-  const Card = React.lazy(() => import('./createCard'));
-  return (
-    <>
-      {history.length > 0 && (
-        <Button
-          leftIcon={<IoArrowBack />}
-          onClick={() => history.goBack()}
-          variant="link">
-          戻る
-        </Button>
-      )}
-      {user?.name && <Heading>{`${user?.name ?? 'ユーザー'}の履歴`}</Heading>}
-
-      <HStack align="flex-start">
-        <DisplayActivities data={activities} showMemberData={true} />
-        <Spacer />
-        <VStack
-          mt="10"
-          border="1px"
-          bg="gray.50"
-          borderColor="gray.200"
-          p="5"
-          rounded="base"
-          align="flex-start">
-          <Button leftIcon={<IoQrCode />} onClick={() => setDialog(true)}>
-            QRコード表示
-          </Button>
-        </VStack>
-      </HStack>
-      <AlertDialog
-        isOpen={dialog}
-        onClose={() => setDialog(false)}
-        leastDestructiveRef={dialogCancel}>
-        <AlertDialogOverlay />
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            {user?.name}のカード
-            <AlertDialogCloseButton />
-          </AlertDialogHeader>
-          <AlertDialogBody>
-            {user && group && (
-              <Suspense fallback={<Skeleton />}>
-                <Card member={{ data: user, id: memberId }} group={group} />
-              </Suspense>
-            )}
-            <Button ref={dialogCancel} onClick={() => setDialog(false)} mx="5">
-              閉じる
-            </Button>
-          </AlertDialogBody>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
-}
-
 export const AllActivity: React.FC = () => {
   const { currentId } = useContext(GroupContext);
   const [activities, setActivities] = useState<
@@ -176,7 +68,7 @@ export const AllActivity: React.FC = () => {
   }, [currentId]);
   const DisplayActivities = React.lazy(() => import('./display-activities'));
   return (
-    <Suspense fallback={<Skeleton />}>
+    <Suspense fallback={null}>
       <DisplayActivities data={activities} />
     </Suspense>
   );
@@ -192,10 +84,14 @@ const ActivityMemo: React.FC<{
   );
   const [editMode, setEditMode] = useState(false);
   const toast = useToast();
-  const saveMemo = (groupId: string, workId: string) => {
+  const saveMemo = (groupId: string, workId: string): Promise<void> => {
     const _activity = activity.data();
     if (_activity?.content) _activity.content.memo = draftText;
-    if (_activity) return setWork(groupId, workId, _activity, { merge: true });
+    if (_activity) {
+      return setWork(groupId, workId, _activity, { merge: true });
+    } else {
+      throw new Error();
+    }
   };
   const RenderedMemo = useMemo(() => {
     const ReactMarkdown = React.lazy(() => import('./activity-memo'));
@@ -222,9 +118,9 @@ const ActivityMemo: React.FC<{
             onChange={(e) => setDraftText(e.target.value)}
             maxLength={10000}
             isInvalid={draftText.length > 10000}
-            h="52">
-            {draftText}
-          </Textarea>
+            defaultValue={draftText}
+            h="52"
+          />
           <FormHelperText>組織内に公開されます</FormHelperText>
         </>
       ) : (
@@ -394,4 +290,4 @@ const Activities: React.FC = () => {
   );
 };
 
-export { UserActivity, Activities };
+export { Activities };

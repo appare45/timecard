@@ -101,20 +101,6 @@ const isAdmin = (item: {
   return true;
 };
 
-const isActivity = (item: {
-  type?: unknown;
-  content?: unknown;
-  status?: unknown;
-}): item is activity<work> => {
-  if (!(item?.type && typeof item.type === 'string')) {
-    return false;
-  }
-  if (!item?.content) {
-    return false;
-  }
-  return true;
-};
-
 /**
  * account, memberの検証が必要な場合にはisAccount, isMemberの使用を推奨する
  * @param item 検証が必要なオブジェクト
@@ -224,10 +210,17 @@ const activityDataConverter = {
     option?: SnapshotOptions
   ): activity<work> {
     const data = snapshot.data(option);
-    if (!isActivity(data)) {
-      throw new Error('データ取得中にエラーが発生しました');
-    }
-    return data;
+    return {
+      updated: data?.updated ?? null,
+      content: {
+        memo: data.content?.memo ?? '',
+        startTime: data.content?.startTime,
+        endTime: data.content?.endTime,
+        status: data.content?.status,
+      },
+      memberId: data?.memberId,
+      type: data?.type,
+    };
   },
 };
 
@@ -430,7 +423,7 @@ const addWork = async (
   try {
     const data = await addDoc(
       collection(Db, `group/${groupId}/activity`).withConverter(
-        accountDataConverter
+        activityDataConverter
       ),
       activity
     );
@@ -449,12 +442,11 @@ const setWork = async (
   try {
     await setDoc(
       doc(Db, `group/${groupId}/activity/${workId}`).withConverter(
-        accountDataConverter
+        activityDataConverter
       ),
       activity,
       option
     );
-
     return;
   } catch (error) {
     console.error(error);

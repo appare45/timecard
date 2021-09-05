@@ -82,7 +82,7 @@ const ActivityCard: React.FC<{
   const activityData: activity<work> | null = activitySnapshot.data() ?? null;
   const { currentMember } = useContext(GroupContext);
   useMemo(() => {
-    const ac = new AbortController();
+    let subscription = true;
     if (member) {
       setMemberInfo(member);
     } else if (currentId && showMemberData) {
@@ -90,12 +90,14 @@ const ActivityCard: React.FC<{
       if (memberId === currentMember?.id) {
         setMemberInfo(currentMember?.data() ?? null);
       } else if (currentMember?.id && memberId && currentId) {
-        getMember(memberId ?? '', currentId).then((e) =>
-          setMemberInfo(e?.data() ?? null)
-        );
+        getMember(memberId ?? '', currentId).then((e) => {
+          if (subscription) setMemberInfo(e?.data() ?? null);
+        });
       }
     }
-    return () => ac.abort();
+    return () => {
+      subscription = false;
+    };
   }, [member, currentId, showMemberData, activitySnapshot, currentMember]);
 
   const MemberInfo = () =>
@@ -211,7 +213,7 @@ const ActivityCard: React.FC<{
                 <TabList>
                   <Tab>ログ</Tab>
                   <Tab
-                    isDisabled={!activityData.content.memo}
+                    isDisabled={!activityData.content?.memo}
                     _disabled={{ opacity: 0.3, cursor: 'not-allowed' }}>
                     メモ
                   </Tab>
@@ -229,7 +231,9 @@ const ActivityCard: React.FC<{
                       />
                     </TabPanel>
                     <TabPanel px="1" py="0.5">
-                      <ActivityMemo content={activityData.content.memo} />
+                      <ActivityMemo
+                        content={activityData.content?.memo ?? ''}
+                      />
                     </TabPanel>
                   </TabPanels>
                 </Link>

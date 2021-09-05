@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { QueryDocumentSnapshot } from 'firebase/firestore';
 import { activity, Member, work } from '../utils/group';
-import { Alert, AlertIcon, Skeleton, Spinner, VStack } from '@chakra-ui/react';
+import { Alert, AlertIcon, Spinner, VStack } from '@chakra-ui/react';
 
 const DisplayActivities: React.FC<{
   data: QueryDocumentSnapshot<activity<work>>[] | null;
@@ -10,7 +10,7 @@ const DisplayActivities: React.FC<{
 }> = ({ data, memberData, showMemberData = true }) => {
   const ActivityCard = React.lazy(() => import('./activity-card'));
   return (
-    <Suspense fallback={<Skeleton />}>
+    <Suspense fallback={null}>
       <VStack spacing="3" w="max-content" pt="5">
         {data?.map((activity) => (
           <ActivityCard

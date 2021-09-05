@@ -153,6 +153,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const Members = React.lazy(() => import('./members'));
   const Front = React.lazy(() => import('./front'));
   const CreateGroup = React.lazy(() => import('./create-group'));
+  const MembersList = React.lazy(() => import('./members-list'));
   return (
     <>
       {!!groupIds.length && currentId && (
@@ -205,7 +206,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                   <Switch>
                     <Route exact path="/">
                       <VStack spacing="5" align="flex-start" w="full">
-                        <Members />
+                        <MembersList onlyOnline />
                         <Heading>最近のアクティビティー</Heading>
                         <AllActivity />
                       </VStack>
