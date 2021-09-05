@@ -33,6 +33,9 @@ import {
 import DisplayActivities from './display-activities';
 
 function UserActivity(): JSX.Element {
+  const [lastActivityDoc, setLastActivityDoc] = useState<
+    QueryDocumentSnapshot<activity<work>> | null | undefined
+  >(null);
   const { memberId } = useParams<{ memberId: string }>();
   const [user, setUser] = useState<Member | null>(null);
   const [activities, setActivities] = useState<
@@ -42,6 +45,8 @@ function UserActivity(): JSX.Element {
   const [dialog, setDialog] = useState(false);
   const dialogCancel = useRef(null);
   const { currentId, currentMember } = useContext(GroupContext);
+  const loadButton = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     if (currentId) {
       getGroup(currentId).then((group) => setGroup(group));
@@ -59,12 +64,42 @@ function UserActivity(): JSX.Element {
     }
   }, [currentId, currentMember, memberId, user]);
   const history = useHistory();
+
+  const loadMoreData = () => {
+    if (currentId)
+      if (lastActivityDoc) {
+        getUserActivities(currentId, memberId, 5, lastActivityDoc).then(
+          (gotActivities) => {
+            setLastActivityDoc(gotActivities.docs[4]);
+            let subscription = true;
+            if (subscription) {
+              const dataSet: QueryDocumentSnapshot<activity<work>>[] =
+                activities ?? [];
+              gotActivities.forEach((data) => {
+                dataSet.push(data);
+              });
+              setActivities([...dataSet]);
+            }
+            return () => (subscription = false);
+          }
+        );
+      }
+  };
+
   useEffect(() => {
-    if (currentId) {
-      getUserActivities(currentId, memberId, 2).then((activities) => {
-        setActivities(activities);
+    if (currentId)
+      getUserActivities(currentId, memberId, 5).then((activities) => {
+        setLastActivityDoc(activities.docs[4]);
+        let subscription = true;
+        if (subscription) {
+          const dataSet: QueryDocumentSnapshot<activity<work>>[] = [];
+          activities.forEach((data) => {
+            dataSet.push(data);
+          });
+          setActivities(dataSet);
+        }
+        return () => (subscription = false);
       });
-    }
   }, [currentId, memberId]);
   const Card = React.lazy(() => import('./createCard'));
   const Activities: React.FC<{
@@ -87,7 +122,14 @@ function UserActivity(): JSX.Element {
       {user?.name && <Heading>{`${user?.name ?? 'ユーザー'}の履歴`}</Heading>}
 
       <HStack align="flex-start">
-        {activities && <Activities data={activities} />}
+        <VStack py="5">
+          {activities && <Activities data={activities} />}
+          {lastActivityDoc && (
+            <Button onClick={loadMoreData} ref={loadButton}>
+              もっと見る
+            </Button>
+          )}
+        </VStack>
         <Spacer />
         <VStack
           mt="10"

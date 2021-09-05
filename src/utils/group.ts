@@ -25,6 +25,7 @@ import {
   FieldPath,
   DocumentData,
   SetOptions,
+  startAt,
 } from 'firebase/firestore';
 import { app } from './../utils/firebase';
 const Db = getFirestore(app);
@@ -498,13 +499,16 @@ export const getActivitySnapshot = async (
 const getUserActivities = async (
   groupId: string,
   memberId: string,
-  limitCount?: number
-): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
+  limitCount?: number,
+  startAtId?: unknown
+): Promise<QuerySnapshot<activity<work>>> => {
   try {
     const filters = [
       where('memberId', '==', memberId),
       orderBy('updated', 'desc'),
     ];
+    if (startAtId) console.info('startAtId');
+    if (startAtId) filters.push(startAt(startAtId));
     if (limitCount) filters.push(limit(limitCount));
     const q = await getDocs(
       query(
@@ -515,11 +519,7 @@ const getUserActivities = async (
       )
     );
 
-    const dataSet: QueryDocumentSnapshot<activity<work>>[] = [];
-    q.forEach((data) => {
-      dataSet.push(data);
-    });
-    return dataSet;
+    return q;
   } catch (error) {
     console.error(error);
     throw new Error();

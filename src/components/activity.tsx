@@ -118,6 +118,9 @@ const ActivityMemo: React.FC<{
             maxLength={10000}
             isInvalid={draftText.length > 10000}
             defaultValue={draftText}
+            fontSize="md"
+            fontFamily="monospace"
+            lineHeight="4"
             h="52"
           />
           <FormHelperText>組織内に公開されます</FormHelperText>
