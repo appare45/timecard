@@ -527,12 +527,20 @@ const getUserActivities = async (
 };
 
 const getAllActivities = async (
-  groupId: string
+  groupId: string,
+  limitCount?: number,
+  startAtDocument?: DocumentSnapshot
 ): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
   try {
+    const filters = [];
+    if (limitCount) filters.push(limit(limitCount));
+    if (startAtDocument) filters.push(startAt(startAtDocument));
     const q = await getDocs(
-      collection(Db, `group/${groupId}/activity/`).withConverter(
-        activityDataConverter
+      query(
+        collection(Db, `group/${groupId}/activity/`).withConverter(
+          activityDataConverter
+        ),
+        ...filters
       )
     );
 

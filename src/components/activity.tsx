@@ -13,7 +13,7 @@ import {
   Textarea,
   useToast,
 } from '@chakra-ui/react';
-import React, { Suspense } from 'react';
+import React, { Suspense, useRef } from 'react';
 import { useEffect } from 'react';
 import { useContext } from 'react';
 import { useState } from 'react';
@@ -58,10 +58,24 @@ export const AllActivity: React.FC = () => {
   const [activities, setActivities] = useState<
     QueryDocumentSnapshot<activity<work>>[] | null
   >(null);
+
+  const LoadMoreButtonRef = useRef<HTMLButtonElement>(null);
+
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot>();
+
+  const loadMoreData = () => {
+    if (currentId && activities)
+      getAllActivities(currentId, 5, lastDoc).then((_activities) => {
+        setActivities([...activities, ..._activities]);
+        setLastDoc(_activities[4]);
+      });
+  };
+
   useEffect(() => {
     if (currentId) {
-      getAllActivities(currentId).then((activities) => {
+      getAllActivities(currentId, 5).then((activities) => {
         setActivities(activities);
+        setLastDoc(activities[4]);
       });
     }
   }, [currentId]);
@@ -69,6 +83,11 @@ export const AllActivity: React.FC = () => {
   return (
     <Suspense fallback={null}>
       <DisplayActivities data={activities} editable />
+      {lastDoc && (
+        <Button onClick={loadMoreData} ref={LoadMoreButtonRef}>
+          もっと読み込む
+        </Button>
+      )}
     </Suspense>
   );
 };

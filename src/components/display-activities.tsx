@@ -6,7 +6,6 @@ import { GroupContext } from '../contexts/group';
 
 const DisplayActivities: React.FC<{
   data: QueryDocumentSnapshot<activity<work>>[] | null;
-  limit?: number;
   memberData?: Member;
   showMemberData?: boolean;
   editable?: boolean;
@@ -16,10 +15,10 @@ const DisplayActivities: React.FC<{
   return (
     <Suspense fallback={null}>
       <VStack spacing="3" w="max-content" pt="5">
-        {data?.map((activity) => (
+        {data?.map((activity, index) => (
           <ActivityCard
             activitySnapshot={activity}
-            key={activity.id}
+            key={activity.id + index}
             member={memberData}
             editable={editable && currentMember?.id == activity.data().memberId}
             showMemberData={showMemberData}

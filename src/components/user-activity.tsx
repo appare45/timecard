@@ -45,7 +45,6 @@ function UserActivity(): JSX.Element {
   const [dialog, setDialog] = useState(false);
   const dialogCancel = useRef(null);
   const { currentId, currentMember } = useContext(GroupContext);
-  const loadButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (currentId) {
@@ -125,9 +124,7 @@ function UserActivity(): JSX.Element {
         <VStack py="5">
           {activities && <Activities data={activities} />}
           {lastActivityDoc && (
-            <Button onClick={loadMoreData} ref={loadButton}>
-              もっと見る
-            </Button>
+            <Button onClick={loadMoreData}>もっと見る</Button>
           )}
         </VStack>
         <Spacer />

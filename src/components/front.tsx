@@ -210,7 +210,7 @@ const Front: React.FC = () => {
                 <Button
                   onClick={() => {
                     if (setFrontMode) setFrontMode(false);
-                    document.exitFullscreen();
+                    if (document.fullscreenElement) document.exitFullscreen();
                   }}>
                   管理モードに切り替え
                 </Button>
