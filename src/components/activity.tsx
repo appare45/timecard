@@ -33,7 +33,12 @@ import {
   work,
   workStatus,
 } from '../utils/group';
-import { IoArrowBack, IoCreate, IoPencilSharp, IoScan } from 'react-icons/io5';
+import {
+  IoArrowBack,
+  IoCreateOutline,
+  IoPencilOutline,
+  IoScan,
+} from 'react-icons/io5';
 import { MemberAction } from './qrcodeScan';
 import { useMemo } from 'react';
 import { DocumentSnapshot, QueryDocumentSnapshot } from 'firebase/firestore';
@@ -153,7 +158,9 @@ const ActivityMemo: React.FC<{
             <Button
               onClick={() => setEditMode(true)}
               variant={!draftText.length ? 'solid' : 'outline'}
-              leftIcon={!draftText.length ? <IoCreate /> : <IoPencilSharp />}>
+              leftIcon={
+                !draftText.length ? <IoCreateOutline /> : <IoPencilOutline />
+              }>
               {draftText.length ? '編集' : '作成'}
             </Button>
           ) : (

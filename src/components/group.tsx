@@ -180,7 +180,8 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                 <ScanButton
                   setFrontMode={() => {
                     setFrontMode(true);
-                    document.body.requestFullscreen();
+                    if (document.fullscreenEnabled)
+                      document.body.requestFullscreen();
                   }}
                 />
                 <List spacing="1.5" my="2">

@@ -26,7 +26,6 @@ import {
 import React, {
   useContext,
   useState,
-  useCallback,
   useEffect,
   ReactElement,
   Suspense,
@@ -34,7 +33,6 @@ import React, {
 import { IoCard } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { Link as RouterLink } from 'react-router-dom';
-import { dataWithId } from '../utils/firebase';
 import {
   Member,
   listMembers,
@@ -45,12 +43,13 @@ import {
   work,
 } from '../utils/group';
 import { ActivityStatus } from './activity';
+import { QueryDocumentSnapshot } from '@firebase/firestore';
 
 const MemberCardDrawer: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   groupId: string;
-  member: dataWithId<Member>;
+  member: QueryDocumentSnapshot<Member>;
 }> = ({ isOpen, onClose, member, groupId }) => {
   const [group, setGroup] = useState<Group | null>(null);
   useEffect(() => {
@@ -62,12 +61,20 @@ const MemberCardDrawer: React.FC<{
       <DrawerOverlay />
       <DrawerContent>
         <DrawerHeader>
-          {`${member.data.name}のカード`}
+          {`${member.data().name}のカード`}
           <DrawerCloseButton />
         </DrawerHeader>
         <DrawerBody>
           <Suspense fallback={<Skeleton />}>
-            {group && <Card member={member} group={group} />}
+            {group && (
+              <Card
+                member={{
+                  id: member.id,
+                  data: member.data(),
+                }}
+                group={group}
+              />
+            )}
           </Suspense>
         </DrawerBody>
       </DrawerContent>
@@ -76,7 +83,7 @@ const MemberCardDrawer: React.FC<{
 };
 
 const MemberRow: React.FC<{
-  data: dataWithId<Member>;
+  data: QueryDocumentSnapshot<Member>;
   buttons: ReactElement;
   isOnline?: boolean;
 }> = ({ data, buttons, isOnline }) => {
@@ -99,7 +106,7 @@ const MemberRow: React.FC<{
         <Tr>
           <Td>
             <Link as={RouterLink} to={`/member/${data.id}`}>
-              {data.data.name}
+              {data.data().name}
             </Link>
           </Td>
           <Td>
@@ -118,7 +125,7 @@ const MemberRow: React.FC<{
         <Tr>
           <Td>
             <Link as={RouterLink} to={`/member/${data.id}`}>
-              {data.data.name}
+              {data.data().name}
             </Link>
           </Td>
           <Td>
@@ -141,43 +148,55 @@ const MembersList: React.FC<{ onlyOnline?: boolean; update?: boolean }> = ({
   onlyOnline = false,
   update,
 }) => {
-  const groupContext = useContext(GroupContext);
+  const { currentId } = useContext(GroupContext);
   const [isUpdating, setIsUpdating] = useState(true);
   const [memberCardDisplay, setMemberCardDisplay] = useBoolean(false);
   const [displayCardMember, setDisplayCardMember] =
-    useState<dataWithId<Member>>();
-  const [shownMembers, setShownMembers] = useState<dataWithId<Member>[]>([]);
+    useState<QueryDocumentSnapshot<Member>>();
+  const [shownMembers, setShownMembers] = useState<
+    QueryDocumentSnapshot<Member>[]
+  >([]);
   const [sortWithOnline, setSortWithOnline] = useState(onlyOnline);
-  const updateMembersList = useCallback(
-    (groupId: string | null) => {
-      setIsUpdating(true);
-      console.info(update);
-      if (groupId) {
-        listMembers(groupId).then((members) => {
-          if (members) {
-            const _members: dataWithId<Member>[] = [];
-            members.forEach((member) => {
-              _members.push({ id: member.id, data: member.data() });
-            });
-            setShownMembers(_members);
-          }
-          setIsUpdating(false);
-        });
-      }
-      setIsUpdating(false);
-    },
-    [update]
-  );
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot>();
+
+  const loadMoreData = (startFrom: QueryDocumentSnapshot) => {
+    if (currentId)
+      listMembers(currentId, 5, undefined, sortWithOnline, startFrom).then(
+        (members) => {
+          const membersList: QueryDocumentSnapshot<Member>[] = [];
+          members?.forEach((_) => membersList.push(_));
+          setLastDoc(membersList[4] ?? null);
+          setShownMembers([...shownMembers, ...membersList]);
+        }
+      );
+  };
+
   useEffect(() => {
-    if (groupContext?.currentId) updateMembersList(groupContext.currentId);
-  }, [groupContext.currentId, updateMembersList]);
+    console.info(update);
+    setIsUpdating(true);
+    if (currentId) {
+      listMembers(currentId, 5, undefined, sortWithOnline).then((members) => {
+        if (members) {
+          const _members: QueryDocumentSnapshot<Member>[] = [];
+          members.forEach((member) => {
+            _members.push(member);
+          });
+          setLastDoc(_members[4]);
+          setShownMembers(_members);
+        }
+        setIsUpdating(false);
+      });
+
+      setIsUpdating(false);
+    }
+  }, [currentId, sortWithOnline, update]);
   return (
     <>
-      {displayCardMember && groupContext.currentId && (
+      {displayCardMember && currentId && (
         <MemberCardDrawer
           member={displayCardMember}
           isOpen={memberCardDisplay}
-          groupId={groupContext.currentId}
+          groupId={currentId}
           onClose={() => setMemberCardDisplay.off()}
         />
       )}
@@ -196,7 +215,9 @@ const MembersList: React.FC<{ onlyOnline?: boolean; update?: boolean }> = ({
       {!shownMembers.length ? (
         <Alert>
           <AlertIcon />
-          表示するメンバーがいません
+          {onlyOnline
+            ? 'オンラインのメンバーがいません'
+            : '表示するメンバーがいません'}
         </Alert>
       ) : (
         <Skeleton isLoaded={!isUpdating} w="full">
@@ -231,6 +252,11 @@ const MembersList: React.FC<{ onlyOnline?: boolean; update?: boolean }> = ({
               ))}
             </Tbody>
           </Table>
+          {lastDoc && (
+            <Button onClick={() => loadMoreData(lastDoc)}>
+              さらに読み込む
+            </Button>
+          )}
         </Skeleton>
       )}
     </>

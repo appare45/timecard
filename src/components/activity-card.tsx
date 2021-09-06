@@ -19,7 +19,7 @@ import {
   Link,
 } from '@chakra-ui/react';
 import { DocumentSnapshot, QueryDocumentSnapshot } from 'firebase/firestore';
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { GroupContext } from '../contexts/group';
 import { activity, getMember, Member, work } from '../utils/group';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
@@ -27,6 +27,7 @@ import {
   IoCheckmarkOutline,
   IoClipboardOutline,
   IoPencilOutline,
+  IoShareOutline,
 } from 'react-icons/io5';
 import { dateToJapaneseTime, relativeTimeText } from '../utils/time';
 import { ActivityStatus } from './activity';
@@ -38,6 +39,8 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
     `${location.host}/activity/${activityId}`
   );
   const history = useHistory();
+  const [shareAvailable, setShareAvailable] = useState<boolean>();
+  useEffect(() => setShareAvailable(!!navigator.share), []);
 
   return (
     <ButtonGroup
@@ -45,21 +48,34 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
       size="sm"
       isAttached={true}
       colorScheme="gray">
-      <Tooltip label="リンクをコピー">
-        <Button
-          onClick={onCopy}
-          colorScheme={hasCopied ? 'green' : 'gray'}
-          disabled={hasCopied}>
-          <HStack>
-            {hasCopied && <Text>コピーしました</Text>}
-            {hasCopied ? <IoCheckmarkOutline /> : <IoClipboardOutline />}
-          </HStack>
-        </Button>
-      </Tooltip>
       {isEditable && (
         <Tooltip label="編集">
           <Button onClick={() => history.push(`/activity/${activityId}`)}>
             <IoPencilOutline />
+          </Button>
+        </Tooltip>
+      )}
+      {shareAvailable ? (
+        <Button
+          onClick={() => {
+            navigator.share({
+              url: `${location.host}/activity/${activityId}`,
+              text: `アクティビティー`,
+            });
+          }}
+          colorScheme={hasCopied ? 'green' : 'gray'}
+          disabled={hasCopied}>
+          <IoShareOutline />
+        </Button>
+      ) : (
+        <Tooltip label="リンクをコピー">
+          <Button
+            onClick={onCopy}
+            colorScheme={hasCopied ? 'green' : 'gray'}
+            disabled={hasCopied}
+            leftIcon={hasCopied ? <IoCheckmarkOutline /> : undefined}>
+            {hasCopied && <Text>コピーしました</Text>}
+            {!hasCopied && <IoClipboardOutline />}
           </Button>
         </Tooltip>
       )}

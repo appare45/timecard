@@ -25,7 +25,7 @@ import {
   FieldPath,
   DocumentData,
   SetOptions,
-  startAt,
+  startAfter,
 } from 'firebase/firestore';
 import { app } from './../utils/firebase';
 const Db = getFirestore(app);
@@ -394,13 +394,17 @@ const getGroup = async (id: string): Promise<Readonly<Group> | null> => {
 const listMembers = async (
   id: string,
   limitNumber?: number,
-  order?: [fieldPath: string | FieldPath, directionStr?: OrderByDirection]
+  order?: [fieldPath: string | FieldPath, directionStr?: OrderByDirection],
+  onlyOnline?: boolean,
+  lastDoc?: QueryDocumentSnapshot
 ): Promise<Readonly<QuerySnapshot<Member> | null> | null> => {
   try {
     if (limitNumber || orderBy) {
       const qcs: QueryConstraint[] = [];
       if (limitNumber) qcs.push(limit(limitNumber));
       if (order) qcs.push(orderBy(...order));
+      if (onlyOnline) qcs.push(where('content.status', '==', 'running'));
+      if (lastDoc) qcs.push(startAfter(lastDoc));
       const q: Query<Member> = query(
         collection(Db, `group/${id}/member`).withConverter(memberDataConverter),
         ...qcs
@@ -508,7 +512,7 @@ const getUserActivities = async (
       orderBy('updated', 'desc'),
     ];
     if (startAtId) console.info('startAtId');
-    if (startAtId) filters.push(startAt(startAtId));
+    if (startAtId) filters.push(startAfter(startAtId));
     if (limitCount) filters.push(limit(limitCount));
     const q = await getDocs(
       query(
@@ -532,9 +536,9 @@ const getAllActivities = async (
   startAtDocument?: DocumentSnapshot
 ): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
   try {
-    const filters = [];
+    const filters = [orderBy('updated', 'desc')];
     if (limitCount) filters.push(limit(limitCount));
-    if (startAtDocument) filters.push(startAt(startAtDocument));
+    if (startAtDocument) filters.push(startAfter(startAtDocument));
     const q = await getDocs(
       query(
         collection(Db, `group/${groupId}/activity/`).withConverter(
