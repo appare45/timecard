@@ -5,7 +5,6 @@ import {
   Heading,
   HStack,
   Input,
-  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
