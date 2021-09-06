@@ -215,7 +215,7 @@ const MembersList: React.FC<{ onlyOnline?: boolean; update?: boolean }> = ({
       {!shownMembers.length ? (
         <Alert>
           <AlertIcon />
-          {onlyOnline
+          {sortWithOnline
             ? 'オンラインのメンバーがいません'
             : '表示するメンバーがいません'}
         </Alert>
