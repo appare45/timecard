@@ -6,10 +6,10 @@ import {
   Input,
   useBoolean,
 } from '@chakra-ui/react';
+import { serverTimestamp } from 'firebase/firestore';
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../contexts/user';
 import { setUser } from '../utils/user';
-import { firebase } from '../utils/firebase';
 
 type Props = {
   name: string | null;
@@ -34,7 +34,7 @@ const NewAccount: React.FC<Props> = ({ name, id }) => {
       await setUser(
         {
           name: setName,
-          updated: firebase.firestore.FieldValue.serverTimestamp(),
+          updated: serverTimestamp(),
         },
         id
       ).then(() => {

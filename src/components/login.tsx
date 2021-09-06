@@ -1,14 +1,29 @@
 import React from 'react';
-import { firebase } from './../utils/firebase';
-import { Box, Button, Center, Heading, Link, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Center,
+  Heading,
+  Image,
+  Link,
+  Text,
+} from '@chakra-ui/react';
 import { IoLogoGoogle } from 'react-icons/io5';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  useDeviceLanguage,
+} from 'firebase/auth';
+import { app } from '../utils/firebase';
 
 const FirebaseAuth: React.FC<{ redirectUri: string; isLoading: boolean }> = ({
   redirectUri,
   isLoading,
 }) => {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().useDeviceLanguage();
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+  useDeviceLanguage(auth);
   provider.setCustomParameters({
     redirect_uri: redirectUri,
   });
@@ -18,7 +33,7 @@ const FirebaseAuth: React.FC<{ redirectUri: string; isLoading: boolean }> = ({
       colorScheme="blackAlpha"
       variant="outline"
       isLoading={isLoading}
-      onClick={() => firebase.auth().signInWithRedirect(provider)}>
+      onClick={() => signInWithRedirect(auth, provider)}>
       Googleアカウントでログイン
     </Button>
   );
@@ -30,11 +45,17 @@ export default function Login(props: {
 }): JSX.Element {
   return (
     <>
-      <Center
-        h="100vh"
-        bgImage="/background.webp"
-        bgSize="cover"
-        bgPos="center">
+      <Center h="100vh" bgSize="cover" bgPos="center" pos="relative">
+        <Image
+          src="/background.webp"
+          loading="lazy"
+          pos="absolute"
+          top={0}
+          w="full"
+          h="full"
+          objectFit="cover"
+          left={0}
+        />
         <Box pb="10" bg="whitesmoke" p="5" rounded="base" opacity="0.95">
           <Heading textAlign="center" mb="3">
             ログイン

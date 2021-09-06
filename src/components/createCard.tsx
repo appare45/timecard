@@ -1,12 +1,19 @@
-import { AspectRatio, Box, Button, Link, Skeleton } from '@chakra-ui/react';
+import {
+  AspectRatio,
+  Box,
+  Button,
+  ButtonGroup,
+  Link,
+  Skeleton,
+} from '@chakra-ui/react';
 import React, { useEffect, useRef, useState } from 'react';
-import { IoDownload } from 'react-icons/io5';
+import { IoDownloadOutline } from 'react-icons/io5';
 import { dataWithId } from '../utils/firebase';
 import { Group, Member } from '../utils/group';
 
 export const cardWidth = 91;
 export const cardHeight = 55;
-export const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
+const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
   member,
   group,
 }) => {
@@ -115,10 +122,18 @@ export const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
         />
       </AspectRatio>
       {dataUrl && (
-        <Link href={dataUrl} download>
-          <Button leftIcon={<IoDownload />}>ダウンロード</Button>
-        </Link>
+        <ButtonGroup>
+          <Button
+            leftIcon={<IoDownloadOutline />}
+            href={dataUrl}
+            as={Link}
+            download>
+            ダウンロード
+          </Button>
+        </ButtonGroup>
       )}
     </>
   );
 };
+
+export default Card;
