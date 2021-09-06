@@ -49,7 +49,7 @@ const ActivityMemo: React.FC<{ draftText: string }> = ({ draftText }) => {
             },
             h1({ children }) {
               return (
-                <Heading size="lg" mb="1" mt="0.5">
+                <Heading size="lg" mb="2" mt="0.5">
                   {children}
                 </Heading>
               );
@@ -58,7 +58,12 @@ const ActivityMemo: React.FC<{ draftText: string }> = ({ draftText }) => {
               return <Heading size="base">{children}</Heading>;
             },
             pre({ children }) {
-              return <Code>{children}</Code>;
+              // eslint-disable-next-line react/no-children-prop
+              return <Code children={children} my="2" />;
+            },
+            code({ children }) {
+              // eslint-disable-next-line react/no-children-prop
+              return <Code children={children} />;
             },
             ol({ children }) {
               return <OrderedList my="1">{children}</OrderedList>;

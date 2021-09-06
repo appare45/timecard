@@ -1,5 +1,13 @@
 import React from 'react';
-import { Box, Button, Center, Heading, Link, Text } from '@chakra-ui/react';
+import {
+  Box,
+  Button,
+  Center,
+  Heading,
+  Image,
+  Link,
+  Text,
+} from '@chakra-ui/react';
 import { IoLogoGoogle } from 'react-icons/io5';
 import {
   getAuth,
@@ -37,11 +45,17 @@ export default function Login(props: {
 }): JSX.Element {
   return (
     <>
-      <Center
-        h="100vh"
-        bgImage="/background.webp"
-        bgSize="cover"
-        bgPos="center">
+      <Center h="100vh" bgSize="cover" bgPos="center" pos="relative">
+        <Image
+          src="/background.webp"
+          loading="lazy"
+          pos="absolute"
+          top={0}
+          w="full"
+          h="full"
+          objectFit="cover"
+          left={0}
+        />
         <Box pb="10" bg="whitesmoke" p="5" rounded="base" opacity="0.95">
           <Heading textAlign="center" mb="3">
             ログイン

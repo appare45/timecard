@@ -25,6 +25,7 @@ import {
   FieldPath,
   DocumentData,
   SetOptions,
+  startAfter,
 } from 'firebase/firestore';
 import { app } from './../utils/firebase';
 const Db = getFirestore(app);
@@ -96,20 +97,6 @@ const isAdmin = (item: {
     return false;
   }
   if (!(item.upGradedBy && typeof item.upGradedBy == 'string')) {
-    return false;
-  }
-  return true;
-};
-
-const isActivity = (item: {
-  type?: unknown;
-  content?: unknown;
-  status?: unknown;
-}): item is activity<work> => {
-  if (!(item?.type && typeof item.type === 'string')) {
-    return false;
-  }
-  if (!item?.content) {
     return false;
   }
   return true;
@@ -224,10 +211,17 @@ const activityDataConverter = {
     option?: SnapshotOptions
   ): activity<work> {
     const data = snapshot.data(option);
-    if (!isActivity(data)) {
-      throw new Error('データ取得中にエラーが発生しました');
-    }
-    return data;
+    return {
+      updated: data?.updated ?? null,
+      content: {
+        memo: data.content?.memo ?? '',
+        startTime: data.content?.startTime,
+        endTime: data.content?.endTime,
+        status: data.content?.status,
+      },
+      memberId: data?.memberId,
+      type: data?.type,
+    };
   },
 };
 
@@ -400,13 +394,17 @@ const getGroup = async (id: string): Promise<Readonly<Group> | null> => {
 const listMembers = async (
   id: string,
   limitNumber?: number,
-  order?: [fieldPath: string | FieldPath, directionStr?: OrderByDirection]
+  order?: [fieldPath: string | FieldPath, directionStr?: OrderByDirection],
+  onlyOnline?: boolean,
+  lastDoc?: QueryDocumentSnapshot
 ): Promise<Readonly<QuerySnapshot<Member> | null> | null> => {
   try {
     if (limitNumber || orderBy) {
       const qcs: QueryConstraint[] = [];
       if (limitNumber) qcs.push(limit(limitNumber));
       if (order) qcs.push(orderBy(...order));
+      if (onlyOnline) qcs.push(where('content.status', '==', 'running'));
+      if (lastDoc) qcs.push(startAfter(lastDoc));
       const q: Query<Member> = query(
         collection(Db, `group/${id}/member`).withConverter(memberDataConverter),
         ...qcs
@@ -430,7 +428,7 @@ const addWork = async (
   try {
     const data = await addDoc(
       collection(Db, `group/${groupId}/activity`).withConverter(
-        accountDataConverter
+        activityDataConverter
       ),
       activity
     );
@@ -449,12 +447,11 @@ const setWork = async (
   try {
     await setDoc(
       doc(Db, `group/${groupId}/activity/${workId}`).withConverter(
-        accountDataConverter
+        activityDataConverter
       ),
       activity,
       option
     );
-
     return;
   } catch (error) {
     console.error(error);
@@ -505,24 +502,28 @@ export const getActivitySnapshot = async (
 
 const getUserActivities = async (
   groupId: string,
-  memberId: string
-): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
+  memberId: string,
+  limitCount?: number,
+  startAtId?: unknown
+): Promise<QuerySnapshot<activity<work>>> => {
   try {
+    const filters = [
+      where('memberId', '==', memberId),
+      orderBy('updated', 'desc'),
+    ];
+    if (startAtId) console.info('startAtId');
+    if (startAtId) filters.push(startAfter(startAtId));
+    if (limitCount) filters.push(limit(limitCount));
     const q = await getDocs(
       query(
         collection(Db, `group/${groupId}/activity/`).withConverter(
           activityDataConverter
         ),
-        where('memberId', '==', memberId),
-        orderBy('updated', 'desc')
+        ...filters
       )
     );
 
-    const dataSet: QueryDocumentSnapshot<activity<work>>[] = [];
-    q.forEach((data) => {
-      dataSet.push(data);
-    });
-    return dataSet;
+    return q;
   } catch (error) {
     console.error(error);
     throw new Error();
@@ -530,12 +531,20 @@ const getUserActivities = async (
 };
 
 const getAllActivities = async (
-  groupId: string
+  groupId: string,
+  limitCount?: number,
+  startAtDocument?: DocumentSnapshot
 ): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
   try {
+    const filters = [orderBy('updated', 'desc')];
+    if (limitCount) filters.push(limit(limitCount));
+    if (startAtDocument) filters.push(startAfter(startAtDocument));
     const q = await getDocs(
-      collection(Db, `group/${groupId}/activity/`).withConverter(
-        activityDataConverter
+      query(
+        collection(Db, `group/${groupId}/activity/`).withConverter(
+          activityDataConverter
+        ),
+        ...filters
       )
     );
 
