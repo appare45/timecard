@@ -30,7 +30,7 @@
     "remark-inline-links": "^6.0.0",
     "remark-linkify-regex": "^1.0.0",
     "remark-math": "^5.1.0",
-    "typescript": "4.3.5",
+    "typescript": "4.4.2",
     "web-vitals": "^2.1.0"
   },
   "scripts": {
