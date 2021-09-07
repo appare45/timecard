@@ -5,7 +5,6 @@ import {
   Circle,
   Heading,
   HStack,
-  Icon,
   List,
   ListItem,
   Select,
@@ -18,7 +17,6 @@ import React, { Suspense, useContext, useEffect, useState } from 'react';
 import { useMemo } from 'react';
 import {
   IoAnalytics,
-  IoEasel,
   IoEaselOutline,
   IoHome,
   IoPeople,
@@ -27,7 +25,14 @@ import {
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
-import { getAccount, getGroup, getMember, Group, Member } from '../utils/group';
+import {
+  getAccount,
+  getAdmin,
+  getGroup,
+  getMember,
+  Group,
+  Member,
+} from '../utils/group';
 import { Activities, AllActivity } from './activity';
 
 type groupProps = {
@@ -100,6 +105,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const { account } = useContext(AuthContext);
   const [currentMemberData, setCurrentMemberData] =
     useState<DocumentSnapshot<Member> | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   // フロントモードの切り替え
   useEffect(() => {
     const dbName = 'Group';
@@ -135,6 +141,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
     }
   }, [frontMode]);
 
+  // グループデータの取得
   useMemo(() => {
     const _groups: Group[] = [];
     groupIds.forEach((groupId) => {
@@ -147,14 +154,19 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
     });
   }, [groupIds]);
 
+  // アカウント情報の取得
   useMemo(() => {
     if (account && currentId)
       getAccount(account.uid, currentId).then((e) => {
         const memberId = e.data()?.memberId;
-        if (memberId)
+        if (memberId) {
           getMember(memberId, currentId).then((e) =>
             setCurrentMemberData(e ?? null)
           );
+          getAdmin(memberId, currentId).then((e) => {
+            if (e.data()) setIsAdmin(true);
+          });
+        }
       });
   }, [account, currentId]);
   const Members = React.lazy(() => import('./members'));
@@ -170,6 +182,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
             currentId: currentId,
             ids: groupIds,
             setFrontMode: setFrontMode,
+            isAdmin: isAdmin,
             currentMember: currentMemberData,
             updateCurrentMember: setCurrentMemberData,
           }}>
@@ -185,13 +198,15 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                   groups={groups}
                   update={updateCurrentId}
                 />
-                <ScanButton
-                  setFrontMode={() => {
-                    setFrontMode(true);
-                    if (document.fullscreenEnabled)
-                      document.body.requestFullscreen();
-                  }}
-                />
+                {isAdmin && (
+                  <ScanButton
+                    setFrontMode={() => {
+                      setFrontMode(true);
+                      if (document.fullscreenEnabled)
+                        document.body.requestFullscreen();
+                    }}
+                  />
+                )}
                 <List spacing="1.5" my="2">
                   <ListItem>
                     <MenuLink leftIcon={<IoHome />} to="/">

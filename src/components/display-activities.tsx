@@ -14,7 +14,7 @@ const DisplayActivities: React.FC<{
   const { currentMember } = useContext(GroupContext);
   return (
     <Suspense fallback={null}>
-      <VStack spacing="3" w="max-content" pt="5">
+      <VStack spacing="3" w="max-content">
         {data?.map((activity, index) => (
           <ActivityCard
             activitySnapshot={activity}

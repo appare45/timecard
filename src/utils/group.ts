@@ -30,10 +30,9 @@ import {
 import { app } from './../utils/firebase';
 const Db = getFirestore(app);
 
-type Admin = {
-  upGraded: FieldValue;
-  upGradedBy: string;
-};
+class Admin {
+  constructor(readonly upGraded: FieldValue, readonly upGradedBy: string) {}
+}
 
 //** 管理はメンバーベースで行う */
 class Account {
@@ -88,18 +87,6 @@ export const statusToText = (status: workStatus): string => {
     default:
       return '不明';
   }
-};
-const isAdmin = (item: {
-  upGraded?: unknown;
-  upGradedBy?: unknown;
-}): item is Admin => {
-  if (!item?.upGraded) {
-    return false;
-  }
-  if (!(item.upGradedBy && typeof item.upGradedBy == 'string')) {
-    return false;
-  }
-  return true;
 };
 
 /**
@@ -181,8 +168,8 @@ const accountDataConverter: FirestoreDataConverter<Account> = {
 const adminDataConverter = {
   toFirestore(admin: Admin): DocumentData {
     return {
-      upgraded: admin.upGraded,
-      upgradedBy: admin.upGradedBy,
+      upgraded: admin.upGraded ?? null,
+      upgradedBy: admin.upGradedBy ?? null,
     };
   },
   fromFirestore(
@@ -190,13 +177,7 @@ const adminDataConverter = {
     option?: SnapshotOptions
   ): Admin {
     const data = snapshot.data(option);
-    if (!isAdmin(data)) {
-      throw new Error('データ取得中にエラーが発生しました');
-    }
-    return {
-      upGraded: data.upGraded,
-      upGradedBy: data.upGradedBy,
-    };
+    return new Admin(data.upGraded, data.upGradedBy);
   },
 };
 
@@ -369,6 +350,22 @@ async function addAdmin(
     );
 
     return;
+  } catch (error) {
+    console.error(error);
+    throw new Error();
+  }
+}
+
+export async function getAdmin(
+  memberId: string,
+  groupId: string
+): Promise<DocumentSnapshot<Admin>> {
+  try {
+    return await getDoc(
+      doc(Db, `group/${groupId}/admin/${memberId}`).withConverter(
+        adminDataConverter
+      )
+    );
   } catch (error) {
     console.error(error);
     throw new Error();

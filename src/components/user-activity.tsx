@@ -1,5 +1,5 @@
 import { Button } from '@chakra-ui/button';
-import { Heading, HStack, Spacer, VStack } from '@chakra-ui/layout';
+import { Heading, HStack, VStack } from '@chakra-ui/layout';
 import {
   AlertDialog,
   AlertDialogOverlay,
@@ -18,8 +18,9 @@ import React, {
   useMemo,
   Suspense,
 } from 'react';
-import { IoArrowBack, IoQrCode } from 'react-icons/io5';
+import { IoArrowBack, IoPersonCircleOutline, IoQrCode } from 'react-icons/io5';
 import { useParams, useHistory } from 'react-router';
+import { Link } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import {
   Member,
@@ -30,6 +31,7 @@ import {
   getMember,
   getUserActivities,
 } from '../utils/group';
+import { LoadMoreButton } from './assets';
 import DisplayActivities from './display-activities';
 
 function UserActivity(): JSX.Element {
@@ -45,6 +47,7 @@ function UserActivity(): JSX.Element {
   const [dialog, setDialog] = useState(false);
   const dialogCancel = useRef(null);
   const { currentId, currentMember } = useContext(GroupContext);
+  const [isOwnMember, setIsOwnMember] = useState(false);
 
   useEffect(() => {
     if (currentId) {
@@ -55,6 +58,7 @@ function UserActivity(): JSX.Element {
     if (currentId && !user) {
       if (currentMember?.id == memberId) {
         setUser(currentMember.data() ?? null);
+        setIsOwnMember(currentMember?.id == memberId);
       } else if (currentMember?.id) {
         getMember(memberId, currentId).then((member) => {
           setUser(member?.data() ?? null);
@@ -118,16 +122,15 @@ function UserActivity(): JSX.Element {
           戻る
         </Button>
       )}
-      {user?.name && <Heading>{`${user?.name ?? 'ユーザー'}の履歴`}</Heading>}
+      {user?.name && (
+        <Heading mb="10">{`${user?.name ?? 'ユーザー'}の履歴`}</Heading>
+      )}
 
       <HStack align="flex-start">
-        <VStack py="5">
+        <VStack w="full" spacing="4" pb="2">
           {activities && <Activities data={activities} />}
-          {lastActivityDoc && (
-            <Button onClick={loadMoreData}>もっと見る</Button>
-          )}
+          {lastActivityDoc && <LoadMoreButton loadMore={loadMoreData} />}
         </VStack>
-        <Spacer />
         <VStack
           mt="10"
           border="1px"
@@ -139,6 +142,14 @@ function UserActivity(): JSX.Element {
           <Button leftIcon={<IoQrCode />} onClick={() => setDialog(true)}>
             QRコード表示
           </Button>
+          {isOwnMember && (
+            <Button
+              leftIcon={<IoPersonCircleOutline />}
+              as={Link}
+              to={`/setting`}>
+              プロフィールを編集
+            </Button>
+          )}
         </VStack>
       </HStack>
       <AlertDialog

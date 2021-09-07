@@ -12,8 +12,9 @@ import {
   Text,
   Textarea,
   useToast,
+  VStack,
 } from '@chakra-ui/react';
-import React, { Suspense, useRef } from 'react';
+import React, { Suspense } from 'react';
 import { useEffect } from 'react';
 import { useContext } from 'react';
 import { useState } from 'react';
@@ -42,6 +43,7 @@ import {
 import { MemberAction } from './qrcodeScan';
 import { useMemo } from 'react';
 import { DocumentSnapshot, QueryDocumentSnapshot } from 'firebase/firestore';
+import { LoadMoreButton } from './assets';
 
 export const ActivityStatus: React.FC<{
   workStatus: workStatus;
@@ -64,8 +66,6 @@ export const AllActivity: React.FC = () => {
     QueryDocumentSnapshot<activity<work>>[] | null
   >(null);
 
-  const LoadMoreButtonRef = useRef<HTMLButtonElement>(null);
-
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot>();
 
   const loadMoreData = () => {
@@ -87,12 +87,10 @@ export const AllActivity: React.FC = () => {
   const DisplayActivities = React.lazy(() => import('./display-activities'));
   return (
     <Suspense fallback={null}>
-      <DisplayActivities data={activities} editable />
-      {lastDoc && (
-        <Button onClick={loadMoreData} ref={LoadMoreButtonRef}>
-          もっと読み込む
-        </Button>
-      )}
+      <VStack w="full">
+        <DisplayActivities data={activities} editable />
+        {lastDoc && <LoadMoreButton loadMore={loadMoreData} />}
+      </VStack>
     </Suspense>
   );
 };
@@ -287,10 +285,21 @@ const Activities: React.FC = () => {
             <Heading>タイムライン</Heading>
             <Text>全てのアクティビティーが時間順で並びます</Text>
           </Box>
-          <Button leftIcon={<IoScan />} as={RouterLink} to="/activity/scan">
-            スキャン
-          </Button>
-          <AllActivity />
+          <HStack align="flex-start" py="5">
+            <AllActivity />
+            <VStack
+              mt="10"
+              border="1px"
+              bg="gray.50"
+              borderColor="gray.200"
+              p="5"
+              rounded="base"
+              align="flex-start">
+              <Button leftIcon={<IoScan />} as={RouterLink} to="/activity/scan">
+                スキャン
+              </Button>
+            </VStack>
+          </HStack>
         </Route>
         <Route exact path={`${path}scan`}>
           {!detectedMember ? (
