@@ -18,7 +18,8 @@ import { AuthContext } from '../contexts/user';
 import { FormButtons } from './assets';
 
 const PersonalSetting: React.FC = () => {
-  const { currentId, currentMember } = useContext(GroupContext);
+  const { currentId, currentMember, updateCurrentMember } =
+    useContext(GroupContext);
   const { account } = useContext(AuthContext);
   const [Member, setCurrentMember] = useState<DocumentSnapshot<Member>>();
   const [editMode, setEditMode] = useBoolean(false);
@@ -34,6 +35,58 @@ const PersonalSetting: React.FC = () => {
         setSyncProfile(!!_member?.data()?.photoUrl);
       });
   }, [currentId, currentMember, update]);
+
+  const updateMemberContext = () => {
+    if (currentMember && currentId)
+      getMember(currentMember.id, currentId).then((e) => {
+        if (e && updateCurrentMember) updateCurrentMember(e);
+      });
+  };
+
+  const ProfileImage: React.FC = () =>
+    useMemo(
+      () => (
+        <HStack spacing="5">
+          <Stack spacing="0.5">
+            <Text fontSize="lg">
+              プロフィール画像をGoogleアカウントと同期する
+            </Text>
+            <Text fontSize="sm">
+              Googleアカウントのプロフィール画像がアイコンに設定されます
+            </Text>
+          </Stack>
+          <Switch
+            colorScheme="green"
+            defaultChecked={!!Member?.data()?.photoUrl}
+            isChecked={syncProfile}
+            onChange={() => {
+              const _member = Member?.data();
+              if (_member && Member && currentId) {
+                _member.photoUrl = !syncProfile ? account?.photoURL ?? '' : '';
+                setMember(_member, Member?.id, currentId)
+                  .then(() => {
+                    setUpdate(!update);
+                    updateMemberContext();
+                    toast({
+                      status: 'success',
+                      title: '保存しました',
+                    });
+                    setSyncProfile(!syncProfile);
+                  })
+                  .catch(() => {
+                    toast({
+                      status: 'error',
+                      title: '保存に失敗しました',
+                    });
+                  });
+              }
+            }}
+          />
+        </HStack>
+      ),
+      []
+    );
+
   const [userName, setUserName] = useState<string>();
   const toast = useToast();
   return (
@@ -63,12 +116,13 @@ const PersonalSetting: React.FC = () => {
                 setMember(_member, Member.id, currentId, {
                   merge: true,
                 })
-                  .then(() =>
+                  .then(() => {
+                    updateMemberContext();
                     toast({
                       status: 'success',
                       title: '保存しました',
-                    })
-                  )
+                    });
+                  })
                   .catch(() => {
                     setUserName(Member.data()?.name);
                     toast({
@@ -88,42 +142,7 @@ const PersonalSetting: React.FC = () => {
             setEditable={setEditMode.on}
           />
         </HStack>
-        <HStack spacing="5">
-          <Stack spacing="0.5">
-            <Text fontSize="lg">
-              プロフィール画像をGoogleアカウントと同期する
-            </Text>
-            <Text fontSize="sm">
-              Googleアカウントのプロフィール画像がアイコンに設定されます
-            </Text>
-          </Stack>
-          <Switch
-            colorScheme="green"
-            defaultChecked={!!Member?.data()?.photoUrl}
-            isChecked={syncProfile}
-            onChange={() => {
-              const _member = Member?.data();
-              if (_member && Member && currentId) {
-                _member.photoUrl = !syncProfile ? account?.photoURL ?? '' : '';
-                setMember(_member, Member?.id, currentId)
-                  .then(() => {
-                    setUpdate(!update);
-                    toast({
-                      status: 'success',
-                      title: '保存しました',
-                    });
-                    setSyncProfile(!syncProfile);
-                  })
-                  .catch(() => {
-                    toast({
-                      status: 'error',
-                      title: '保存に失敗しました',
-                    });
-                  });
-              }
-            }}
-          />
-        </HStack>
+        <ProfileImage />
       </Stack>
     </Box>
   );
