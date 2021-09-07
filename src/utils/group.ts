@@ -152,14 +152,14 @@ const groupDataConverter: FirestoreDataConverter<Group> = {
 
 const memberDataConverter = {
   toFirestore(member: Member): DocumentData {
-    return member;
+    return { name: member.name, photoUrl: member.photoUrl ?? '' };
   },
   fromFirestore(
     snapshot: QueryDocumentSnapshot,
     option?: SnapshotOptions
   ): Member {
     const data = snapshot.data(option);
-    return new Member(data.name);
+    return new Member(data.name, data.photoUrl);
   },
 };
 
@@ -302,6 +302,26 @@ async function addMember(member: Member, groupId: string): Promise<string> {
       member
     );
     return group.id;
+  } catch (error) {
+    console.error(error);
+    throw new Error();
+  }
+}
+
+async function setMember(
+  member: Member,
+  memberId: string,
+  groupId: string,
+  option?: SetOptions
+): Promise<void> {
+  try {
+    return await setDoc<Member>(
+      doc(Db, `group/${groupId}/member/${memberId}`).withConverter(
+        memberDataConverter
+      ),
+      member,
+      option ?? {}
+    );
   } catch (error) {
     console.error(error);
     throw new Error();
@@ -591,6 +611,7 @@ export {
   addAccount,
   addAdmin,
   addMember,
+  setMember,
   setWork,
   createGroup,
   listMembers,

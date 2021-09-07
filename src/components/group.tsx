@@ -16,7 +16,14 @@ import {
 import { DocumentSnapshot } from 'firebase/firestore';
 import React, { Suspense, useContext, useEffect, useState } from 'react';
 import { useMemo } from 'react';
-import { IoAnalytics, IoEasel, IoHome, IoPeople } from 'react-icons/io5';
+import {
+  IoAnalytics,
+  IoEasel,
+  IoEaselOutline,
+  IoHome,
+  IoPeople,
+  IoSettings,
+} from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
@@ -58,7 +65,7 @@ const ScanButton: React.FC<{ setFrontMode: () => void }> = ({
         mt="5"
         mb="3"
         colorScheme="cyan"
-        leftIcon={<Icon as={IoEasel} />}
+        leftIcon={<IoEaselOutline />}
         onClick={() => setFrontMode()}>
         フロントモードに切り替える
       </Button>
@@ -153,6 +160,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const Members = React.lazy(() => import('./members'));
   const Front = React.lazy(() => import('./front'));
   const CreateGroup = React.lazy(() => import('./create-group'));
+  const Setting = React.lazy(() => import('./setting'));
   const MembersList = React.lazy(() => import('./members-list'));
   return (
     <>
@@ -200,6 +208,11 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                       メンバー
                     </MenuLink>
                   </ListItem>
+                  <ListItem>
+                    <MenuLink leftIcon={<IoSettings />} to="/setting">
+                      設定
+                    </MenuLink>
+                  </ListItem>
                 </List>
               </Box>
               <Box w="full">
@@ -218,6 +231,9 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                     </Route>
                     <Route path={`/member/`}>
                       <Members />
+                    </Route>
+                    <Route path={`/setting/`}>
+                      <Setting />
                     </Route>
                   </Switch>
                 </Suspense>
