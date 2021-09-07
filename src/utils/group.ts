@@ -51,12 +51,21 @@ export class Member {
 }
 
 export class Group {
+  name: string;
+  joinStatus: boolean;
+  created: FieldPath;
+  authorId: string;
   constructor(
-    readonly name: string,
-    readonly joinStatus: boolean,
-    readonly created: FieldValue,
-    readonly authorId: string
-  ) {}
+    name: string,
+    joinStatus: boolean,
+    created: FieldValue,
+    authorId: string
+  ) {
+    this.name = name;
+    this.joinStatus = joinStatus;
+    this.created = created;
+    this.authorId = authorId;
+  }
 }
 
 type activityType = 'work';

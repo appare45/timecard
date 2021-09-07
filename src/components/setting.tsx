@@ -2,8 +2,6 @@ import React, { useContext, useMemo, useState } from 'react';
 import {
   Avatar,
   Box,
-  Button,
-  ButtonGroup,
   Heading,
   HStack,
   Input,
@@ -17,6 +15,7 @@ import { GroupContext } from '../contexts/group';
 import { getMember, Member, setMember } from '../utils/group';
 import { DocumentSnapshot } from '@firebase/firestore';
 import { AuthContext } from '../contexts/user';
+import { FormButtons } from './assets';
 
 const PersonalSetting: React.FC = () => {
   const { currentId, currentMember } = useContext(GroupContext);
@@ -40,115 +39,106 @@ const PersonalSetting: React.FC = () => {
   return (
     <Box my="4">
       <Heading size="lg">個人設定</Heading>
-      <HStack spacing="12">
-        <HStack my="4" spacing="3">
-          <Avatar src={Member?.data()?.photoUrl} name={userName} />
-          <Input
-            fontSize="xl"
-            value={userName}
-            isReadOnly={!editMode}
-            variant={editMode ? 'outline' : 'flushed'}
-            onChange={(e) => setUserName(e.target.value)}
-            isRequired
-            min="1"
+      <Stack spacing="2" py="4">
+        <HStack spacing="12">
+          <HStack my="4" spacing="3">
+            <Avatar src={Member?.data()?.photoUrl} name={userName} />
+            <Input
+              fontSize="xl"
+              value={userName}
+              isReadOnly={!editMode}
+              variant={editMode ? 'outline' : 'flushed'}
+              onChange={(e) => setUserName(e.target.value)}
+              isRequired
+              min="1"
+            />
+          </HStack>
+          <FormButtons
+            editMode={editMode}
+            onSave={() => {
+              setEditMode.off();
+              const _member = Member?.data();
+              if (_member && userName && Member && currentId) {
+                _member.name = userName;
+                setMember(_member, Member.id, currentId, {
+                  merge: true,
+                })
+                  .then(() =>
+                    toast({
+                      status: 'success',
+                      title: '保存しました',
+                    })
+                  )
+                  .catch(() => {
+                    setUserName(Member.data()?.name);
+                    toast({
+                      status: 'error',
+                      title: '保存できませんでした',
+                    });
+                  });
+              }
+            }}
+            saveAvailable={
+              userName != Member?.data()?.name || !!userName?.length
+            }
+            onCancel={() => {
+              setEditMode.off();
+              setUserName(Member?.data()?.name);
+            }}
+            setEditable={setEditMode.on}
           />
         </HStack>
-        {editMode ? (
-          <ButtonGroup>
-            <Button
-              onClick={() => {
-                setEditMode.off();
-                const _member = Member?.data();
-                if (_member && userName && Member && currentId) {
-                  _member.name = userName;
-                  setMember(_member, Member.id, currentId, {
-                    merge: true,
-                  })
-                    .then(() =>
-                      toast({
-                        status: 'success',
-                        title: '保存しました',
-                      })
-                    )
-                    .catch(() => {
-                      setUserName(Member.data()?.name);
-                      toast({
-                        status: 'error',
-                        title: '保存できませんでした',
-                      });
+        <HStack spacing="5">
+          <Stack spacing="0.5">
+            <Text fontSize="lg">
+              プロフィール画像をGoogleアカウントと同期する
+            </Text>
+            <Text fontSize="sm">
+              Googleアカウントのプロフィール画像がアイコンに設定されます
+            </Text>
+          </Stack>
+          <Switch
+            colorScheme="green"
+            defaultChecked={!!Member?.data()?.photoUrl}
+            isChecked={syncProfile}
+            onChange={() => {
+              const _member = Member?.data();
+              if (_member && Member && currentId) {
+                _member.photoUrl = !syncProfile ? account?.photoURL ?? '' : '';
+                setMember(_member, Member?.id, currentId)
+                  .then(() => {
+                    setUpdate(!update);
+                    toast({
+                      status: 'success',
+                      title: '保存しました',
                     });
-                }
-              }}
-              colorScheme="green"
-              isDisabled={
-                userName == Member?.data()?.name || !userName?.length
-              }>
-              保存
-            </Button>
-            <Button
-              onClick={() => {
-                setEditMode.off();
-                setUserName(Member?.data()?.name);
-              }}
-              variant="ghost"
-              colorScheme="red">
-              キャンセル
-            </Button>
-          </ButtonGroup>
-        ) : (
-          <Button
-            onClick={setEditMode.on}
-            variant="outline"
-            colorScheme="green">
-            編集
-          </Button>
-        )}
-      </HStack>
-      <HStack spacing="5">
-        <Stack spacing="0.5">
-          <Text fontSize="lg">
-            プロフィール画像をGoogleアカウントと同期する
-          </Text>
-          <Text fontSize="sm">
-            Googleアカウントのプロフィール画像がアイコンに設定されます
-          </Text>
-        </Stack>
-        <Switch
-          colorScheme="green"
-          defaultChecked={!!Member?.data()?.photoUrl}
-          isChecked={syncProfile}
-          onChange={() => {
-            const _member = Member?.data();
-            if (_member && Member && currentId) {
-              _member.photoUrl = !syncProfile ? account?.photoURL ?? '' : '';
-              setMember(_member, Member?.id, currentId)
-                .then(() => {
-                  setUpdate(!update);
-                  toast({
-                    status: 'success',
-                    title: '保存しました',
+                    setSyncProfile(!syncProfile);
+                  })
+                  .catch(() => {
+                    toast({
+                      status: 'error',
+                      title: '保存に失敗しました',
+                    });
                   });
-                  setSyncProfile(!syncProfile);
-                })
-                .catch(() => {
-                  toast({
-                    status: 'error',
-                    title: '保存に失敗しました',
-                  });
-                });
-            }
-          }}
-        />
-      </HStack>
+              }
+            }}
+          />
+        </HStack>
+      </Stack>
     </Box>
   );
 };
 
 const Setting: React.FC = () => {
+  const AdminSetting = React.lazy(() => import('./admin-setting'));
+  const { isAdmin } = useContext(GroupContext);
   return (
     <>
       <Heading>設定</Heading>
-      <PersonalSetting />
+      <Stack spacing="5" py="3">
+        <PersonalSetting />
+        {isAdmin && <AdminSetting />}
+      </Stack>
     </>
   );
 };
