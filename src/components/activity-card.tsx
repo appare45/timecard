@@ -57,6 +57,7 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
       )}
       {shareAvailable ? (
         <Button
+          aria-label="アクティビティーを共有"
           onClick={() => {
             navigator.share({
               url: `${location.host}/activity/${activityId}`,
@@ -209,7 +210,7 @@ const ActivityCard: React.FC<{
   };
 
   return (
-    <Box w="lg" border="1px" borderColor="gray.200" rounded="base">
+    <Box w="full" minW="lg" border="1px" borderColor="gray.200" rounded="base">
       {activityData && (
         <>
           <HStack px="3" py="1" justify="flex-start" bg="gray.100">

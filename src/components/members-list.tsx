@@ -22,6 +22,7 @@ import {
   Td,
   Alert,
   AlertIcon,
+  VStack,
 } from '@chakra-ui/react';
 import React, {
   useContext,
@@ -44,6 +45,7 @@ import {
 } from '../utils/group';
 import { ActivityStatus } from './activity';
 import { QueryDocumentSnapshot } from '@firebase/firestore';
+import { LoadMoreButton } from './assets';
 
 const MemberCardDrawer: React.FC<{
   isOpen: boolean;
@@ -221,42 +223,42 @@ const MembersList: React.FC<{ onlyOnline?: boolean; update?: boolean }> = ({
         </Alert>
       ) : (
         <Skeleton isLoaded={!isUpdating} w="full">
-          <Table colorScheme="blackAlpha" size="sm" mt="5" w="full">
-            <Thead>
-              <Tr>
-                <Th>名前</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {shownMembers?.map((member) => (
-                <MemberRow
-                  key={member.id}
-                  data={member}
-                  isOnline={sortWithOnline}
-                  buttons={
-                    <>
-                      <Tooltip label="カードを表示">
-                        <Button
-                          colorScheme="gray"
-                          variant="ghost"
-                          onClick={() => {
-                            setDisplayCardMember(member);
-                            setMemberCardDisplay.on();
-                          }}>
-                          <Icon as={IoCard} />
-                        </Button>
-                      </Tooltip>
-                    </>
-                  }
-                />
-              ))}
-            </Tbody>
-          </Table>
-          {lastDoc && (
-            <Button onClick={() => loadMoreData(lastDoc)}>
-              さらに読み込む
-            </Button>
-          )}
+          <VStack spacing="4">
+            <Table colorScheme="blackAlpha" size="sm" mt="5" w="full">
+              <Thead>
+                <Tr>
+                  <Th>名前</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {shownMembers?.map((member) => (
+                  <MemberRow
+                    key={member.id}
+                    data={member}
+                    isOnline={sortWithOnline}
+                    buttons={
+                      <>
+                        <Tooltip label="カードを表示">
+                          <Button
+                            colorScheme="gray"
+                            variant="ghost"
+                            onClick={() => {
+                              setDisplayCardMember(member);
+                              setMemberCardDisplay.on();
+                            }}>
+                            <Icon as={IoCard} />
+                          </Button>
+                        </Tooltip>
+                      </>
+                    }
+                  />
+                ))}
+              </Tbody>
+            </Table>
+            {lastDoc && (
+              <LoadMoreButton loadMore={() => loadMoreData(lastDoc)} />
+            )}
+          </VStack>
         </Skeleton>
       )}
     </>

@@ -5,7 +5,6 @@ import {
   Circle,
   Heading,
   HStack,
-  Icon,
   List,
   ListItem,
   Select,
@@ -16,11 +15,24 @@ import {
 import { DocumentSnapshot } from 'firebase/firestore';
 import React, { Suspense, useContext, useEffect, useState } from 'react';
 import { useMemo } from 'react';
-import { IoAnalytics, IoEasel, IoHome, IoPeople } from 'react-icons/io5';
+import {
+  IoAnalytics,
+  IoEaselOutline,
+  IoHome,
+  IoPeople,
+  IoSettings,
+} from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
-import { getAccount, getGroup, getMember, Group, Member } from '../utils/group';
+import {
+  getAccount,
+  getAdmin,
+  getGroup,
+  getMember,
+  Group,
+  Member,
+} from '../utils/group';
 import { Activities, AllActivity } from './activity';
 
 type groupProps = {
@@ -58,7 +70,7 @@ const ScanButton: React.FC<{ setFrontMode: () => void }> = ({
         mt="5"
         mb="3"
         colorScheme="cyan"
-        leftIcon={<Icon as={IoEasel} />}
+        leftIcon={<IoEaselOutline />}
         onClick={() => setFrontMode()}>
         フロントモードに切り替える
       </Button>
@@ -93,6 +105,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const { account } = useContext(AuthContext);
   const [currentMemberData, setCurrentMemberData] =
     useState<DocumentSnapshot<Member> | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   // フロントモードの切り替え
   useEffect(() => {
     const dbName = 'Group';
@@ -128,6 +141,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
     }
   }, [frontMode]);
 
+  // グループデータの取得
   useMemo(() => {
     const _groups: Group[] = [];
     groupIds.forEach((groupId) => {
@@ -140,19 +154,25 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
     });
   }, [groupIds]);
 
+  // アカウント情報の取得
   useMemo(() => {
     if (account && currentId)
       getAccount(account.uid, currentId).then((e) => {
         const memberId = e.data()?.memberId;
-        if (memberId)
+        if (memberId) {
           getMember(memberId, currentId).then((e) =>
             setCurrentMemberData(e ?? null)
           );
+          getAdmin(memberId, currentId).then((e) => {
+            if (e.data()) setIsAdmin(true);
+          });
+        }
       });
   }, [account, currentId]);
   const Members = React.lazy(() => import('./members'));
   const Front = React.lazy(() => import('./front'));
   const CreateGroup = React.lazy(() => import('./create-group'));
+  const Setting = React.lazy(() => import('./setting'));
   const MembersList = React.lazy(() => import('./members-list'));
   return (
     <>
@@ -162,6 +182,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
             currentId: currentId,
             ids: groupIds,
             setFrontMode: setFrontMode,
+            isAdmin: isAdmin,
             currentMember: currentMemberData,
             updateCurrentMember: setCurrentMemberData,
           }}>
@@ -177,13 +198,15 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                   groups={groups}
                   update={updateCurrentId}
                 />
-                <ScanButton
-                  setFrontMode={() => {
-                    setFrontMode(true);
-                    if (document.fullscreenEnabled)
-                      document.body.requestFullscreen();
-                  }}
-                />
+                {isAdmin && (
+                  <ScanButton
+                    setFrontMode={() => {
+                      setFrontMode(true);
+                      if (document.fullscreenEnabled)
+                        document.body.requestFullscreen();
+                    }}
+                  />
+                )}
                 <List spacing="1.5" my="2">
                   <ListItem>
                     <MenuLink leftIcon={<IoHome />} to="/">
@@ -198,6 +221,11 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                   <ListItem>
                     <MenuLink leftIcon={<IoPeople />} to="/member">
                       メンバー
+                    </MenuLink>
+                  </ListItem>
+                  <ListItem>
+                    <MenuLink leftIcon={<IoSettings />} to="/setting">
+                      設定
                     </MenuLink>
                   </ListItem>
                 </List>
@@ -218,6 +246,9 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                     </Route>
                     <Route path={`/member/`}>
                       <Members />
+                    </Route>
+                    <Route path={`/setting/`}>
+                      <Setting />
                     </Route>
                   </Switch>
                 </Suspense>

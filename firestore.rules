@@ -18,7 +18,7 @@ service cloud.firestore {
         allow get, create, update: if isUserAuthenticated(uid)
       }
       match /group/{groupId} {
-        allow get: if isGroupMember(groupId)
+        allow get, update: if isGroupMember(groupId)
       }
       match /group/{groupId}/account/{accountId} {
         allow get, create, update: if request.auth.uid == accountId
