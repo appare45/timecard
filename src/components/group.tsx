@@ -8,7 +8,9 @@ import {
   List,
   ListItem,
   Select,
+  Spacer,
   Spinner,
+  Stack,
   Text,
   VStack,
 } from '@chakra-ui/react';
@@ -33,7 +35,7 @@ import {
   Group,
   Member,
 } from '../utils/group';
-import { Activities, AllActivity } from './activity';
+import { AllActivity } from './activity';
 
 type groupProps = {
   groupIds: string[];
@@ -174,6 +176,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const CreateGroup = React.lazy(() => import('./create-group'));
   const Setting = React.lazy(() => import('./setting'));
   const MembersList = React.lazy(() => import('./members-list'));
+  const Activities = React.lazy(() => import('./activity'));
   return (
     <>
       {!!groupIds.length && currentId && (
@@ -191,23 +194,14 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
               <Front />
             </Suspense>
           ) : (
-            <HStack align="start" h="100vh" py="10" px="5" spacing="10">
+            <HStack align="start" h="100vh" py="10" px="5" spacing="20">
               <Box pos="sticky" top="10">
                 <GroupSelector
                   ids={groupIds}
                   groups={groups}
                   update={updateCurrentId}
                 />
-                {isAdmin && (
-                  <ScanButton
-                    setFrontMode={() => {
-                      setFrontMode(true);
-                      if (document.fullscreenEnabled)
-                        document.body.requestFullscreen();
-                    }}
-                  />
-                )}
-                <List spacing="1.5" my="2">
+                <List spacing="1" my="5">
                   <ListItem>
                     <MenuLink leftIcon={<IoHome />} to="/">
                       トップ
@@ -234,12 +228,24 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                 <Suspense fallback={null}>
                   <Switch>
                     <Route exact path="/">
-                      <VStack spacing="5" align="flex-start" w="full">
-                        <Heading>オンラインのメンバー</Heading>
-                        <MembersList onlyOnline />
-                        <Heading>最近のアクティビティー</Heading>
-                        <AllActivity />
-                      </VStack>
+                      <Heading>最近のアクティビティー</Heading>
+                      <HStack align="flex-start" w="full" py="6">
+                        <AllActivity loadMore={false} />
+                        <Spacer />
+                        <Stack spacing="4">
+                          {isAdmin && (
+                            <ScanButton
+                              setFrontMode={() => {
+                                setFrontMode(true);
+                                if (document.fullscreenEnabled)
+                                  document.body.requestFullscreen();
+                              }}
+                            />
+                          )}
+                          <Heading size="sm">オンラインのメンバー</Heading>
+                          <MembersList onlyOnline isSimple />
+                        </Stack>
+                      </HStack>
                     </Route>
                     <Route path={`/activity/`}>
                       <Activities />

@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Button,
-  Center,
-  Heading,
-  Image,
-  Link,
-  Text,
-} from '@chakra-ui/react';
+import { Box, Button, Center, Heading, Image } from '@chakra-ui/react';
 import { IoLogoGoogle } from 'react-icons/io5';
 import {
   getAuth,
@@ -47,7 +39,7 @@ export default function Login(props: {
     <>
       <Center h="100vh" bgSize="cover" bgPos="center" pos="relative">
         <Image
-          src="/background.webp"
+          src="https://picsum.photos/1920/1080.webp?grayscale"
           loading="lazy"
           pos="absolute"
           top={0}
@@ -66,19 +58,6 @@ export default function Login(props: {
           />
         </Box>
       </Center>
-      <Box pos="fixed" bottom="10px" left="10px" fontSize="sm">
-        <Text>＊画像はイメージです</Text>
-        <Text>
-          Photo by{' '}
-          <Link href="https://unsplash.com/@sunday_digital?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">
-            Nastuh Abootalebi
-          </Link>{' '}
-          on{' '}
-          <Link href="https://unsplash.com/s/photos/office?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">
-            Unsplash
-          </Link>
-        </Text>
-      </Box>
     </>
   );
 }

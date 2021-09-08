@@ -1,5 +1,4 @@
 import {
-  Avatar,
   Box,
   Button,
   ButtonGroup,
@@ -29,8 +28,9 @@ import {
   IoPencilOutline,
   IoShareOutline,
 } from 'react-icons/io5';
-import { dateToJapaneseTime, relativeTimeText } from '../utils/time';
+import { relativeTimeText } from '../utils/time';
 import { ActivityStatus } from './activity';
+import { MemberAvatar } from './assets';
 const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
   activityId,
   isEditable,
@@ -125,11 +125,7 @@ const ActivityCard: React.FC<{
       if (memberInfo && activityData) {
         return (
           <HStack>
-            <Avatar
-              src={memberInfo?.photoUrl}
-              name={memberInfo?.name}
-              size="xs"
-            />
+            <MemberAvatar member={memberInfo} size="xs" />
             <Button
               p={0}
               as={RouterLink}
@@ -260,22 +256,21 @@ const ActivityCard: React.FC<{
               </Box>
             </Tabs>
           </Box>
-          <HStack bg="gray.100" px="2" py="1.5" fontSize="xs" color="gray.600">
+          <HStack
+            bg="gray.100"
+            px="2"
+            py="1.5"
+            fontSize="xs"
+            color="gray.600"
+            spacing="2">
             <ActivityStatus
               workStatus={activityData.content.status ?? 'running'}
               size="2"
             />
-            <Tooltip
-              label={dateToJapaneseTime({
-                timeObject: activityData.updated?.toDate() ?? null,
-                full: true,
-              })}>
-              <>
-                {relativeTimeText(activityData.updated?.toDate() ?? null) ??
-                  null}
-                に更新
-              </>
-            </Tooltip>
+            <Text>
+              {relativeTimeText(activityData.updated?.toDate() ?? null) ?? null}
+              に更新
+            </Text>
           </HStack>
         </>
       )}

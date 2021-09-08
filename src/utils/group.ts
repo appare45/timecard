@@ -41,12 +41,19 @@ class Account {
   }
 }
 
+export type memberStatus = 'active' | 'inactive';
 export class Member {
   name = '';
   photoUrl = '';
-  constructor(name: string, photoUrl: string | null = null) {
+  status: memberStatus | null = null;
+  constructor(
+    name: string,
+    photoUrl: string | null = null,
+    status: memberStatus
+  ) {
     this.name = name;
     if (photoUrl) this.photoUrl = photoUrl;
+    this.status = status;
   }
 }
 
@@ -155,7 +162,7 @@ const memberDataConverter = {
     option?: SnapshotOptions
   ): Member {
     const data = snapshot.data(option);
-    return new Member(data.name, data.photoUrl);
+    return new Member(data.name, data.photoUrl, data.status ?? null);
   },
 };
 
@@ -228,7 +235,7 @@ const createGroup = (
     };
     return addDoc(collection(Db, 'group'), _group).then((group_1) => {
       addMember(
-        { name: author.name, photoUrl: author.photoUrl },
+        { name: author.name, photoUrl: author.photoUrl, status: 'inactive' },
         group_1.id
       ).then((memberId) => {
         addAccount(author.id, { memberId: memberId }, group_1.id);
@@ -417,11 +424,30 @@ const getGroup = async (id: string): Promise<Readonly<Group> | null> => {
   }
 };
 
+const setMemberStatus = async (
+  status: memberStatus,
+  memberId: string,
+  groupId: string
+): Promise<void> => {
+  try {
+    await setDoc(
+      doc(Db, `group/${groupId}/member/${memberId}`),
+      {
+        status: status,
+      },
+      { merge: true }
+    );
+    return;
+  } catch (error) {
+    throw new Error();
+  }
+};
+
 const listMembers = async (
   id: string,
   limitNumber?: number,
   order?: [fieldPath: string | FieldPath, directionStr?: OrderByDirection],
-  onlyOnline?: boolean,
+  status?: memberStatus,
   lastDoc?: QueryDocumentSnapshot
 ): Promise<Readonly<QuerySnapshot<Member> | null> | null> => {
   try {
@@ -429,7 +455,7 @@ const listMembers = async (
       const qcs: QueryConstraint[] = [];
       if (limitNumber) qcs.push(limit(limitNumber));
       if (order) qcs.push(orderBy(...order));
-      if (onlyOnline) qcs.push(where('content.status', '==', 'running'));
+      if (status) qcs.push(where('status', '==', status));
       if (lastDoc) qcs.push(startAfter(lastDoc));
       const q: Query<Member> = query(
         collection(Db, `group/${id}/member`).withConverter(memberDataConverter),
@@ -458,6 +484,12 @@ const addWork = async (
       ),
       activity
     );
+    if (activity.memberId)
+      await setMemberStatus(
+        activity.content?.status == 'running' ? 'active' : 'inactive',
+        activity.memberId,
+        groupId
+      );
     return data.id;
   } catch (error) {
     console.error(error);
@@ -478,6 +510,12 @@ const setWork = async (
       activity,
       option
     );
+    if (activity.memberId)
+      await setMemberStatus(
+        activity.content?.status == 'running' ? 'active' : 'inactive',
+        activity.memberId,
+        groupId
+      );
     return;
   } catch (error) {
     console.error(error);

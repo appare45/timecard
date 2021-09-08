@@ -9,6 +9,7 @@ import {
   Heading,
   HStack,
   Skeleton,
+  Spacer,
   Text,
   Textarea,
   useToast,
@@ -43,7 +44,7 @@ import {
 import { MemberAction } from './qrcodeScan';
 import { useMemo } from 'react';
 import { DocumentSnapshot, QueryDocumentSnapshot } from 'firebase/firestore';
-import { LoadMoreButton } from './assets';
+import { LoadMoreButton, SideWidget } from './assets';
 
 export const ActivityStatus: React.FC<{
   workStatus: workStatus;
@@ -60,7 +61,9 @@ export const ActivityStatus: React.FC<{
   );
 };
 
-export const AllActivity: React.FC = () => {
+export const AllActivity: React.FC<{ loadMore?: boolean }> = ({
+  loadMore = true,
+}) => {
   const { currentId } = useContext(GroupContext);
   const [activities, setActivities] = useState<
     QueryDocumentSnapshot<activity<work>>[] | null
@@ -87,9 +90,9 @@ export const AllActivity: React.FC = () => {
   const DisplayActivities = React.lazy(() => import('./display-activities'));
   return (
     <Suspense fallback={null}>
-      <VStack w="full">
+      <VStack>
         <DisplayActivities data={activities} editable />
-        {lastDoc && <LoadMoreButton loadMore={loadMoreData} />}
+        {loadMore && lastDoc && <LoadMoreButton loadMore={loadMoreData} />}
       </VStack>
     </Suspense>
   );
@@ -273,6 +276,7 @@ const SingleActivity = () => {
 
 const Activities: React.FC = () => {
   const { path } = useRouteMatch();
+  const { isAdmin } = useContext(GroupContext);
   const history = useHistory();
   const [detectedMember, setDetectedMember] =
     useState<dataWithId<Member> | null>(null);
@@ -287,18 +291,19 @@ const Activities: React.FC = () => {
           </Box>
           <HStack align="flex-start" py="5">
             <AllActivity />
-            <VStack
-              mt="10"
-              border="1px"
-              bg="gray.50"
-              borderColor="gray.200"
-              p="5"
-              rounded="base"
-              align="flex-start">
-              <Button leftIcon={<IoScan />} as={RouterLink} to="/activity/scan">
-                スキャン
-              </Button>
-            </VStack>
+            <Spacer />\
+            <SideWidget>
+              <>
+                {isAdmin && (
+                  <Button
+                    leftIcon={<IoScan />}
+                    as={RouterLink}
+                    to="/activity/scan">
+                    スキャン
+                  </Button>
+                )}
+              </>
+            </SideWidget>
           </HStack>
         </Route>
         <Route exact path={`${path}scan`}>
@@ -322,4 +327,4 @@ const Activities: React.FC = () => {
   );
 };
 
-export { Activities };
+export default Activities;
