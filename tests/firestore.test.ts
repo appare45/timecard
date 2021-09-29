@@ -266,4 +266,17 @@ describe('Group Data', () => {
       await firebase.assertFails(outSideGroupActivityRef.delete());
     });
   });
+
+  describe('招待', () => {
+    const groupDocumentRef = authDb.collection('group').doc(groupId);
+    beforeEach(async () => {
+      // authDbをグループメンバーに追加
+      await groupDocumentRef
+        .collection('member')
+        .doc(memberId)
+        .set({ name: uid });
+      // authDbを管理者アカウントに登録
+      await groupDocumentRef.collection('admin').doc(memberId).set({});
+    });
+  });
 });

@@ -10,7 +10,6 @@ import {
   Text,
   Tooltip,
   Button,
-  Icon,
   Switch,
   Drawer,
   DrawerBody,
@@ -37,15 +36,13 @@ import { Link as RouterLink } from 'react-router-dom';
 import {
   Member,
   listMembers,
-  activity,
   getGroup,
-  getLatestActivity,
   Group,
-  work,
+  getMember,
+  memberStatus,
 } from '../utils/group';
-import { ActivityStatus } from './activity';
 import { QueryDocumentSnapshot } from '@firebase/firestore';
-import { LoadMoreButton } from './assets';
+import { LoadMoreButton, MemberAvatar } from './assets';
 
 const MemberCardDrawer: React.FC<{
   isOpen: boolean;
@@ -87,15 +84,15 @@ const MemberCardDrawer: React.FC<{
 const MemberRow: React.FC<{
   data: QueryDocumentSnapshot<Member>;
   buttons: ReactElement;
-  isOnline?: boolean;
-}> = ({ data, buttons, isOnline }) => {
-  const [currentStatus, setCurrentStatus] = useState<activity<work>>();
+  isSimple?: boolean;
+}> = ({ data, buttons, isSimple = false }) => {
+  const [currentStatus, setCurrentStatus] = useState<memberStatus>();
   const { currentId } = useContext(GroupContext);
   useEffect(() => {
     let isSubscribed = true;
     if (currentId && data.id) {
-      getLatestActivity(currentId, data.id).then((status) => {
-        if (isSubscribed) setCurrentStatus(status?.data());
+      getMember(data.id, currentId).then((e) => {
+        if (isSubscribed) setCurrentStatus(e?.data()?.status ?? undefined);
       });
     }
     return () => {
@@ -104,53 +101,35 @@ const MemberRow: React.FC<{
   }, [currentId, data.id]);
   return (
     <>
-      {!isOnline && (
-        <Tr>
-          <Td>
+      <Tr>
+        <Td>
+          <HStack>
+            <MemberAvatar
+              member={data.data()}
+              size={isSimple ? 'xs' : undefined}
+              status={currentStatus}
+            />
             <Link as={RouterLink} to={`/member/${data.id}`}>
               {data.data().name}
             </Link>
-          </Td>
+          </HStack>
+        </Td>
+        {!isSimple && (
           <Td>
             <HStack>{buttons}</HStack>
           </Td>
-          <Td>
-            {currentStatus?.content.status ? (
-              <ActivityStatus workStatus={currentStatus?.content.status} />
-            ) : (
-              <Skeleton width="14" />
-            )}
-          </Td>
-        </Tr>
-      )}
-      {isOnline && currentStatus?.content.status == 'running' && (
-        <Tr>
-          <Td>
-            <Link as={RouterLink} to={`/member/${data.id}`}>
-              {data.data().name}
-            </Link>
-          </Td>
-          <Td>
-            <HStack>{buttons}</HStack>
-          </Td>
-          <Td>
-            {currentStatus?.content.status ? (
-              <ActivityStatus workStatus={currentStatus?.content.status} />
-            ) : (
-              <Skeleton width="14" />
-            )}
-          </Td>
-        </Tr>
-      )}
+        )}
+      </Tr>
     </>
   );
 };
 
-const MembersList: React.FC<{ onlyOnline?: boolean; update?: boolean }> = ({
-  onlyOnline = false,
-  update,
-}) => {
-  const { currentId } = useContext(GroupContext);
+const MembersList: React.FC<{
+  onlyOnline?: boolean;
+  update?: boolean;
+  isSimple?: boolean;
+}> = ({ onlyOnline = false, update, isSimple = false }) => {
+  const { currentId, currentMember, isAdmin } = useContext(GroupContext);
   const [isUpdating, setIsUpdating] = useState(true);
   const [memberCardDisplay, setMemberCardDisplay] = useBoolean(false);
   const [displayCardMember, setDisplayCardMember] =
@@ -163,21 +142,30 @@ const MembersList: React.FC<{ onlyOnline?: boolean; update?: boolean }> = ({
 
   const loadMoreData = (startFrom: QueryDocumentSnapshot) => {
     if (currentId)
-      listMembers(currentId, 5, undefined, sortWithOnline, startFrom).then(
-        (members) => {
-          const membersList: QueryDocumentSnapshot<Member>[] = [];
-          members?.forEach((_) => membersList.push(_));
-          setLastDoc(membersList[4] ?? null);
-          setShownMembers([...shownMembers, ...membersList]);
-        }
-      );
+      listMembers(
+        currentId,
+        5,
+        undefined,
+        sortWithOnline ? 'active' : undefined,
+        startFrom
+      ).then((members) => {
+        const membersList: QueryDocumentSnapshot<Member>[] = [];
+        members?.forEach((_) => membersList.push(_));
+        setLastDoc(membersList[4] ?? null);
+        setShownMembers([...shownMembers, ...membersList]);
+      });
   };
 
   useEffect(() => {
     console.info(update);
     setIsUpdating(true);
     if (currentId) {
-      listMembers(currentId, 5, undefined, sortWithOnline).then((members) => {
+      listMembers(
+        currentId,
+        5,
+        undefined,
+        sortWithOnline ? 'active' : undefined
+      ).then((members) => {
         if (members) {
           const _members: QueryDocumentSnapshot<Member>[] = [];
           members.forEach((member) => {
@@ -224,10 +212,15 @@ const MembersList: React.FC<{ onlyOnline?: boolean; update?: boolean }> = ({
       ) : (
         <Skeleton isLoaded={!isUpdating} w="full">
           <VStack spacing="4">
-            <Table colorScheme="blackAlpha" size="sm" mt="5" w="full">
+            <Table
+              colorScheme="blackAlpha"
+              size={isSimple ? 'sm' : 'md'}
+              mt={!isSimple ? '5' : '0.5'}
+              w="full">
               <Thead>
                 <Tr>
                   <Th>名前</Th>
+                  <Th></Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -235,20 +228,22 @@ const MembersList: React.FC<{ onlyOnline?: boolean; update?: boolean }> = ({
                   <MemberRow
                     key={member.id}
                     data={member}
-                    isOnline={sortWithOnline}
+                    isSimple={isSimple}
                     buttons={
                       <>
-                        <Tooltip label="カードを表示">
-                          <Button
-                            colorScheme="gray"
-                            variant="ghost"
-                            onClick={() => {
-                              setDisplayCardMember(member);
-                              setMemberCardDisplay.on();
-                            }}>
-                            <Icon as={IoCard} />
-                          </Button>
-                        </Tooltip>
+                        {(currentMember?.id == member.id || isAdmin) && (
+                          <Tooltip label="カードを表示">
+                            <Button
+                              colorScheme="gray"
+                              variant="ghost"
+                              onClick={() => {
+                                setDisplayCardMember(member);
+                                setMemberCardDisplay.on();
+                              }}>
+                              <IoCard />
+                            </Button>
+                          </Tooltip>
+                        )}
                       </>
                     }
                   />

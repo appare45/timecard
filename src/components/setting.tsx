@@ -1,6 +1,5 @@
 import React, { useContext, useMemo, useState } from 'react';
 import {
-  Avatar,
   Box,
   Heading,
   HStack,
@@ -15,7 +14,7 @@ import { GroupContext } from '../contexts/group';
 import { getMember, Member, setMember } from '../utils/group';
 import { DocumentSnapshot } from '@firebase/firestore';
 import { AuthContext } from '../contexts/user';
-import { FormButtons } from './assets';
+import { FormButtons, MemberAvatar } from './assets';
 
 const PersonalSetting: React.FC = () => {
   const { currentId, currentMember, updateCurrentMember } =
@@ -95,7 +94,7 @@ const PersonalSetting: React.FC = () => {
       <Stack spacing="2" py="4">
         <HStack spacing="12">
           <HStack my="4" spacing="3">
-            <Avatar src={Member?.data()?.photoUrl} name={userName} />
+            {Member?.data() && <MemberAvatar member={Member.data()} />}
             <Input
               fontSize="xl"
               value={userName}

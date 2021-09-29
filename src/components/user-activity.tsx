@@ -31,7 +31,7 @@ import {
   getMember,
   getUserActivities,
 } from '../utils/group';
-import { LoadMoreButton } from './assets';
+import { LoadMoreButton, SideWidget } from './assets';
 import DisplayActivities from './display-activities';
 
 function UserActivity(): JSX.Element {
@@ -46,7 +46,7 @@ function UserActivity(): JSX.Element {
   const [group, setGroup] = useState<Group | null>(null);
   const [dialog, setDialog] = useState(false);
   const dialogCancel = useRef(null);
-  const { currentId, currentMember } = useContext(GroupContext);
+  const { currentId, currentMember, isAdmin } = useContext(GroupContext);
   const [isOwnMember, setIsOwnMember] = useState(false);
 
   useEffect(() => {
@@ -131,17 +131,12 @@ function UserActivity(): JSX.Element {
           {activities && <Activities data={activities} />}
           {lastActivityDoc && <LoadMoreButton loadMore={loadMoreData} />}
         </VStack>
-        <VStack
-          mt="10"
-          border="1px"
-          bg="gray.50"
-          borderColor="gray.200"
-          p="5"
-          rounded="base"
-          align="flex-start">
-          <Button leftIcon={<IoQrCode />} onClick={() => setDialog(true)}>
-            QRコード表示
-          </Button>
+        <SideWidget>
+          {(isAdmin || isOwnMember) && (
+            <Button leftIcon={<IoQrCode />} onClick={() => setDialog(true)}>
+              QRコード表示
+            </Button>
+          )}
           {isOwnMember && (
             <Button
               leftIcon={<IoPersonCircleOutline />}
@@ -150,7 +145,7 @@ function UserActivity(): JSX.Element {
               プロフィールを編集
             </Button>
           )}
-        </VStack>
+        </SideWidget>
       </HStack>
       <AlertDialog
         isOpen={dialog}
