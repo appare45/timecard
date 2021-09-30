@@ -22,6 +22,12 @@ import {
   Alert,
   AlertIcon,
   VStack,
+  useEditable,
+  ButtonGroup,
+  IconButton,
+  Editable,
+  EditableInput,
+  EditablePreview,
 } from '@chakra-ui/react';
 import React, {
   useContext,
@@ -30,7 +36,7 @@ import React, {
   ReactElement,
   Suspense,
 } from 'react';
-import { IoCard } from 'react-icons/io5';
+import { IoAnalytics, IoCard } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { Link as RouterLink } from 'react-router-dom';
 import {
@@ -38,8 +44,8 @@ import {
   listMembers,
   getGroup,
   Group,
-  getMember,
   memberStatus,
+  setMember,
 } from '../utils/group';
 import { QueryDocumentSnapshot } from '@firebase/firestore';
 import { LoadMoreButton, MemberAvatar } from './assets';
@@ -81,24 +87,40 @@ const MemberCardDrawer: React.FC<{
   );
 };
 
+const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
+  data,
+}) => {
+  const { currentId } = useContext(GroupContext);
+  return (
+    <Editable
+      defaultValue={data.data().name}
+      onSubmit={(e) => {
+        if (currentId)
+          setMember(
+            new Member(
+              e,
+              data.data().photoUrl,
+              data.data().status ?? 'inactive'
+            ),
+            data.id,
+            currentId
+          );
+      }}>
+      <EditablePreview />
+      <EditableInput />
+    </Editable>
+  );
+};
+
 const MemberRow: React.FC<{
   data: QueryDocumentSnapshot<Member>;
   buttons: ReactElement;
   isSimple?: boolean;
 }> = ({ data, buttons, isSimple = false }) => {
   const [currentStatus, setCurrentStatus] = useState<memberStatus>();
-  const { currentId } = useContext(GroupContext);
   useEffect(() => {
-    let isSubscribed = true;
-    if (currentId && data.id) {
-      getMember(data.id, currentId).then((e) => {
-        if (isSubscribed) setCurrentStatus(e?.data()?.status ?? undefined);
-      });
-    }
-    return () => {
-      isSubscribed = false;
-    };
-  }, [currentId, data.id]);
+    setCurrentStatus(data?.data()?.status ?? undefined);
+  }, [data]);
   return (
     <>
       <Tr>
@@ -109,9 +131,7 @@ const MemberRow: React.FC<{
               size={isSimple ? 'xs' : undefined}
               status={currentStatus}
             />
-            <Link as={RouterLink} to={`/member/${data.id}`}>
-              {data.data().name}
-            </Link>
+            <MemberName data={data} />
           </HStack>
         </Td>
         {!isSimple && (
@@ -230,21 +250,31 @@ const MembersList: React.FC<{
                     data={member}
                     isSimple={isSimple}
                     buttons={
-                      <>
+                      <ButtonGroup
+                        colorScheme="gray"
+                        variant="ghost"
+                        spacing="1">
                         {(currentMember?.id == member.id || isAdmin) && (
                           <Tooltip label="カードを表示">
-                            <Button
-                              colorScheme="gray"
-                              variant="ghost"
+                            <IconButton
+                              aria-label="カードを表示"
+                              icon={<IoCard />}
                               onClick={() => {
                                 setDisplayCardMember(member);
                                 setMemberCardDisplay.on();
-                              }}>
-                              <IoCard />
-                            </Button>
+                              }}
+                            />
                           </Tooltip>
                         )}
-                      </>
+                        <Tooltip label="アクティビティーを見る">
+                          <IconButton
+                            aria-label="アクティビティーを見る"
+                            icon={<IoAnalytics />}
+                            as={RouterLink}
+                            to={`/member/${member.id}`}
+                          />
+                        </Tooltip>
+                      </ButtonGroup>
                     }
                   />
                 ))}

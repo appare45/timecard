@@ -299,8 +299,7 @@ export const QRCodeScan = React.memo(
     const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
     const [error, updateError] = useState('');
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [facingMode, setFacingMode] =
-      useState<VideoFacingModeEnum>('environment');
+    const [facingMode, setFacingMode] = useState<VideoFacingModeEnum>('user');
 
     useEffect(() => {
       getUserCamera(facingMode)

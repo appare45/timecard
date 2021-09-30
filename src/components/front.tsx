@@ -64,7 +64,7 @@ const Time: React.FC = () => {
     <VStack>
       <Text fontSize="lg" fontFamily="mono">
         {date.getFullYear()}年{`00${date.getMonth() + 1}`.slice(-2)}月
-        {`00${date.getDate() + 1}`.slice(-2)}日（{dayToJP(date.getDay())}）
+        {`00${date.getDate()}`.slice(-2)}日（{dayToJP(date.getDay())}）
       </Text>
       <Text fontSize="3xl">
         {`00${date.getHours()}`.slice(-2)}:{`00${date.getMinutes()}`.slice(-2)}:
@@ -156,7 +156,7 @@ const Front: React.FC = () => {
                 )}
               </Box>
             </Suspense>
-            <ButtonGroup>
+            <ButtonGroup size="lg">
               <Button
                 colorScheme={
                   latestActivity?.data().content.status === 'running'
