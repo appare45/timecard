@@ -130,7 +130,7 @@ const ActivityCard: React.FC<{
       if (memberInfo && activityData) {
         return (
           <HStack>
-            <MemberAvatar member={memberInfo} size="xs" />
+            <MemberAvatar member={memberInfo} size="xs" status={false} />
             <Button
               p={0}
               as={RouterLink}

@@ -1,8 +1,10 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   AlertDialog,
   AlertDialogBody,
+  AlertDialogCloseButton,
   AlertDialogContent,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogOverlay,
   AspectRatio,
@@ -15,7 +17,6 @@ import {
   Spacer,
   Text,
   useToast,
-  VStack,
 } from '@chakra-ui/react';
 import { QRCodeScan } from './qrcodeScan';
 import { useState } from 'react';
@@ -34,45 +35,8 @@ import { AuthContext } from '../contexts/user';
 import { GroupContext } from '../contexts/group';
 import { cardHeight, cardWidth } from './createCard';
 import { Timestamp, QueryDocumentSnapshot } from 'firebase/firestore';
-
-const Time: React.FC = () => {
-  const [date, setDate] = useState(new Date());
-  useEffect(() => {
-    const interval = setInterval(() => setDate(new Date()), 1000);
-    return () => clearInterval(interval);
-  }, [date]);
-
-  const dayToJP = (e: number): string => {
-    switch (e) {
-      case 0:
-        return '月';
-      case 1:
-        return '火';
-      case 2:
-        return '水';
-      case 3:
-        return '木';
-      case 4:
-        return '金';
-      case 5:
-        return '土';
-      default:
-        return '日';
-    }
-  };
-  return (
-    <VStack>
-      <Text fontSize="lg" fontFamily="mono">
-        {date.getFullYear()}年{`00${date.getMonth() + 1}`.slice(-2)}月
-        {`00${date.getDate()}`.slice(-2)}日（{dayToJP(date.getDay())}）
-      </Text>
-      <Text fontSize="3xl">
-        {`00${date.getHours()}`.slice(-2)}:{`00${date.getMinutes()}`.slice(-2)}:
-        {`00${date.getSeconds()}`.slice(-2)}
-      </Text>
-    </VStack>
-  );
-};
+import { MemberAvatar } from './assets';
+import { millisToText } from '../utils/time';
 
 const Front: React.FC = () => {
   const [detectedMember, setDetectedMember] =
@@ -85,7 +49,6 @@ const Front: React.FC = () => {
   const { currentId, setFrontMode } = useContext(GroupContext);
   const toast = useToast();
   const { currentMember } = useContext(GroupContext);
-  const ActivityCard = React.lazy(() => import('./activity-card'));
 
   // メンバーの最終活動を表示する
   useEffect(() => {
@@ -108,7 +71,6 @@ const Front: React.FC = () => {
           </Text>
         </Box>
         <Spacer />
-        <Time />
       </HStack>
       <Box m="10">
         {detectedMember ? (
@@ -135,27 +97,34 @@ const Front: React.FC = () => {
         motionPreset="slideInBottom"
         isCentered
         onClose={() => setDetectedMember(null)}
-        size="xl">
+        size="lg">
         <AlertDialogOverlay />
         <AlertDialogContent>
           <AlertDialogHeader>
-            {detectedMember?.data.name ? (
-              <>{detectedMember?.data.name}さん</>
-            ) : (
-              <Skeleton>読み込み中</Skeleton>
-            )}
+            <HStack spacing="4">
+              {detectedMember && (
+                <MemberAvatar member={detectedMember.data} size="md" />
+              )}
+              <Text fontSize="2xl" fontWeight="bold">
+                {detectedMember?.data.name}
+              </Text>
+            </HStack>
+            <AlertDialogCloseButton />
           </AlertDialogHeader>
           <AlertDialogBody>
-            <Suspense fallback={<Skeleton />}>
-              <Box mb="5">
-                {latestActivity?.data() && (
-                  <ActivityCard
-                    activitySnapshot={latestActivity}
-                    member={detectedMember?.data}
-                  />
-                )}
-              </Box>
-            </Suspense>
+            {latestActivity?.data().content.status == 'running' && (
+              <HStack alignItems="baseline">
+                <Text fontSize="2xl">
+                  {millisToText(
+                    Date.now() -
+                      latestActivity?.data().content.startTime.toMillis()
+                  )}
+                </Text>
+                <Text>経過</Text>
+              </HStack>
+            )}
+          </AlertDialogBody>
+          <AlertDialogFooter>
             <ButtonGroup size="lg">
               <Button
                 colorScheme={
@@ -223,7 +192,7 @@ const Front: React.FC = () => {
                 キャンセル
               </Button>
             </ButtonGroup>
-          </AlertDialogBody>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </Box>

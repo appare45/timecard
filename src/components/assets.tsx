@@ -31,12 +31,12 @@ export const SideWidget: React.FC = ({ children }) => (
 export const MemberAvatar: React.FC<{
   member?: Member;
   size?: string;
-  status?: memberStatus;
-}> = ({ member, size = 'sm', status }) => (
+  status?: boolean;
+}> = ({ member, size = 'sm', status = true }) => (
   <Avatar src={member?.photoUrl} size={size}>
     {status && (
       <AvatarBadge
-        bg={status === 'inactive' ? 'gray.400' : 'green.400'}
+        bg={member?.status === 'active' ? 'green.400' : 'gray.400'}
         boxSize="1em"
       />
     )}

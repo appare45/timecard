@@ -219,7 +219,9 @@ export const MemberAction: React.FC<{
             <Heading fontSize="2xl">読み込み中</Heading>
           </Skeleton>
         )}
-        <Suspense fallback={<Skeleton />}>{LatestActivityCard}</Suspense>
+        {latestActivity?.data().content.status == 'running' && (
+          <Suspense fallback={<Skeleton />}>{LatestActivityCard}</Suspense>
+        )}
       </Box>
       <FormControl>
         <FormLabel>メモ</FormLabel>

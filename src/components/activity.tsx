@@ -45,6 +45,7 @@ import { MemberAction } from './qrcodeScan';
 import { useMemo } from 'react';
 import { DocumentSnapshot, QueryDocumentSnapshot } from 'firebase/firestore';
 import { LoadMoreButton, SideWidget } from './assets';
+import { millisToText } from '../utils/time';
 
 export const ActivityStatus: React.FC<{
   workStatus: workStatus;
@@ -219,8 +220,10 @@ const ActivityDetail: React.FC<{
           activityData.content.endTime ? (
             <Text>
               {/* ToDo: m秒表示を日本語に変換する */}
-              {activityData.content.endTime.toMillis() -
-                activityData.content.startTime.toMillis()}
+              {millisToText(
+                activityData.content.endTime.toMillis() -
+                  activityData.content.startTime.toMillis()
+              )}
             </Text>
           ) : (
             <ActivityStatus workStatus={activityData.content.status} />

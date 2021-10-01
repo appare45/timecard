@@ -121,33 +121,27 @@ const MemberRow: React.FC<{
   data: QueryDocumentSnapshot<Member>;
   buttons: ReactElement;
   isSimple?: boolean;
-}> = ({ data, buttons, isSimple = false }) => {
-  const [currentStatus, setCurrentStatus] = useState<memberStatus>();
-  useEffect(() => {
-    setCurrentStatus(data?.data()?.status ?? undefined);
-  }, [data]);
-  return (
-    <>
-      <Tr>
+}> = ({ data, buttons, isSimple = false }) => (
+  <>
+    <Tr>
+      <Td>
+        <HStack>
+          <MemberAvatar
+            member={data.data()}
+            size={isSimple ? 'xs' : undefined}
+            status={true}
+          />
+          <MemberName data={data} />
+        </HStack>
+      </Td>
+      {!isSimple && (
         <Td>
-          <HStack>
-            <MemberAvatar
-              member={data.data()}
-              size={isSimple ? 'xs' : undefined}
-              status={currentStatus}
-            />
-            <MemberName data={data} />
-          </HStack>
+          <HStack>{buttons}</HStack>
         </Td>
-        {!isSimple && (
-          <Td>
-            <HStack>{buttons}</HStack>
-          </Td>
-        )}
-      </Tr>
-    </>
-  );
-};
+      )}
+    </Tr>
+  </>
+);
 
 const MembersList: React.FC<{
   onlyOnline?: boolean;
