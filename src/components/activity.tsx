@@ -291,7 +291,7 @@ const Activities: React.FC = () => {
           </Box>
           <HStack align="flex-start" py="5">
             <AllActivity />
-            <Spacer />\
+            <Spacer />
             <SideWidget>
               <>
                 {isAdmin && (

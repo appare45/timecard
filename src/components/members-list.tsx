@@ -9,7 +9,6 @@ import {
   Tbody,
   Text,
   Tooltip,
-  Button,
   Switch,
   Drawer,
   DrawerBody,
@@ -17,17 +16,16 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerOverlay,
-  Link,
   Td,
   Alert,
   AlertIcon,
   VStack,
-  useEditable,
   ButtonGroup,
   IconButton,
   Editable,
   EditableInput,
   EditablePreview,
+  useToast,
 } from '@chakra-ui/react';
 import React, {
   useContext,
@@ -91,20 +89,27 @@ const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
   data,
 }) => {
   const { currentId } = useContext(GroupContext);
+  const toast = useToast();
   return (
     <Editable
       defaultValue={data.data().name}
       onSubmit={(e) => {
+        const _member = data.data();
+        _member.name = e;
         if (currentId)
-          setMember(
-            new Member(
-              e,
-              data.data().photoUrl,
-              data.data().status ?? 'inactive'
-            ),
-            data.id,
-            currentId
-          );
+          setMember(_member, data.id, currentId, { merge: true })
+            .then(() =>
+              toast({
+                title: '保存しました',
+                status: 'success',
+              })
+            )
+            .catch(() =>
+              toast({
+                title: '保存に失敗しました',
+                status: 'error',
+              })
+            );
       }}>
       <EditablePreview />
       <EditableInput />
@@ -154,9 +159,8 @@ const MembersList: React.FC<{
   const [memberCardDisplay, setMemberCardDisplay] = useBoolean(false);
   const [displayCardMember, setDisplayCardMember] =
     useState<QueryDocumentSnapshot<Member>>();
-  const [shownMembers, setShownMembers] = useState<
-    QueryDocumentSnapshot<Member>[]
-  >([]);
+  const [shownMembers, setShownMembers] =
+    useState<QueryDocumentSnapshot<Member>[]>();
   const [sortWithOnline, setSortWithOnline] = useState(onlyOnline);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot>();
 
@@ -172,7 +176,7 @@ const MembersList: React.FC<{
         const membersList: QueryDocumentSnapshot<Member>[] = [];
         members?.forEach((_) => membersList.push(_));
         setLastDoc(membersList[4] ?? null);
-        setShownMembers([...shownMembers, ...membersList]);
+        setShownMembers([...(shownMembers ?? []), ...membersList]);
       });
   };
 
@@ -222,7 +226,7 @@ const MembersList: React.FC<{
           />
         </HStack>
       )}
-      {!shownMembers.length ? (
+      {shownMembers?.length == 0 ? (
         <Alert>
           <AlertIcon />
           {sortWithOnline
