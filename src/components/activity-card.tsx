@@ -6,7 +6,6 @@ import {
   Skeleton,
   SkeletonCircle,
   Spacer,
-  Stack,
   Tab,
   TabList,
   TabPanel,
@@ -16,11 +15,17 @@ import {
   Tooltip,
   useClipboard,
   Link,
+  VStack,
+  useToast,
 } from '@chakra-ui/react';
-import { DocumentSnapshot, QueryDocumentSnapshot } from 'firebase/firestore';
+import {
+  DocumentSnapshot,
+  QueryDocumentSnapshot,
+  Timestamp,
+} from 'firebase/firestore';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { GroupContext } from '../contexts/group';
-import { activity, getMember, Member, work } from '../utils/group';
+import { activity, getMember, Member, setWork, work } from '../utils/group';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
 import {
   IoCheckmarkOutline,
@@ -152,49 +157,87 @@ const ActivityCard: React.FC<{
   const ActivityStatusFull: React.FC<{
     activityData: activity<work>;
     height?: string;
-  }> = ({ activityData, height = 'auto' }) => {
+    closeButton?: boolean;
+  }> = ({ activityData, height = 'auto', closeButton = true }) => {
+    const toast = useToast();
+    const [status, setStatus] = useState(activityData.content.status);
     return (
-      <>
-        <Stack height={height} overflow="hidden" pt="2" spacing="-0.5">
-          {activityData.content.endTime && (
-            <HStack>
-              <Text color="gray.500">
-                {`00${activityData?.content.endTime
+      <VStack
+        height={height}
+        overflow="hidden"
+        alignItems="flex-start"
+        justifyContent="center"
+        spacing="0.5">
+        {status == 'done' ? (
+          <HStack>
+            <Text color="gray.500">
+              {`00${activityData?.content.endTime?.toDate().getHours()}`.slice(
+                -2
+              ) +
+                ':' +
+                `00${activityData?.content.endTime
                   ?.toDate()
-                  .getHours()}`.slice(-2) +
-                  ':' +
-                  `00${activityData?.content.endTime
-                    ?.toDate()
-                    .getMinutes()}`.slice(-2)}
-              </Text>
-              <Text>終了しました</Text>
-            </HStack>
-          )}
-          {activityData.content.startTime && (
-            <HStack>
-              <Text color="gray.500">
-                {`00${activityData?.content.startTime
+                  .getMinutes()}`.slice(-2)}
+            </Text>
+            <Text>終了しました</Text>
+          </HStack>
+        ) : (
+          <>
+            {closeButton && (
+              <Button
+                size="sm"
+                my="2"
+                colorScheme="red"
+                variant="outline"
+                onClick={() => {
+                  const _activityData = activityData;
+                  _activityData.content.endTime = Timestamp.now();
+                  _activityData.content.status = 'done';
+                  if (currentId)
+                    setWork(currentId, activitySnapshot.id, _activityData, {
+                      merge: true,
+                    })
+                      .then(() => {
+                        setStatus('done');
+
+                        toast({ title: '終了しました', status: 'success' });
+                      })
+                      .catch(() =>
+                        toast({
+                          title: 'エラーが発生しました',
+                          status: 'error',
+                        })
+                      );
+                }}>
+                終了する
+              </Button>
+            )}
+          </>
+        )}
+        {activityData.content.startTime && (
+          <HStack>
+            <Text color="gray.500">
+              {`00${activityData?.content.startTime
+                ?.toDate()
+                .getHours()}`.slice(-2) +
+                ':' +
+                `00${activityData?.content.startTime
                   ?.toDate()
-                  .getHours()}`.slice(-2) +
-                  ':' +
-                  `00${activityData?.content.startTime
-                    ?.toDate()
-                    .getMinutes()}`.slice(-2)}
-              </Text>
-              <Text>開始しました</Text>
-            </HStack>
-          )}
-        </Stack>
-      </>
+                  .getMinutes()}`.slice(-2)}
+            </Text>
+            <Text>開始しました</Text>
+          </HStack>
+        )}
+      </VStack>
     );
   };
 
-  const ActivityMemo = (props: { content: string }) => {
+  const ActivityMemo = (props: { content: string; height?: string }) => {
     if (props.content) {
       const memoText = props.content.replace(/\\n/g, '\n');
       return (
         <Box
-          h="14"
+          h={props.height}
           py="1"
           wordBreak="break-all"
           fontSize="sm"
@@ -234,25 +277,17 @@ const ActivityCard: React.FC<{
                     メモ
                   </Tab>
                 </TabList>
-                <Link
-                  to={`/activity/${activitySnapshot.id}`}
-                  as={RouterLink}
-                  display="block"
-                  pos="relative">
-                  <TabPanels>
-                    <TabPanel px="1" py="0.5">
-                      <ActivityStatusFull
-                        activityData={activityData}
-                        height="14"
-                      />
-                    </TabPanel>
-                    <TabPanel px="1" py="0.5">
-                      <ActivityMemo
-                        content={activityData.content?.memo ?? ''}
-                      />
-                    </TabPanel>
-                  </TabPanels>
-                </Link>
+                <TabPanels>
+                  <TabPanel px="1" py="0.5">
+                    <ActivityStatusFull
+                      activityData={activityData}
+                      height="20"
+                    />
+                  </TabPanel>
+                  <TabPanel px="1" py="0.5" height="20">
+                    <ActivityMemo content={activityData.content?.memo ?? ''} />
+                  </TabPanel>
+                </TabPanels>
               </Box>
             </Tabs>
           </Box>
@@ -268,7 +303,10 @@ const ActivityCard: React.FC<{
               size="2"
             />
             <Text>
-              {relativeTimeText(activityData.updated?.toDate() ?? null) ?? null}
+              <Link as={RouterLink} to={`/activity/${activitySnapshot.id}`}>
+                {relativeTimeText(activityData.updated?.toDate() ?? null) ??
+                  null}
+              </Link>
               に更新
             </Text>
           </HStack>
