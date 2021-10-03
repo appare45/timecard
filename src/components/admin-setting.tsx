@@ -1,11 +1,17 @@
+import { Button, ButtonGroup } from '@chakra-ui/button';
+import { useBoolean } from '@chakra-ui/hooks';
 import { Input } from '@chakra-ui/input';
 import { Box, Heading, Text, HStack, Stack } from '@chakra-ui/layout';
-import { Tag, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
+import { Alert, AlertIcon, AlertTitle, Spacer } from '@chakra-ui/react';
+import { Select } from '@chakra-ui/select';
+import { Tag as TagElement, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
 import { useToast } from '@chakra-ui/toast';
-import React, { useContext, useMemo, useState } from 'react';
-import { IoKeyOutline } from 'react-icons/io5';
+import { QueryDocumentSnapshot } from '@firebase/firestore';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { IoAdd, IoKeyOutline, IoPricetag } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { getGroup, Group, setGroup } from '../utils/group';
+import { createTag, listTag, Tag, tagColors } from './../utils/group-tag';
 import { FormButtons } from './assets';
 
 const OrganizationName = () => {
@@ -66,18 +72,134 @@ const OrganizationName = () => {
   );
 };
 
+const CreateTag = () => {
+  const [createMode, setCreateMode] = useBoolean(false);
+  const [tagName, setTagName] = useState('');
+  const [tagColor, setTagColor] = useState<tagColors>('red');
+  const { currentId } = useContext(GroupContext);
+  const toast = useToast();
+  const tagColors: tagColors[] = [
+    'gray',
+    'red',
+    'orange',
+    'yellow',
+    'green',
+    'blue',
+    'cyan',
+    'purple',
+    'pink',
+  ];
+  return (
+    <HStack>
+      {createMode ? (
+        <>
+          <Input
+            placeholder="タグの名前"
+            value={tagName}
+            onChange={(e) => setTagName(e.target.value)}
+            autoFocus
+            minLength={1}
+            maxLength={20}
+          />
+          <Select
+            variant="filled"
+            icon={<IoPricetag />}
+            iconColor={tagColor}
+            value={tagColor}
+            onChange={(e) => setTagColor(e.target.value as tagColors)}>
+            {tagColors.map((color) => (
+              <option key={color} id={color}>
+                {color}
+              </option>
+            ))}
+          </Select>
+          <Spacer />
+          <ButtonGroup>
+            <Button
+              colorScheme="green"
+              disabled={tagName.length == 0 && tagName.length < 20}
+              onClick={() => {
+                if (currentId && tagName.length > 0)
+                  createTag(new Tag(tagName, tagColor), currentId)
+                    .then(() => {
+                      toast({
+                        title: 'タグを作成しました',
+                        status: 'success',
+                      });
+                      setCreateMode.off();
+                    })
+                    .catch(() => {
+                      toast({ title: '作成に失敗しました', status: 'error' });
+                    });
+              }}>
+              作成
+            </Button>
+            <Button
+              variant="ghost"
+              colorScheme="red"
+              onClick={setCreateMode.off}>
+              キャンセル
+            </Button>
+          </ButtonGroup>
+        </>
+      ) : (
+        <Button
+          leftIcon={<IoAdd />}
+          variant="outline"
+          colorScheme="green"
+          size="sm"
+          onClick={setCreateMode.on}>
+          タグを作成
+        </Button>
+      )}
+    </HStack>
+  );
+};
+
+const TagSetting = () => {
+  return (
+    <Box>
+      <Heading>タグ</Heading>
+      <CreateTag />
+      <TagList />
+    </Box>
+  );
+};
+
+const TagList = () => {
+  const { currentId } = useContext(GroupContext);
+  const [tags, setTags] = useState<QueryDocumentSnapshot<Tag>[]>();
+  useEffect(() => {
+    if (currentId)
+      listTag(currentId).then((e) => {
+        const tags: QueryDocumentSnapshot<Tag>[] = [];
+        e.forEach((j) => tags.push(j));
+        setTags(tags);
+      });
+  }, [currentId]);
+  return tags?.length ?? 0 > 0 ? (
+    <></>
+  ) : (
+    <Alert status="info">
+      <AlertIcon />
+      <AlertTitle>タグがありません</AlertTitle>
+    </Alert>
+  );
+};
+
 const AdminSetting: React.FC = () => {
   return (
     <Box>
       <HStack spacing="4">
         <Heading size="lg">組織設定</Heading>
-        <Tag>
+        <TagElement>
           <TagLeftIcon as={IoKeyOutline} />
           <TagLabel>管理者のみが設定できます</TagLabel>
-        </Tag>
+        </TagElement>
       </HStack>
       <Stack py="4">
         <OrganizationName />
+        <TagSetting />
       </Stack>
     </Box>
   );
