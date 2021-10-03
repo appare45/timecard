@@ -1,17 +1,33 @@
 import { Avatar, AvatarBadge } from '@chakra-ui/avatar';
 import { Button, ButtonGroup } from '@chakra-ui/button';
-import { VStack } from '@chakra-ui/layout';
-import React from 'react';
-import { IoArrowDown } from 'react-icons/io5';
-import { Member, memberStatus } from '../utils/group';
+import { HStack, Text, VStack } from '@chakra-ui/layout';
+import { Spinner } from '@chakra-ui/spinner';
+import React, { useEffect, useRef } from 'react';
+import { Member } from '../utils/group';
 
 export const LoadMoreButton: React.FC<{ loadMore: () => void }> = ({
   loadMore,
 }) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (e) => {
+        if (e[0].isIntersecting) loadMore();
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: '10px',
+      }
+    );
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+  }, [loadMore]);
   return (
-    <Button onClick={loadMore} variant="link" leftIcon={<IoArrowDown />}>
-      さらに読み込む
-    </Button>
+    <HStack ref={ref}>
+      <Spinner size="sm" colorScheme="red" /> <Text>読込中</Text>
+    </HStack>
   );
 };
 

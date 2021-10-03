@@ -13,7 +13,6 @@ import {
   Text,
   Textarea,
   useToast,
-  VStack,
 } from '@chakra-ui/react';
 import React, { Suspense } from 'react';
 import { useEffect } from 'react';
@@ -27,7 +26,6 @@ import { Link as RouterLink } from 'react-router-dom';
 import {
   activity,
   getActivitySnapshot,
-  getAllActivities,
   getMember,
   Member,
   setWork,
@@ -43,8 +41,8 @@ import {
 } from 'react-icons/io5';
 import { MemberAction } from './qrcodeScan';
 import { useMemo } from 'react';
-import { DocumentSnapshot, QueryDocumentSnapshot } from 'firebase/firestore';
-import { LoadMoreButton, SideWidget } from './assets';
+import { DocumentSnapshot } from 'firebase/firestore';
+import { SideWidget } from './assets';
 import { millisToText } from '../utils/time';
 
 export const ActivityStatus: React.FC<{
@@ -59,43 +57,6 @@ export const ActivityStatus: React.FC<{
       />
       <Text> {statusToText(workStatus ?? '')}</Text>
     </HStack>
-  );
-};
-
-export const AllActivity: React.FC<{ loadMore?: boolean }> = ({
-  loadMore = true,
-}) => {
-  const { currentId } = useContext(GroupContext);
-  const [activities, setActivities] = useState<
-    QueryDocumentSnapshot<activity<work>>[] | null
-  >(null);
-
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot>();
-
-  const loadMoreData = () => {
-    if (currentId && activities)
-      getAllActivities(currentId, 5, lastDoc).then((_activities) => {
-        setActivities([...activities, ..._activities]);
-        setLastDoc(_activities[4]);
-      });
-  };
-
-  useEffect(() => {
-    if (currentId) {
-      getAllActivities(currentId, 5).then((activities) => {
-        setActivities(activities);
-        setLastDoc(activities[4]);
-      });
-    }
-  }, [currentId]);
-  const DisplayActivities = React.lazy(() => import('./display-activities'));
-  return (
-    <Suspense fallback={null}>
-      <VStack>
-        <DisplayActivities data={activities} editable />
-        {loadMore && lastDoc && <LoadMoreButton loadMore={loadMoreData} />}
-      </VStack>
-    </Suspense>
   );
 };
 
@@ -284,6 +245,7 @@ const Activities: React.FC = () => {
   const [detectedMember, setDetectedMember] =
     useState<dataWithId<Member> | null>(null);
   const QRCodeScan = React.lazy(() => import('./qrcodeScan'));
+  const Activities = React.lazy(() => import('./display-activities'));
   return (
     <>
       <Switch>
@@ -293,7 +255,9 @@ const Activities: React.FC = () => {
             <Text>全てのアクティビティーが時間順で並びます</Text>
           </Box>
           <HStack align="flex-start" py="5">
-            <AllActivity />
+            <Suspense fallback={<Skeleton />}>
+              <Activities />
+            </Suspense>
             <Spacer />
             <SideWidget>
               <>

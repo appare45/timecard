@@ -32,7 +32,7 @@ import {
   getUserActivities,
 } from '../utils/group';
 import { LoadMoreButton, SideWidget } from './assets';
-import DisplayActivities from './display-activities';
+import { DisplayActivities } from './display-activities';
 
 function UserActivity(): JSX.Element {
   const [lastActivityDoc, setLastActivityDoc] = useState<
@@ -112,6 +112,9 @@ function UserActivity(): JSX.Element {
       () => <DisplayActivities data={data} showMemberData editable />,
       [data]
     );
+
+  const LoadMore: React.FC = () =>
+    useMemo(() => <LoadMoreButton loadMore={loadMoreData} />, []);
   return (
     <>
       {history.length > 0 && (
@@ -129,7 +132,7 @@ function UserActivity(): JSX.Element {
       <HStack align="flex-start">
         <VStack w="full" spacing="4" pb="2">
           {activities && <Activities data={activities} />}
-          {lastActivityDoc && <LoadMoreButton loadMore={loadMoreData} />}
+          {lastActivityDoc && <LoadMore />}
         </VStack>
         <SideWidget>
           {(isAdmin || isOwnMember) && (

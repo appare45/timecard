@@ -42,7 +42,6 @@ import {
   listMembers,
   getGroup,
   Group,
-  memberStatus,
   setMember,
 } from '../utils/group';
 import { QueryDocumentSnapshot } from '@firebase/firestore';
@@ -135,9 +134,14 @@ const MemberRow: React.FC<{
         </HStack>
       </Td>
       {!isSimple && (
-        <Td>
-          <HStack>{buttons}</HStack>
-        </Td>
+        <>
+          <Td>
+            <HStack>{buttons}</HStack>
+          </Td>
+          <Td>
+            <HStack>{buttons}</HStack>
+          </Td>
+        </>
       )}
     </Tr>
   </>
@@ -239,6 +243,7 @@ const MembersList: React.FC<{
                 <Tr>
                   <Th>名前</Th>
                   <Th></Th>
+                  <Th>タグ</Th>
                 </Tr>
               </Thead>
               <Tbody>
