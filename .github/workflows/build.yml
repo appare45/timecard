@@ -12,6 +12,6 @@ jobs:
         with:
           node-version: '16'
           cache: 'yarn'
-      - run: yarn install
+        run: yarn install
       - run: yarn build
         timeout-minutes: 5
