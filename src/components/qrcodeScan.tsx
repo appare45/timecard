@@ -219,7 +219,9 @@ export const MemberAction: React.FC<{
             <Heading fontSize="2xl">読み込み中</Heading>
           </Skeleton>
         )}
-        <Suspense fallback={<Skeleton />}>{LatestActivityCard}</Suspense>
+        {latestActivity?.data().content.status == 'running' && (
+          <Suspense fallback={<Skeleton />}>{LatestActivityCard}</Suspense>
+        )}
       </Box>
       <FormControl>
         <FormLabel>メモ</FormLabel>
@@ -299,8 +301,7 @@ export const QRCodeScan = React.memo(
     const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
     const [error, updateError] = useState('');
     const videoRef = useRef<HTMLVideoElement>(null);
-    const [facingMode, setFacingMode] =
-      useState<VideoFacingModeEnum>('environment');
+    const [facingMode, setFacingMode] = useState<VideoFacingModeEnum>('user');
 
     useEffect(() => {
       getUserCamera(facingMode)

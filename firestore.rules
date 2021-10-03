@@ -13,6 +13,11 @@ service cloud.firestore {
     function isGroupMember(groupId) {
       return isAuthenticated() && exists(/databases/$(database)/documents/group/$(groupId)/account/$(request.auth.uid))
     }
+
+    function isAdmin(groupId, memberId) {
+      return isAuthenticated() && isGroupMember(groupId) && exists(/databases/$(database)/documents/group/$(groupId)/admin/$(memberId))
+    }
+
     match /{document=**} {
       match /user/{uid} {
         allow get, create, update: if isUserAuthenticated(uid)

@@ -9,10 +9,10 @@ import {
   Heading,
   HStack,
   Skeleton,
+  Spacer,
   Text,
   Textarea,
   useToast,
-  VStack,
 } from '@chakra-ui/react';
 import React, { Suspense } from 'react';
 import { useEffect } from 'react';
@@ -26,7 +26,6 @@ import { Link as RouterLink } from 'react-router-dom';
 import {
   activity,
   getActivitySnapshot,
-  getAllActivities,
   getMember,
   Member,
   setWork,
@@ -42,8 +41,9 @@ import {
 } from 'react-icons/io5';
 import { MemberAction } from './qrcodeScan';
 import { useMemo } from 'react';
-import { DocumentSnapshot, QueryDocumentSnapshot } from 'firebase/firestore';
-import { LoadMoreButton } from './assets';
+import { DocumentSnapshot } from 'firebase/firestore';
+import { SideWidget } from './assets';
+import { millisToText } from '../utils/time';
 
 export const ActivityStatus: React.FC<{
   workStatus: workStatus;
@@ -57,41 +57,6 @@ export const ActivityStatus: React.FC<{
       />
       <Text> {statusToText(workStatus ?? '')}</Text>
     </HStack>
-  );
-};
-
-export const AllActivity: React.FC = () => {
-  const { currentId } = useContext(GroupContext);
-  const [activities, setActivities] = useState<
-    QueryDocumentSnapshot<activity<work>>[] | null
-  >(null);
-
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot>();
-
-  const loadMoreData = () => {
-    if (currentId && activities)
-      getAllActivities(currentId, 5, lastDoc).then((_activities) => {
-        setActivities([...activities, ..._activities]);
-        setLastDoc(_activities[4]);
-      });
-  };
-
-  useEffect(() => {
-    if (currentId) {
-      getAllActivities(currentId, 5).then((activities) => {
-        setActivities(activities);
-        setLastDoc(activities[4]);
-      });
-    }
-  }, [currentId]);
-  const DisplayActivities = React.lazy(() => import('./display-activities'));
-  return (
-    <Suspense fallback={null}>
-      <VStack w="full">
-        <DisplayActivities data={activities} editable />
-        {lastDoc && <LoadMoreButton loadMore={loadMoreData} />}
-      </VStack>
-    </Suspense>
   );
 };
 
@@ -216,8 +181,10 @@ const ActivityDetail: React.FC<{
           activityData.content.endTime ? (
             <Text>
               {/* ToDo: m秒表示を日本語に変換する */}
-              {activityData.content.endTime.toMillis() -
-                activityData.content.startTime.toMillis()}
+              {millisToText(
+                activityData.content.endTime.toMillis() -
+                  activityData.content.startTime.toMillis()
+              )}
             </Text>
           ) : (
             <ActivityStatus workStatus={activityData.content.status} />
@@ -273,10 +240,12 @@ const SingleActivity = () => {
 
 const Activities: React.FC = () => {
   const { path } = useRouteMatch();
+  const { isAdmin } = useContext(GroupContext);
   const history = useHistory();
   const [detectedMember, setDetectedMember] =
     useState<dataWithId<Member> | null>(null);
   const QRCodeScan = React.lazy(() => import('./qrcodeScan'));
+  const Activities = React.lazy(() => import('./display-activities'));
   return (
     <>
       <Switch>
@@ -286,19 +255,22 @@ const Activities: React.FC = () => {
             <Text>全てのアクティビティーが時間順で並びます</Text>
           </Box>
           <HStack align="flex-start" py="5">
-            <AllActivity />
-            <VStack
-              mt="10"
-              border="1px"
-              bg="gray.50"
-              borderColor="gray.200"
-              p="5"
-              rounded="base"
-              align="flex-start">
-              <Button leftIcon={<IoScan />} as={RouterLink} to="/activity/scan">
-                スキャン
-              </Button>
-            </VStack>
+            <Suspense fallback={<Skeleton />}>
+              <Activities />
+            </Suspense>
+            <Spacer />
+            <SideWidget>
+              <>
+                {isAdmin && (
+                  <Button
+                    leftIcon={<IoScan />}
+                    as={RouterLink}
+                    to="/activity/scan">
+                    スキャン
+                  </Button>
+                )}
+              </>
+            </SideWidget>
           </HStack>
         </Route>
         <Route exact path={`${path}scan`}>
@@ -322,4 +294,4 @@ const Activities: React.FC = () => {
   );
 };
 
-export { Activities };
+export default Activities;

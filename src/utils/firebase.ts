@@ -1,3 +1,4 @@
+import { getFirestore } from '@firebase/firestore';
 import { initializeApp } from 'firebase/app';
 
 const firebaseConfig = {
@@ -16,5 +17,7 @@ export type dataWithId<T> = {
   id: string;
   data: T;
 };
+
+export const Db = getFirestore(app);
 
 export { app };

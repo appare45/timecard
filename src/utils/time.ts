@@ -50,3 +50,13 @@ export const relativeTimeText = (DateObject: Date | null): void | string => {
     return texts.join();
   }
 };
+
+export const millisToText = (time: number): string => {
+  let text = '';
+  const _time = time / 100;
+  if (_time / 60 / 60 / 60 > 1)
+    text += `${Math.round(((_time % 60) % 60) % 60)}時間`;
+  if (_time / 60 / 60 > 1) text += `${Math.round((_time % 60) % 60)}分`;
+  if (_time / 60 > 1) text += `${Math.round(_time % 60)}秒`;
+  return text;
+};

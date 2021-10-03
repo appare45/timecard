@@ -106,7 +106,7 @@ const Members: React.FC = () => {
       <RouteSwitch>
         <Route exact path={path}>
           <HStack w="full">
-            <Heading>メンバー一覧</Heading>
+            <Heading>メンバー</Heading>
             <Spacer />
             {groupContext.currentId && (
               <AddMember

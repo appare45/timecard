@@ -1,16 +1,63 @@
+import { Avatar, AvatarBadge } from '@chakra-ui/avatar';
 import { Button, ButtonGroup } from '@chakra-ui/button';
-import React from 'react';
-import { IoArrowDown } from 'react-icons/io5';
+import { HStack, Text, VStack } from '@chakra-ui/layout';
+import { Spinner } from '@chakra-ui/spinner';
+import React, { useEffect, useRef } from 'react';
+import { Member } from '../utils/group';
 
 export const LoadMoreButton: React.FC<{ loadMore: () => void }> = ({
   loadMore,
 }) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (e) => {
+        if (e[0].isIntersecting) loadMore();
+      },
+      {
+        root: null,
+        threshold: 0,
+        rootMargin: '10px',
+      }
+    );
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+  }, [loadMore]);
   return (
-    <Button onClick={loadMore} variant="link" leftIcon={<IoArrowDown />}>
-      さらに読み込む
-    </Button>
+    <HStack ref={ref}>
+      <Spinner size="sm" colorScheme="red" /> <Text>読込中</Text>
+    </HStack>
   );
 };
+
+export const SideWidget: React.FC = ({ children }) => (
+  <VStack
+    mt="10"
+    border="1px"
+    bg="gray.50"
+    borderColor="gray.200"
+    p="5"
+    rounded="base"
+    align="flex-start">
+    {children}
+  </VStack>
+);
+
+export const MemberAvatar: React.FC<{
+  member?: Member;
+  size?: string;
+  status?: boolean;
+}> = ({ member, size = 'sm', status = true }) => (
+  <Avatar src={member?.photoUrl} size={size}>
+    {status && (
+      <AvatarBadge
+        bg={member?.status === 'active' ? 'green.400' : 'gray.400'}
+        boxSize="1em"
+      />
+    )}
+  </Avatar>
+);
 
 export const FormButtons: React.FC<{
   editMode: boolean;
