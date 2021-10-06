@@ -8,7 +8,12 @@ import Offline from './pages/offline';
 function App(): JSX.Element {
   const [isOffline, setIsOffline] = useState(navigator.onLine);
   useEffect(() => {
-    setIsOffline(navigator.onLine);
+    window.addEventListener('offline', () => {
+      setIsOffline(true);
+    });
+    window.addEventListener('online', () => {
+      setIsOffline(false);
+    });
   }, []);
   const UserUI = React.lazy(() => import('./components/user'));
   return (
