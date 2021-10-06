@@ -17,6 +17,7 @@ import React, {
   useEffect,
   useMemo,
   Suspense,
+  useCallback,
 } from 'react';
 import { IoArrowBack, IoPersonCircleOutline, IoQrCode } from 'react-icons/io5';
 import { useParams, useHistory } from 'react-router';
@@ -68,7 +69,7 @@ function UserActivity(): JSX.Element {
   }, [currentId, currentMember, memberId, user]);
   const history = useHistory();
 
-  const loadMoreData = () => {
+  const loadMoreData = useCallback(() => {
     if (currentId)
       if (lastActivityDoc) {
         getUserActivities(currentId, memberId, 5, lastActivityDoc).then(
@@ -87,7 +88,7 @@ function UserActivity(): JSX.Element {
           }
         );
       }
-  };
+  }, [activities, currentId, lastActivityDoc, memberId]);
 
   useEffect(() => {
     if (currentId)
@@ -109,7 +110,18 @@ function UserActivity(): JSX.Element {
     data: QueryDocumentSnapshot<activity<work>>[];
   }> = ({ data }) =>
     useMemo(
-      () => <DisplayActivities data={data} showMemberData editable />,
+      () => (
+        <>
+          {user && (
+            <DisplayActivities
+              data={data}
+              showMemberData
+              editable
+              memberData={user}
+            />
+          )}
+        </>
+      ),
       [data]
     );
 

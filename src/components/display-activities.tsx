@@ -1,5 +1,6 @@
 import React, {
   Suspense,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -9,8 +10,8 @@ import { QueryDocumentSnapshot } from 'firebase/firestore';
 import { activity, getAllActivities, Member, work } from '../utils/group';
 import { Alert, AlertIcon, Skeleton, VStack } from '@chakra-ui/react';
 import { GroupContext } from '../contexts/group';
-import { LoadMoreButton } from './assets';
 import ActivityCard from './activity-card';
+import { useLoadMore } from '../hooks/loadmore';
 
 export const DisplayActivities: React.FC<{
   data: QueryDocumentSnapshot<activity<work>>[] | null;
@@ -61,13 +62,13 @@ export const AllActivity: React.FC<{ loadMore?: boolean }> = ({
 
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot>();
 
-  const loadMoreData = () => {
+  const loadMoreData = useCallback(() => {
     if (currentId && activities)
       getAllActivities(currentId, 5, lastDoc).then((_activities) => {
         setActivities([...activities, ..._activities]);
         setLastDoc(_activities[4]);
       });
-  };
+  }, [activities, currentId, lastDoc]);
 
   useEffect(() => {
     if (currentId) {
@@ -78,8 +79,7 @@ export const AllActivity: React.FC<{ loadMore?: boolean }> = ({
     }
   }, [currentId]);
 
-  const LoadMore: React.FC = () =>
-    useMemo(() => <LoadMoreButton loadMore={loadMoreData} />, []);
+  const LoadMore: React.FC = () => useLoadMore(loadMoreData);
 
   return (
     <Suspense fallback={null}>
