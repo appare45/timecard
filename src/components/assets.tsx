@@ -1,9 +1,13 @@
 import { Avatar, AvatarBadge } from '@chakra-ui/avatar';
 import { Button, ButtonGroup } from '@chakra-ui/button';
 import { HStack, Text, VStack } from '@chakra-ui/layout';
+import { TagLeftIcon } from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
+import { Tag, TagLabel } from '@chakra-ui/tag';
 import React, { useEffect, useRef } from 'react';
+import { IoPricetag } from 'react-icons/io5';
 import { Member } from '../utils/group';
+import { tagColors } from '../utils/group-tag';
 
 export const LoadMoreButton: React.FC<{ loadMore: () => void }> = ({
   loadMore,
@@ -83,3 +87,16 @@ export const FormButtons: React.FC<{
     )}
   </ButtonGroup>
 );
+
+export const GroupTag: React.FC<{
+  label: React.ReactElement | string;
+  color: tagColors;
+  size?: string;
+}> = ({ label, color, size = 'md' }) => {
+  return (
+    <Tag colorScheme={color} size={size}>
+      <TagLeftIcon as={IoPricetag} />
+      <TagLabel>{label}</TagLabel>
+    </Tag>
+  );
+};

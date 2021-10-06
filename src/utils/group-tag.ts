@@ -4,8 +4,12 @@ import {
   DocumentReference,
   FirestoreDataConverter,
   getDocs,
+  limit,
   query,
+  QueryConstraint,
+  QueryDocumentSnapshot,
   QuerySnapshot,
+  startAfter,
 } from '@firebase/firestore';
 import { Db } from './firebase';
 
@@ -74,10 +78,19 @@ export async function createTag(
     throw new Error('');
   }
 }
-export async function listTag(groupId: string): Promise<QuerySnapshot<tag>> {
+export async function listTag(
+  groupId: string,
+  limitNumber?: number,
+  lastDoc?: QueryDocumentSnapshot
+): Promise<QuerySnapshot<tag>> {
   try {
+    const qcs: QueryConstraint[] = [];
+    if (limitNumber) qcs.push(limit(limitNumber));
+    if (lastDoc) qcs.push(startAfter(lastDoc));
     return getDocs(
-      query(collection(Db, `group/${groupId}/tag`)).withConverter(TagConverter)
+      query(collection(Db, `group/${groupId}/tag`), ...qcs).withConverter(
+        TagConverter
+      )
     );
   } catch (error) {
     console.error(error);

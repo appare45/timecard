@@ -10,18 +10,17 @@ import {
   EditableInput,
   EditablePreview,
   Spacer,
-  Tag,
 } from '@chakra-ui/react';
 import { Select } from '@chakra-ui/select';
 import { Tag as TagElement, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
 import { useToast } from '@chakra-ui/toast';
 import { QueryDocumentSnapshot } from '@firebase/firestore';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { IoAdd, IoKeyOutline, IoPricetag } from 'react-icons/io5';
+import { IoAdd, IoKeyOutline } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { getGroup, Group, setGroup } from '../utils/group';
 import { createTag, listTag, tag, tagColors } from './../utils/group-tag';
-import { FormButtons } from './assets';
+import { FormButtons, GroupTag } from './assets';
 
 const OrganizationName = () => {
   const { currentId } = useContext(GroupContext);
@@ -102,9 +101,8 @@ const CreateTag = () => {
     <HStack my="3">
       {createMode ? (
         <>
-          <Tag colorScheme={tagColor} size="lg">
-            <TagLeftIcon as={IoPricetag} />
-            <TagLabel>
+          <GroupTag
+            label={
               <Editable
                 placeholder="タグの名前を入力"
                 onSubmit={(e) => setTagName(e)}
@@ -112,8 +110,10 @@ const CreateTag = () => {
                 <EditableInput />
                 <EditablePreview />
               </Editable>
-            </TagLabel>
-          </Tag>
+            }
+            color={tagColor}
+            size="lg"
+          />
           <Select
             variant="filled"
             size="sm"
@@ -187,17 +187,28 @@ const TagSetting = () => {
 
 const TagList = () => {
   const { currentId } = useContext(GroupContext);
-  const [tags, setTags] = useState<QueryDocumentSnapshot<tag>[]>();
+  const [tags, setTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
+  // ToDo: 無限スクロールを実装
   useEffect(() => {
     if (currentId)
       listTag(currentId).then((e) => {
         const tags: QueryDocumentSnapshot<tag>[] = [];
         e.forEach((j) => tags.push(j));
+
         setTags(tags);
       });
   }, [currentId]);
-  return tags?.length ?? 0 > 0 ? (
-    <></>
+  return tags.length > 0 ? (
+    <>
+      {tags?.map((e) => (
+        <GroupTag
+          label={e.data().name ?? '読込中'}
+          color={e.data().color ?? 'gray'}
+          key={e.id}
+          size="lg"
+        />
+      ))}
+    </>
   ) : (
     <Alert status="info">
       <AlertIcon />
