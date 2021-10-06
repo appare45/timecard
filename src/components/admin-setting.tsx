@@ -2,7 +2,16 @@ import { Button, ButtonGroup } from '@chakra-ui/button';
 import { useBoolean } from '@chakra-ui/hooks';
 import { Input } from '@chakra-ui/input';
 import { Box, Heading, Text, HStack, Stack } from '@chakra-ui/layout';
-import { Alert, AlertIcon, AlertTitle, Spacer } from '@chakra-ui/react';
+import {
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  Editable,
+  EditableInput,
+  EditablePreview,
+  Spacer,
+  Tag,
+} from '@chakra-ui/react';
 import { Select } from '@chakra-ui/select';
 import { Tag as TagElement, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
 import { useToast } from '@chakra-ui/toast';
@@ -11,7 +20,7 @@ import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { IoAdd, IoKeyOutline, IoPricetag } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { getGroup, Group, setGroup } from '../utils/group';
-import { createTag, listTag, Tag, tagColors } from './../utils/group-tag';
+import { createTag, listTag, tag, tagColors } from './../utils/group-tag';
 import { FormButtons } from './assets';
 
 const OrganizationName = () => {
@@ -90,20 +99,25 @@ const CreateTag = () => {
     'pink',
   ];
   return (
-    <HStack>
+    <HStack my="3">
       {createMode ? (
         <>
-          <Input
-            placeholder="タグの名前"
-            value={tagName}
-            onChange={(e) => setTagName(e.target.value)}
-            autoFocus
-            minLength={1}
-            maxLength={20}
-          />
+          <Tag colorScheme={tagColor} size="lg">
+            <TagLeftIcon as={IoPricetag} />
+            <TagLabel>
+              <Editable
+                placeholder="タグの名前を入力"
+                onSubmit={(e) => setTagName(e)}
+                startWithEditView>
+                <EditableInput />
+                <EditablePreview />
+              </Editable>
+            </TagLabel>
+          </Tag>
           <Select
             variant="filled"
-            icon={<IoPricetag />}
+            size="sm"
+            w="auto"
             iconColor={tagColor}
             value={tagColor}
             onChange={(e) => setTagColor(e.target.value as tagColors)}>
@@ -114,13 +128,19 @@ const CreateTag = () => {
             ))}
           </Select>
           <Spacer />
+          {tagName.length == 0 && (
+            <Alert status="warning" w="auto" variant="subtle">
+              <AlertIcon />
+              タグの名前を入力してください
+            </Alert>
+          )}
           <ButtonGroup>
             <Button
               colorScheme="green"
               disabled={tagName.length == 0 && tagName.length < 20}
               onClick={() => {
                 if (currentId && tagName.length > 0)
-                  createTag(new Tag(tagName, tagColor), currentId)
+                  createTag(new tag(tagName, tagColor), currentId)
                     .then(() => {
                       toast({
                         title: 'タグを作成しました',
@@ -147,7 +167,6 @@ const CreateTag = () => {
           leftIcon={<IoAdd />}
           variant="outline"
           colorScheme="green"
-          size="sm"
           onClick={setCreateMode.on}>
           タグを作成
         </Button>
@@ -168,11 +187,11 @@ const TagSetting = () => {
 
 const TagList = () => {
   const { currentId } = useContext(GroupContext);
-  const [tags, setTags] = useState<QueryDocumentSnapshot<Tag>[]>();
+  const [tags, setTags] = useState<QueryDocumentSnapshot<tag>[]>();
   useEffect(() => {
     if (currentId)
       listTag(currentId).then((e) => {
-        const tags: QueryDocumentSnapshot<Tag>[] = [];
+        const tags: QueryDocumentSnapshot<tag>[] = [];
         e.forEach((j) => tags.push(j));
         setTags(tags);
       });

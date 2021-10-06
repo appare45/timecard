@@ -20,7 +20,7 @@ export type tagColors =
   | 'purple'
   | 'pink';
 
-export class Tag {
+export class tag {
   private _name = '';
   private _color: tagColors = 'gray';
   public get color(): tagColors {
@@ -43,8 +43,8 @@ export class Tag {
   }
 }
 
-const TagConverter: FirestoreDataConverter<Tag> = {
-  toFirestore(data: Tag) {
+const TagConverter: FirestoreDataConverter<tag> = {
+  toFirestore(data: tag) {
     return {
       name: data.name,
       color: data.color,
@@ -52,14 +52,14 @@ const TagConverter: FirestoreDataConverter<Tag> = {
   },
   fromFirestore(snapshot, option) {
     const data = snapshot.data(option);
-    return new Tag(data.name, data.color);
+    return new tag(data.name, data.color);
   },
 };
 
 export async function createTag(
-  tag: Tag,
+  tag: tag,
   groupId: string
-): Promise<DocumentReference<Tag>> {
+): Promise<DocumentReference<tag>> {
   if (tag.name.length > 0) {
     try {
       return await addDoc(
@@ -74,7 +74,7 @@ export async function createTag(
     throw new Error('');
   }
 }
-export async function listTag(groupId: string): Promise<QuerySnapshot<Tag>> {
+export async function listTag(groupId: string): Promise<QuerySnapshot<tag>> {
   try {
     return getDocs(
       query(collection(Db, `group/${groupId}/tag`)).withConverter(TagConverter)
