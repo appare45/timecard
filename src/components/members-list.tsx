@@ -1,4 +1,3 @@
-import { useBoolean } from '@chakra-ui/hooks';
 import { HStack, Stack } from '@chakra-ui/layout';
 import {
   Skeleton,
@@ -29,24 +28,18 @@ import {
   PopoverHeader,
   PopoverBody,
   Checkbox,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalOverlay,
 } from '@chakra-ui/react';
 import React, {
   useContext,
   useState,
   useEffect,
   ReactElement,
-  Suspense,
   useMemo,
   useCallback,
 } from 'react';
 import { IoAdd, IoAnalytics } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { Link as RouterLink } from 'react-router-dom';
-import { getGroup, Group } from '../utils/group';
 import {
   DocumentReference,
   DocumentSnapshot,
@@ -55,32 +48,8 @@ import {
 } from '@firebase/firestore';
 import { GroupTag, LoadMoreButton, MemberAvatar } from './assets';
 import { listTag, tag } from '../utils/group-tag';
-import { RecoilRoot } from 'recoil';
 import { listMembers, Member, setMember, setMemberTag } from '../utils/member';
-
-const MemberCardDrawer: React.FC<{
-  groupId: string;
-  member: QueryDocumentSnapshot<Member>;
-}> = ({ member, groupId }) => {
-  const [group, setGroup] = useState<Group | null>(null);
-  useEffect(() => {
-    getGroup(groupId).then((group) => setGroup(group));
-  }, [groupId]);
-  const Card = React.lazy(() => import('./createCard'));
-  return (
-    <Suspense fallback={<Skeleton />}>
-      {group && (
-        <Card
-          member={{
-            id: member.id,
-            data: member.data(),
-          }}
-          group={group}
-        />
-      )}
-    </Suspense>
-  );
-};
+import { atom, useRecoilState } from 'recoil';
 
 const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
   data,
@@ -166,7 +135,6 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
   // グループのタグ
   const [groupTags, setGroupTags] = useState<DocumentSnapshot<tag>[]>([]);
   const { currentId } = useContext(GroupContext);
-  // タグ一覧
   useMemo(() => {
     if (currentId) {
       // タグ一覧を取得
@@ -218,8 +186,6 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
     }
     setUserTags(newTags);
   };
-
-  // タグ一覧（Popoverが描画されたタイミングでは描画されない）
 
   //  タグを追加するボタン（popover）
   const AddTagButton: React.FC = () => {
@@ -289,9 +255,7 @@ const MemberRow: React.FC<{
               <HStack>{buttons}</HStack>
             </Td>
             <Td>
-              <RecoilRoot>
-                <MemberTags memberId={data.id} memberData={data.data()} />
-              </RecoilRoot>
+              <MemberTags memberId={data.id} memberData={data.data()} />
             </Td>
           </>
         )}
@@ -304,47 +268,41 @@ const MembersListTable: React.FC<{
   membersData: QueryDocumentSnapshot<Member>[];
   isSimple?: boolean;
 }> = ({ membersData, isSimple = false }) => {
-  const { currentId } = useContext(GroupContext);
-  const [showCardModal, setShowCardModal] = useBoolean(false);
-  console.info(showCardModal);
   return useMemo(
     () => (
       <>
         {membersData?.map((member) => (
-          <>
-            <MemberRow
-              key={member.id}
-              data={member}
-              isSimple={isSimple}
-              buttons={
-                <ButtonGroup colorScheme="gray" variant="ghost" spacing="1">
-                  <Tooltip label="アクティビティーを見る">
-                    <IconButton
-                      aria-label="アクティビティーを見る"
-                      icon={<IoAnalytics />}
-                      as={RouterLink}
-                      to={`/member/${member.id}`}
-                    />
-                  </Tooltip>
-                </ButtonGroup>
-              }
-            />
-            <Modal isOpen={showCardModal} onClose={setShowCardModal.off}>
-              <ModalOverlay />
-              <ModalBody>
-                <ModalCloseButton />
-                {currentId && (
-                  <MemberCardDrawer groupId={currentId} member={member} />
-                )}
-              </ModalBody>
-            </Modal>
-          </>
+          <MemberRow
+            key={member.id}
+            data={member}
+            isSimple={isSimple}
+            buttons={
+              <ButtonGroup colorScheme="gray" variant="ghost" spacing="1">
+                <Tooltip label="アクティビティーを見る">
+                  <IconButton
+                    aria-label="アクティビティーを見る"
+                    icon={<IoAnalytics />}
+                    as={RouterLink}
+                    to={`/member/${member.id}`}
+                  />
+                </Tooltip>
+              </ButtonGroup>
+            }
+          />
         ))}
       </>
     ),
-    [currentId, isSimple, membersData, setShowCardModal, showCardModal]
+    [isSimple, membersData]
   );
 };
+
+// メンバー一覧のatom
+const ShowMembersState = atom<QueryDocumentSnapshot<Member>[]>({
+  key: 'shownMemberState_MembersList',
+  default: [],
+  dangerouslyAllowMutability: true,
+});
+
 const MembersList: React.FC<{
   onlyOnline?: boolean;
   update?: boolean;
@@ -352,8 +310,7 @@ const MembersList: React.FC<{
 }> = ({ onlyOnline = false, update, isSimple = false }) => {
   const { currentId } = useContext(GroupContext);
   const [isUpdating, setIsUpdating] = useState(true);
-  const [shownMembers, setShownMembers] =
-    useState<QueryDocumentSnapshot<Member>[]>();
+  const [shownMembers, setShownMembers] = useRecoilState(ShowMembersState);
   const [sortWithOnline, setSortWithOnline] = useState(onlyOnline);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot>();
 
@@ -398,7 +355,7 @@ const MembersList: React.FC<{
 
       setIsUpdating(false);
     }
-  }, [currentId, sortWithOnline, update]);
+  }, [currentId, setShownMembers, sortWithOnline, update]);
   return (
     <>
       {!onlyOnline && (
