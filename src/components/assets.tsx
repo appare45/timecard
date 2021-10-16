@@ -1,7 +1,7 @@
 import { Avatar, AvatarBadge } from '@chakra-ui/avatar';
 import { Button, ButtonGroup } from '@chakra-ui/button';
 import { HStack, Text, VStack } from '@chakra-ui/layout';
-import { TagLeftIcon } from '@chakra-ui/react';
+import { TagCloseButton, TagLeftIcon } from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
 import { Tag, TagLabel } from '@chakra-ui/tag';
 import React, { useEffect, useRef } from 'react';
@@ -92,11 +92,13 @@ export const GroupTag: React.FC<{
   label: React.ReactElement | string;
   color: tagColors;
   size?: string;
-}> = ({ label, color, size = 'md' }) => {
+  onRemove?: () => void;
+}> = ({ label, color, size = 'md', onRemove }) => {
   return (
     <Tag colorScheme={color} size={size}>
       <TagLeftIcon as={IoPricetag} />
       <TagLabel>{label}</TagLabel>
+      {onRemove && <TagCloseButton onClick={onRemove} />}
     </Tag>
   );
 };

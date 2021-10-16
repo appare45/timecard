@@ -1,5 +1,5 @@
 import { useBoolean } from '@chakra-ui/hooks';
-import { HStack } from '@chakra-ui/layout';
+import { HStack, Stack } from '@chakra-ui/layout';
 import {
   Skeleton,
   Table,
@@ -26,6 +26,15 @@ import {
   EditableInput,
   EditablePreview,
   useToast,
+  Button,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverArrow,
+  PopoverCloseButton,
+  PopoverHeader,
+  PopoverBody,
+  Checkbox,
 } from '@chakra-ui/react';
 import React, {
   useContext,
@@ -33,8 +42,9 @@ import React, {
   useEffect,
   ReactElement,
   Suspense,
+  useMemo,
 } from 'react';
-import { IoAnalytics, IoCard } from 'react-icons/io5';
+import { IoAdd, IoAnalytics, IoCard } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { Link as RouterLink } from 'react-router-dom';
 import {
@@ -44,8 +54,10 @@ import {
   Group,
   setMember,
 } from '../utils/group';
-import { QueryDocumentSnapshot } from '@firebase/firestore';
-import { LoadMoreButton, MemberAvatar } from './assets';
+import { DocumentSnapshot, QueryDocumentSnapshot } from '@firebase/firestore';
+import { GroupTag, LoadMoreButton, MemberAvatar } from './assets';
+import { listTag, tag } from '../utils/group-tag';
+import { RecoilRoot } from 'recoil';
 
 const MemberCardDrawer: React.FC<{
   isOpen: boolean;
@@ -116,34 +128,159 @@ const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
   );
 };
 
+const GroupTagList: React.FC<{
+  groupTags: DocumentSnapshot<tag>[];
+  userTags: {
+    data: DocumentSnapshot<tag>[];
+    addTag: (e: DocumentSnapshot<tag>) => void;
+    removeTag: (e: DocumentSnapshot<tag>) => void;
+  };
+}> = ({ groupTags, userTags }) => {
+  return useMemo(() => {
+    // 各タグ
+    const GroupTagMemo: React.FC<{ tag: DocumentSnapshot<tag> }> = ({ tag }) =>
+      useMemo(() => {
+        const tagData = tag.data();
+        if (tagData) {
+          return (
+            <Checkbox
+              defaultChecked={
+                userTags.data.find((e) => e.id === tag.id) != undefined
+              }
+              onChange={(e) => {
+                if (e.target.checked) {
+                  userTags.addTag(tag);
+                } else {
+                  userTags.removeTag(tag);
+                }
+              }}>
+              <GroupTag label={tagData.name} color={tagData.color} />
+            </Checkbox>
+          );
+        } else return null;
+      }, [tag]);
+
+    return (
+      <Stack spacing="2">
+        {groupTags.map((tag) => (
+          <GroupTagMemo tag={tag} key={tag.id} />
+        ))}
+      </Stack>
+    );
+  }, [groupTags, userTags]);
+};
+const MemberTags: React.FC = () => {
+  // ユーザーが持つタグ
+  const [userTags, setUserTags] = useState<DocumentSnapshot<tag>[]>([]);
+  // グループのタグ
+  const [groupTags, setGroupTags] = useState<DocumentSnapshot<tag>[]>([]);
+  const { currentId } = useContext(GroupContext);
+  // タグ一覧
+  useMemo(() => {
+    if (currentId) {
+      // タグ一覧を取得
+      listTag(currentId).then((e) => {
+        e.forEach((f) => {
+          setGroupTags((oldTags) => [...oldTags, f]);
+        });
+      });
+    }
+  }, [currentId]);
+
+  const addTag = (tag: DocumentSnapshot<tag>) => {
+    setUserTags((e) => [...e, tag]);
+  };
+
+  const removeTag = (tag: DocumentSnapshot<tag>) => {
+    const removeTagIndex = userTags.findIndex((e) => e.id === tag.id);
+    const newTags = [
+      ...userTags.slice(0, removeTagIndex),
+      ...userTags.slice(removeTagIndex + 1),
+    ];
+    setUserTags(newTags);
+  };
+
+  // タグ一覧（Popoverが描画されたタイミングでは描画されない）
+
+  //  タグを追加するボタン（popover）
+  const AddTagButton: React.FC = () => {
+    return (
+      <Popover isLazy lazyBehavior="keepMounted">
+        <PopoverTrigger>
+          <Button leftIcon={<IoAdd />} variant="outline" size="sm">
+            タグを追加
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent w="auto">
+          <PopoverArrow />
+          <PopoverCloseButton />
+          <PopoverHeader>タグを選択</PopoverHeader>
+          <PopoverBody>
+            <GroupTagList
+              groupTags={groupTags}
+              userTags={{
+                data: userTags,
+                addTag: addTag,
+                removeTag: removeTag,
+              }}
+            />
+          </PopoverBody>
+        </PopoverContent>
+      </Popover>
+    );
+  };
+
+  return (
+    <HStack>
+      {userTags.map(
+        (tag) =>
+          tag.data() && (
+            <GroupTag
+              label={tag.data()?.name ?? ''}
+              color={tag.data()?.color ?? 'gray'}
+              key={tag.id}
+              onRemove={() => removeTag(tag)}
+              size="md"
+            />
+          )
+      )}
+      <AddTagButton />
+    </HStack>
+  );
+};
+
 const MemberRow: React.FC<{
   data: QueryDocumentSnapshot<Member>;
   buttons: ReactElement;
   isSimple?: boolean;
 }> = ({ data, buttons, isSimple = false }) => (
   <>
-    <Tr>
-      <Td>
-        <HStack>
-          <MemberAvatar
-            member={data.data()}
-            size={isSimple ? 'xs' : undefined}
-            status={true}
-          />
-          <MemberName data={data} />
-        </HStack>
-      </Td>
-      {!isSimple && (
-        <>
-          <Td>
-            <HStack>{buttons}</HStack>
-          </Td>
-          <Td>
-            <HStack>{buttons}</HStack>
-          </Td>
-        </>
-      )}
-    </Tr>
+    {data.data() && (
+      <Tr>
+        <Td>
+          <HStack>
+            <MemberAvatar
+              member={data.data()}
+              size={isSimple ? 'xs' : undefined}
+              status={true}
+            />
+            <MemberName data={data} />
+          </HStack>
+        </Td>
+        {!isSimple && (
+          <>
+            <Td>
+              <HStack>{buttons}</HStack>
+            </Td>
+            <Td>
+              <RecoilRoot>
+                <MemberTags />
+              </RecoilRoot>
+            </Td>
+          </>
+        )}
+      </Tr>
+    )}
   </>
 );
 
