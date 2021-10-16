@@ -1,6 +1,6 @@
 import { DocumentSnapshot } from 'firebase/firestore';
 import { createContext } from 'react';
-import { Member } from '../utils/group';
+import { Member } from '../utils/member';
 
 export type groupId = {
   currentId: string | null;

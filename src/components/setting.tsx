@@ -11,7 +11,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import { GroupContext } from '../contexts/group';
-import { getMember, Member, setMember } from '../utils/group';
+import { getMember, Member, setMember } from '../utils/member';
 import { DocumentSnapshot } from '@firebase/firestore';
 import { AuthContext } from '../contexts/user';
 import { FormButtons, MemberAvatar } from './assets';

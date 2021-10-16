@@ -31,8 +31,6 @@ import {
   activity,
   addWork,
   getLatestActivity,
-  getMember,
-  Member,
   setWork,
   work,
 } from '../utils/group';
@@ -41,6 +39,7 @@ import { MutableRefObject } from 'react';
 import { IoCamera } from 'react-icons/io5';
 import { useMemo } from 'react';
 import { QueryDocumentSnapshot, Timestamp } from 'firebase/firestore';
+import { Member, getMember } from '../utils/member';
 
 const getUserCamera = (facingMode?: VideoFacingModeEnum) =>
   new Promise<MediaStream>((resolve, reject) => {

@@ -27,14 +27,8 @@ import {
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
-import {
-  getAccount,
-  getAdmin,
-  getGroup,
-  getMember,
-  Group,
-  Member,
-} from '../utils/group';
+import { getAccount, getAdmin, getGroup, Group } from '../utils/group';
+import { Member, getMember } from '../utils/member';
 
 type groupProps = {
   groupIds: string[];
