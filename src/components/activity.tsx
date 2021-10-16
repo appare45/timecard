@@ -26,8 +26,6 @@ import { Link as RouterLink } from 'react-router-dom';
 import {
   activity,
   getActivitySnapshot,
-  getMember,
-  Member,
   setWork,
   statusToText,
   work,
@@ -44,6 +42,7 @@ import { useMemo } from 'react';
 import { DocumentSnapshot } from 'firebase/firestore';
 import { SideWidget } from './assets';
 import { millisToText } from '../utils/time';
+import { Member, getMember } from '../utils/member';
 
 export const ActivityStatus: React.FC<{
   workStatus: workStatus;

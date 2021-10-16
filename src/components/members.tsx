@@ -17,9 +17,9 @@ import {
 } from '@chakra-ui/react';
 import React, { Suspense, useContext, useState } from 'react';
 import { GroupContext } from '../contexts/group';
-import { addMember, Member } from '../utils/group';
 import { IoPersonAdd } from 'react-icons/io5';
 import { Route, useRouteMatch, Switch as RouteSwitch } from 'react-router-dom';
+import { Member, addMember } from '../utils/member';
 
 const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
   groupId,

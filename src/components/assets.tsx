@@ -6,8 +6,8 @@ import { Spinner } from '@chakra-ui/spinner';
 import { Tag, TagLabel } from '@chakra-ui/tag';
 import React, { useEffect, useRef } from 'react';
 import { IoPricetag } from 'react-icons/io5';
-import { Member } from '../utils/group';
 import { tagColors } from '../utils/group-tag';
+import { Member } from '../utils/member';
 
 export const LoadMoreButton: React.FC<{ loadMore: () => void }> = ({
   loadMore,

@@ -25,14 +25,7 @@ import {
 } from 'firebase/firestore';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { GroupContext } from '../contexts/group';
-import {
-  activity,
-  getMember,
-  Member,
-  setWork,
-  work,
-  workStatus,
-} from '../utils/group';
+import { activity, setWork, work, workStatus } from '../utils/group';
 import { Link as RouterLink, useHistory } from 'react-router-dom';
 import {
   IoCheckmarkOutline,
@@ -43,6 +36,7 @@ import {
 import { relativeTimeText } from '../utils/time';
 import { ActivityStatus } from './activity';
 import { MemberAvatar } from './assets';
+import { Member, getMember } from '../utils/member';
 const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
   activityId,
   isEditable,

@@ -47,17 +47,12 @@ import React, {
 import { IoAdd, IoAnalytics, IoCard } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { Link as RouterLink } from 'react-router-dom';
-import {
-  Member,
-  listMembers,
-  getGroup,
-  Group,
-  setMember,
-} from '../utils/group';
+import { getGroup, Group } from '../utils/group';
 import { DocumentSnapshot, QueryDocumentSnapshot } from '@firebase/firestore';
 import { GroupTag, LoadMoreButton, MemberAvatar } from './assets';
 import { listTag, tag } from '../utils/group-tag';
 import { RecoilRoot } from 'recoil';
+import { listMembers, Member, setMember } from '../utils/member';
 
 const MemberCardDrawer: React.FC<{
   isOpen: boolean;

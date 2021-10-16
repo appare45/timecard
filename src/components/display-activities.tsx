@@ -2,16 +2,16 @@ import React, {
   Suspense,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from 'react';
 import { QueryDocumentSnapshot } from 'firebase/firestore';
-import { activity, getAllActivities, Member, work } from '../utils/group';
+import { activity, getAllActivities, work } from '../utils/group';
 import { Alert, AlertIcon, Skeleton, VStack } from '@chakra-ui/react';
 import { GroupContext } from '../contexts/group';
 import ActivityCard from './activity-card';
 import { useLoadMore } from '../hooks/loadmore';
+import { Member } from '../utils/member';
 
 export const DisplayActivities: React.FC<{
   data: QueryDocumentSnapshot<activity<work>>[] | null;
@@ -65,12 +65,15 @@ export const AllActivity: React.FC<{ loadMore?: boolean }> = ({
   const loadMoreData = useCallback(() => {
     if (currentId && activities)
       getAllActivities(currentId, 5, lastDoc).then((_activities) => {
-        setActivities([...activities, ..._activities]);
+        setActivities((e): QueryDocumentSnapshot<activity<work>>[] => [
+          ...(e ?? []),
+          ..._activities,
+        ]);
         setLastDoc(_activities[4]);
       });
   }, [activities, currentId, lastDoc]);
 
-  useEffect(() => {
+  useMemo(() => {
     if (currentId) {
       getAllActivities(currentId, 5).then((activities) => {
         setActivities(activities);
@@ -81,10 +84,15 @@ export const AllActivity: React.FC<{ loadMore?: boolean }> = ({
 
   const LoadMore: React.FC = () => useLoadMore(loadMoreData);
 
+  const DataDisplay = useCallback(
+    () => <DisplayActivities data={activities} editable />,
+    [activities]
+  );
+
   return (
     <Suspense fallback={null}>
       <VStack>
-        <DisplayActivities data={activities} editable />
+        {activities ? <DataDisplay /> : <Skeleton />}
         {loadMore && lastDoc && <LoadMore />}
       </VStack>
     </Suspense>

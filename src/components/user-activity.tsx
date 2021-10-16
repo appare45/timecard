@@ -24,14 +24,13 @@ import { useParams, useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import {
-  Member,
   activity,
   work,
   Group,
   getGroup,
-  getMember,
   getUserActivities,
 } from '../utils/group';
+import { Member, getMember } from '../utils/member';
 import { LoadMoreButton, SideWidget } from './assets';
 import { DisplayActivities } from './display-activities';
 

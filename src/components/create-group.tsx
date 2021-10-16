@@ -27,10 +27,12 @@ const CreateGroup: React.FC = () => {
           await createGroup(
             { name: groupName, joinStatus: false },
             {
-              id: userContext.account.uid,
               name: userContext.account.displayName,
               photoUrl: userContext.account.photoURL,
-            }
+              status: 'inactive',
+              tag: [],
+            },
+            userContext.account.uid
           ).then((groupId) => {
             if (userContext.account?.uid) {
               setUser({ groupId: [groupId] }, userContext.account.uid, {

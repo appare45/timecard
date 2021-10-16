@@ -1,11 +1,9 @@
-import { OrderByDirection } from '@firebase/firestore-types';
 import {
   Timestamp,
   QueryDocumentSnapshot,
   getFirestore,
   collection,
   query,
-  Query,
   where,
   getDocs,
   addDoc,
@@ -21,13 +19,13 @@ import {
   QuerySnapshot,
   orderBy,
   limit,
-  QueryConstraint,
   FieldPath,
   DocumentData,
   SetOptions,
   startAfter,
 } from 'firebase/firestore';
 import { app } from './../utils/firebase';
+import { addMember, Member, setMemberStatus } from './member';
 const Db = getFirestore(app);
 
 class Admin {
@@ -38,22 +36,6 @@ class Admin {
 class Account {
   constructor(readonly memberId: string) {
     this.memberId = memberId;
-  }
-}
-
-export type memberStatus = 'active' | 'inactive';
-export class Member {
-  name = '';
-  photoUrl = '';
-  status: memberStatus | null = null;
-  constructor(
-    name: string,
-    photoUrl: string | null = null,
-    status: memberStatus
-  ) {
-    this.name = name;
-    if (photoUrl) this.photoUrl = photoUrl;
-    this.status = status;
   }
 }
 
@@ -153,19 +135,6 @@ const groupDataConverter: FirestoreDataConverter<Group> = {
   },
 };
 
-const memberDataConverter = {
-  toFirestore(member: Member): DocumentData {
-    return { name: member.name, photoUrl: member.photoUrl ?? '' };
-  },
-  fromFirestore(
-    snapshot: QueryDocumentSnapshot,
-    option?: SnapshotOptions
-  ): Member {
-    const data = snapshot.data(option);
-    return new Member(data.name, data.photoUrl, data.status ?? null);
-  },
-};
-
 const accountDataConverter: FirestoreDataConverter<Account> = {
   toFirestore(account: WithFieldValue<Account>): DocumentData {
     return {
@@ -224,21 +193,27 @@ const activityDataConverter = {
 
 const createGroup = (
   group: { name: string; joinStatus: boolean },
-  author: { id: string; name: string; photoUrl: string }
+  author: Member,
+  authorId: string
 ): Promise<string> => {
   try {
     const _group: Readonly<Group> = {
       name: group.name,
       joinStatus: group.joinStatus,
-      authorId: author.id,
+      authorId: authorId,
       created: serverTimestamp(),
     };
     return addDoc(collection(Db, 'group'), _group).then((group_1) => {
       addMember(
-        { name: author.name, photoUrl: author.photoUrl, status: 'inactive' },
+        {
+          name: author.name,
+          photoUrl: author.photoUrl,
+          status: 'inactive',
+          tag: author.tag ?? [],
+        },
         group_1.id
       ).then((memberId) => {
-        addAccount(author.id, { memberId: memberId }, group_1.id);
+        addAccount(authorId, { memberId: memberId }, group_1.id);
         addAdmin(memberId, memberId, group_1.id);
       });
       return group_1.id;
@@ -281,64 +256,6 @@ async function getAccount(
   } catch (error) {
     console.error(error);
     throw new Error();
-  }
-}
-
-/**
- * メンバーを追加する
- * @param member メンバーのデータ
- * @param groupId 追加するグループ名
- * @returns メンバーのID
- */
-async function addMember(member: Member, groupId: string): Promise<string> {
-  try {
-    const group = await addDoc<Member>(
-      collection(Db, `group/${groupId}/member/`).withConverter(
-        memberDataConverter
-      ),
-      member
-    );
-    return group.id;
-  } catch (error) {
-    console.error(error);
-    throw new Error();
-  }
-}
-
-async function setMember(
-  member: Member,
-  memberId: string,
-  groupId: string,
-  option?: SetOptions
-): Promise<void> {
-  try {
-    return await setDoc<Member>(
-      doc(Db, `group/${groupId}/member/${memberId}`).withConverter(
-        memberDataConverter
-      ),
-      member,
-      option ?? {}
-    );
-  } catch (error) {
-    console.error(error);
-    throw new Error();
-  }
-}
-
-async function getMember(
-  memberId: string,
-  groupId: string
-): Promise<DocumentSnapshot<Member> | null> {
-  try {
-    const member = getDoc(
-      doc(Db, `group/${groupId}/member/${memberId}`).withConverter(
-        memberDataConverter
-      )
-    );
-
-    return await member;
-  } catch (error) {
-    return null;
   }
 }
 
@@ -421,55 +338,6 @@ const getGroup = async (id: string): Promise<Readonly<Group> | null> => {
     return group.data() ?? null;
   } catch (error) {
     throw new Error(`Invalid data: ${error}`);
-  }
-};
-
-const setMemberStatus = async (
-  status: memberStatus,
-  memberId: string,
-  groupId: string
-): Promise<void> => {
-  try {
-    await setDoc(
-      doc(Db, `group/${groupId}/member/${memberId}`),
-      {
-        status: status,
-      },
-      { merge: true }
-    );
-    return;
-  } catch (error) {
-    throw new Error();
-  }
-};
-
-const listMembers = async (
-  id: string,
-  limitNumber?: number,
-  order?: [fieldPath: string | FieldPath, directionStr?: OrderByDirection],
-  status?: memberStatus,
-  lastDoc?: QueryDocumentSnapshot
-): Promise<Readonly<QuerySnapshot<Member> | null> | null> => {
-  try {
-    if (limitNumber || orderBy) {
-      const qcs: QueryConstraint[] = [];
-      if (limitNumber) qcs.push(limit(limitNumber));
-      if (order) qcs.push(orderBy(...order));
-      if (status) qcs.push(where('status', '==', status));
-      if (lastDoc) qcs.push(startAfter(lastDoc));
-      const q: Query<Member> = query(
-        collection(Db, `group/${id}/member`).withConverter(memberDataConverter),
-        ...qcs
-      );
-      return await getDocs(q);
-    } else {
-      return await getDocs(
-        collection(Db, `group/${id}/member`).withConverter(memberDataConverter)
-      );
-    }
-  } catch (error) {
-    console.error(error);
-    throw new Error();
   }
 };
 
@@ -654,14 +522,10 @@ export {
   getGroup,
   addAccount,
   addAdmin,
-  addMember,
-  setMember,
   setWork,
   createGroup,
-  listMembers,
   addWork,
   getUserActivity,
-  getMember,
   getUserActivities,
   getAllActivities,
   getLatestActivity,

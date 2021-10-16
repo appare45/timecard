@@ -25,7 +25,6 @@ import {
   activity,
   addWork,
   getLatestActivity,
-  Member,
   setWork,
   work,
 } from '../utils/group';
@@ -37,6 +36,7 @@ import { cardHeight, cardWidth } from './createCard';
 import { Timestamp, QueryDocumentSnapshot } from 'firebase/firestore';
 import { MemberAvatar } from './assets';
 import { millisToText } from '../utils/time';
+import { Member } from '../utils/member';
 
 const Front: React.FC = () => {
   const [detectedMember, setDetectedMember] =
