@@ -1,4 +1,4 @@
-import { HStack, Stack } from '@chakra-ui/layout';
+import { Box, HStack, Spacer, Stack } from '@chakra-ui/layout';
 import {
   Skeleton,
   Table,
@@ -28,6 +28,7 @@ import {
   PopoverHeader,
   PopoverBody,
   Checkbox,
+  Select,
 } from '@chakra-ui/react';
 import React, {
   useContext,
@@ -49,7 +50,13 @@ import {
 import { GroupTag, LoadMoreButton, MemberAvatar } from './assets';
 import { listTag, tag } from '../utils/group-tag';
 import { listMembers, Member, setMember, setMemberTag } from '../utils/member';
-import { atom, useRecoilState } from 'recoil';
+import {
+  atom,
+  selectorFamily,
+  useRecoilState,
+  useRecoilValue,
+  useSetRecoilState,
+} from 'recoil';
 
 const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
   data,
@@ -190,28 +197,30 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
   //  タグを追加するボタン（popover）
   const AddTagButton: React.FC = () => {
     return (
-      <Popover isLazy lazyBehavior="keepMounted">
-        <PopoverTrigger>
-          <Button leftIcon={<IoAdd />} variant="outline" size="sm">
-            タグを追加
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent w="auto">
-          <PopoverArrow />
-          <PopoverCloseButton />
-          <PopoverHeader>タグを選択</PopoverHeader>
-          <PopoverBody>
-            <GroupTagList
-              groupTags={groupTags}
-              userTags={{
-                data: userTags,
-                addTag: addTag,
-                removeTag: removeTag,
-              }}
-            />
-          </PopoverBody>
-        </PopoverContent>
-      </Popover>
+      <Box>
+        <Popover isLazy lazyBehavior="keepMounted">
+          <PopoverTrigger>
+            <Button leftIcon={<IoAdd />} variant="outline" size="sm">
+              タグを追加
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent w="auto">
+            <PopoverArrow />
+            <PopoverCloseButton />
+            <PopoverHeader>タグを選択</PopoverHeader>
+            <PopoverBody>
+              <GroupTagList
+                groupTags={groupTags}
+                userTags={{
+                  data: userTags,
+                  addTag: addTag,
+                  removeTag: removeTag,
+                }}
+              />
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
+      </Box>
     );
   };
 
@@ -303,18 +312,62 @@ const ShowMembersState = atom<QueryDocumentSnapshot<Member>[]>({
   dangerouslyAllowMutability: true,
 });
 
+const ShowMemberOnlineState = atom<boolean>({
+  key: 'showMemberOnlineState',
+  default: false,
+});
+
+const showMemberFilterState = atom<QueryDocumentSnapshot<tag> | null>({
+  key: 'showMemberFilterState',
+  default: null,
+  dangerouslyAllowMutability: true,
+});
+
+const filteredMemberFilterState = selectorFamily<
+  QueryDocumentSnapshot<Member>[],
+  { groupId: string; count: number }
+>({
+  key: 'filteredMemberState',
+  get:
+    ({ groupId, count }) =>
+    async ({ get }): Promise<QueryDocumentSnapshot<Member>[]> => {
+      const filter = get(showMemberFilterState);
+      const Members = get(ShowMembersState);
+      const OnlyOnline = get(ShowMemberOnlineState);
+      const filteredResult = await listMembers(
+        groupId,
+        count,
+        undefined,
+        OnlyOnline ? 'active' : undefined,
+        Members[count],
+        filter?.ref ?? undefined
+      );
+      const newMembers: QueryDocumentSnapshot<Member>[] = [];
+      filteredResult?.forEach((e) => newMembers.push(e));
+      return newMembers;
+    },
+  dangerouslyAllowMutability: true,
+});
+
 const MembersList: React.FC<{
   onlyOnline?: boolean;
   update?: boolean;
   isSimple?: boolean;
 }> = ({ onlyOnline = false, update, isSimple = false }) => {
+  const loadDataCount = 10;
   const { currentId } = useContext(GroupContext);
   const [isUpdating, setIsUpdating] = useState(true);
-  const [shownMembers, setShownMembers] = useRecoilState(ShowMembersState);
-  const [sortWithOnline, setSortWithOnline] = useState(onlyOnline);
+  const setShownMembers = useSetRecoilState(ShowMembersState);
+  const shownMembers = useRecoilValue(
+    filteredMemberFilterState({
+      groupId: currentId ?? '',
+      count: loadDataCount,
+    })
+  );
+  const [sortWithOnline, setSortWithOnline] = useRecoilState(
+    ShowMemberOnlineState
+  );
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot>();
-
-  const loadDataCount = 10;
 
   const loadMoreData = (startFrom: QueryDocumentSnapshot) => {
     if (currentId)
@@ -368,6 +421,8 @@ const MembersList: React.FC<{
             }}
             colorScheme="green"
           />
+          <Spacer />
+          <MemberFilter />
         </HStack>
       )}
       {shownMembers?.length == 0 ? (
@@ -405,6 +460,34 @@ const MembersList: React.FC<{
         </Skeleton>
       )}
     </>
+  );
+};
+
+const MemberFilter = () => {
+  const [GroupTags, setGroupTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
+  const { currentId } = useContext(GroupContext);
+  useEffect(() => {
+    const newGroupTags: QueryDocumentSnapshot<tag>[] = [];
+    if (currentId)
+      listTag(currentId).then((e) => e.forEach((f) => newGroupTags.push(f)));
+    setGroupTags(newGroupTags);
+  }, [currentId]);
+
+  const [currentFilter, setFilter] = useRecoilState(showMemberFilterState);
+  return (
+    <Select
+      w="md"
+      onChange={(e) => {
+        setFilter(GroupTags.find((tag) => tag.id == e.target.value) ?? null);
+      }}
+      value={currentFilter?.id ?? 'default'}>
+      <option value="default">フィルターを選択</option>
+      {GroupTags.map((e) => (
+        <option key={e.id} value={e.id}>
+          {e.data().name}
+        </option>
+      ))}
+    </Select>
   );
 };
 

@@ -153,15 +153,17 @@ export const listMembers = async (
   limitNumber?: number,
   order?: [fieldPath: string | FieldPath, directionStr?: OrderByDirection],
   status?: memberStatus,
-  lastDoc?: QueryDocumentSnapshot
+  lastDoc?: QueryDocumentSnapshot,
+  tag?: DocumentReference<tag>
 ): Promise<Readonly<QuerySnapshot<Member> | null> | null> => {
   try {
-    if (limitNumber || order) {
+    if (limitNumber || order || tag || status) {
       const qcs: QueryConstraint[] = [];
       if (limitNumber) qcs.push(limit(limitNumber));
       if (order) qcs.push(orderBy(...order));
       if (status) qcs.push(where('status', '==', status));
       if (lastDoc) qcs.push(startAfter(lastDoc));
+      if (tag) qcs.push(where('tag', 'array-contains', tag));
       const q: Query<Member> = query(
         collection(Db, `group/${id}/member`).withConverter(memberDataConverter),
         ...qcs
