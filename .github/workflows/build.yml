@@ -3,7 +3,7 @@ name: Node.js CI
 on: [push, pull_request]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,4 +17,18 @@ jobs:
         run: yarn install
       - name: build
         run: yarn build
+        timeout-minutes: 5
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+          cache: 'yarn'
+      - name: install modules
+        run: yarn global add firebase-tools && yarn install --frozen-lockfile
+      - name: run firebase rules test
+        run: firebase emulators:exec --only firestore 'yarn jest --silent'
         timeout-minutes: 5

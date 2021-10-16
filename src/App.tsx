@@ -3,21 +3,29 @@ import React, { Suspense } from 'react';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { RecoilRoot } from 'recoil';
 import Offline from './pages/offline';
 
 function App(): JSX.Element {
   const [isOffline, setIsOffline] = useState(navigator.onLine);
   useEffect(() => {
-    setIsOffline(navigator.onLine);
+    window.addEventListener('offline', () => {
+      setIsOffline(true);
+    });
+    window.addEventListener('online', () => {
+      setIsOffline(false);
+    });
   }, []);
   const UserUI = React.lazy(() => import('./components/user'));
   return (
     <BrowserRouter>
       <div className="App">
         <ChakraProvider>
-          <Suspense fallback={<Spinner />}>
-            {isOffline ? <UserUI /> : <Offline />}
-          </Suspense>
+          <RecoilRoot>
+            <Suspense fallback={<Spinner />}>
+              {isOffline ? <UserUI /> : <Offline />}
+            </Suspense>
+          </RecoilRoot>
         </ChakraProvider>
       </div>
     </BrowserRouter>

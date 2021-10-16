@@ -9,7 +9,8 @@ import {
 import React, { useEffect, useRef, useState } from 'react';
 import { IoDownloadOutline } from 'react-icons/io5';
 import { dataWithId } from '../utils/firebase';
-import { Group, Member } from '../utils/group';
+import { Group } from '../utils/group';
+import { Member } from '../utils/member';
 
 export const cardWidth = 91;
 export const cardHeight = 55;
