@@ -146,9 +146,9 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
     if (currentId) {
       // タグ一覧を取得
       listTag(currentId).then((e) => {
-        e.forEach((f) => {
-          setGroupTags((oldTags) => [...oldTags, f]);
-        });
+        const newTags: QueryDocumentSnapshot<tag>[] = [];
+        e.forEach((f) => newTags.push(f));
+        setGroupTags(newTags);
       });
     }
   }, [currentId]);
@@ -385,6 +385,11 @@ const MembersList: React.FC<{
       });
   };
 
+  useEffect(
+    () => setSortWithOnline(onlyOnline),
+    [onlyOnline, setSortWithOnline]
+  );
+
   useEffect(() => {
     console.info(update);
     setIsUpdating(true);
@@ -393,7 +398,7 @@ const MembersList: React.FC<{
         currentId,
         loadDataCount,
         undefined,
-        sortWithOnline ? 'active' : undefined
+        onlyOnline ? 'active' : undefined
       ).then((members) => {
         if (members) {
           const _members: QueryDocumentSnapshot<Member>[] = [];
@@ -408,7 +413,14 @@ const MembersList: React.FC<{
 
       setIsUpdating(false);
     }
-  }, [currentId, setShownMembers, sortWithOnline, update]);
+  }, [
+    currentId,
+    onlyOnline,
+    setShownMembers,
+    setSortWithOnline,
+    sortWithOnline,
+    update,
+  ]);
   return (
     <>
       {!onlyOnline && (
