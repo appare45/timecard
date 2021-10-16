@@ -63,7 +63,7 @@ const memberDataConverter = {
       data.name,
       data.photoUrl,
       data.status ?? null,
-      data.tagIds ?? []
+      data.tag ?? []
     );
   },
 };
@@ -172,6 +172,25 @@ export const listMembers = async (
         collection(Db, `group/${id}/member`).withConverter(memberDataConverter)
       );
     }
+  } catch (error) {
+    console.error(error);
+    throw new Error();
+  }
+};
+
+export const setMemberTag = async (
+  tags: DocumentReference<tag>[],
+  memberId: string,
+  groupId: string
+): Promise<void> => {
+  try {
+    await setDoc(
+      doc(Db, `group/${groupId}/member/${memberId}`),
+      {
+        tag: tags,
+      },
+      { merge: true }
+    );
   } catch (error) {
     console.error(error);
     throw new Error();

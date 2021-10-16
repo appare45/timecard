@@ -10,12 +10,6 @@ import {
   Text,
   Tooltip,
   Switch,
-  Drawer,
-  DrawerBody,
-  DrawerCloseButton,
-  DrawerContent,
-  DrawerHeader,
-  DrawerOverlay,
   Td,
   Alert,
   AlertIcon,
@@ -35,6 +29,10 @@ import {
   PopoverHeader,
   PopoverBody,
   Checkbox,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalOverlay,
 } from '@chakra-ui/react';
 import React, {
   useContext,
@@ -43,51 +41,44 @@ import React, {
   ReactElement,
   Suspense,
   useMemo,
+  useCallback,
 } from 'react';
-import { IoAdd, IoAnalytics, IoCard } from 'react-icons/io5';
+import { IoAdd, IoAnalytics } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { Link as RouterLink } from 'react-router-dom';
 import { getGroup, Group } from '../utils/group';
-import { DocumentSnapshot, QueryDocumentSnapshot } from '@firebase/firestore';
+import {
+  DocumentReference,
+  DocumentSnapshot,
+  getDoc,
+  QueryDocumentSnapshot,
+} from '@firebase/firestore';
 import { GroupTag, LoadMoreButton, MemberAvatar } from './assets';
 import { listTag, tag } from '../utils/group-tag';
 import { RecoilRoot } from 'recoil';
-import { listMembers, Member, setMember } from '../utils/member';
+import { listMembers, Member, setMember, setMemberTag } from '../utils/member';
 
 const MemberCardDrawer: React.FC<{
-  isOpen: boolean;
-  onClose: () => void;
   groupId: string;
   member: QueryDocumentSnapshot<Member>;
-}> = ({ isOpen, onClose, member, groupId }) => {
+}> = ({ member, groupId }) => {
   const [group, setGroup] = useState<Group | null>(null);
   useEffect(() => {
     getGroup(groupId).then((group) => setGroup(group));
   }, [groupId]);
   const Card = React.lazy(() => import('./createCard'));
   return (
-    <Drawer placement="bottom" isOpen={isOpen} onClose={onClose}>
-      <DrawerOverlay />
-      <DrawerContent>
-        <DrawerHeader>
-          {`${member.data().name}のカード`}
-          <DrawerCloseButton />
-        </DrawerHeader>
-        <DrawerBody>
-          <Suspense fallback={<Skeleton />}>
-            {group && (
-              <Card
-                member={{
-                  id: member.id,
-                  data: member.data(),
-                }}
-                group={group}
-              />
-            )}
-          </Suspense>
-        </DrawerBody>
-      </DrawerContent>
-    </Drawer>
+    <Suspense fallback={<Skeleton />}>
+      {group && (
+        <Card
+          member={{
+            id: member.id,
+            data: member.data(),
+          }}
+          group={group}
+        />
+      )}
+    </Suspense>
   );
 };
 
@@ -164,9 +155,14 @@ const GroupTagList: React.FC<{
     );
   }, [groupTags, userTags]);
 };
-const MemberTags: React.FC = () => {
+
+const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
+  memberId,
+  memberData,
+}) => {
   // ユーザーが持つタグ
   const [userTags, setUserTags] = useState<DocumentSnapshot<tag>[]>([]);
+
   // グループのタグ
   const [groupTags, setGroupTags] = useState<DocumentSnapshot<tag>[]>([]);
   const { currentId } = useContext(GroupContext);
@@ -182,9 +178,33 @@ const MemberTags: React.FC = () => {
     }
   }, [currentId]);
 
-  const addTag = (tag: DocumentSnapshot<tag>) => {
-    setUserTags((e) => [...e, tag]);
-  };
+  const addTag = useCallback(
+    (tag: DocumentSnapshot<tag>) => {
+      setUserTags((e) => {
+        const newMemberTag = [...e, tag];
+        const newMemberTagRef: DocumentReference<tag>[] = newMemberTag.map(
+          (e) => e.ref
+        );
+        if (currentId) {
+          setMemberTag(newMemberTagRef, memberId, currentId);
+        }
+        return newMemberTag;
+      });
+    },
+    [currentId, memberId]
+  );
+
+  useEffect(() => {
+    const tagSnapshots: DocumentSnapshot<tag>[] = [];
+    Promise.all(
+      memberData.tag.map(
+        (tagRef): Promise<number> =>
+          getDoc(tagRef).then((e) => tagSnapshots.push(e))
+      )
+    ).then(() => {
+      setUserTags(tagSnapshots);
+    });
+  }, [memberData]);
 
   const removeTag = (tag: DocumentSnapshot<tag>) => {
     const removeTagIndex = userTags.findIndex((e) => e.id === tag.id);
@@ -192,6 +212,10 @@ const MemberTags: React.FC = () => {
       ...userTags.slice(0, removeTagIndex),
       ...userTags.slice(removeTagIndex + 1),
     ];
+    const newTagsRef = newTags.map((e) => e.ref);
+    if (currentId) {
+      setMemberTag(newTagsRef, memberId, currentId);
+    }
     setUserTags(newTags);
   };
 
@@ -227,18 +251,15 @@ const MemberTags: React.FC = () => {
 
   return (
     <HStack>
-      {userTags.map(
-        (tag) =>
-          tag.data() && (
-            <GroupTag
-              label={tag.data()?.name ?? ''}
-              color={tag.data()?.color ?? 'gray'}
-              key={tag.id}
-              onRemove={() => removeTag(tag)}
-              size="md"
-            />
-          )
-      )}
+      {userTags.map((tag) => (
+        <GroupTag
+          label={tag.data()?.name ?? ''}
+          color={tag.data()?.color ?? 'gray'}
+          key={tag.id}
+          onRemove={() => removeTag(tag)}
+          size="md"
+        />
+      ))}
       <AddTagButton />
     </HStack>
   );
@@ -269,7 +290,7 @@ const MemberRow: React.FC<{
             </Td>
             <Td>
               <RecoilRoot>
-                <MemberTags />
+                <MemberTags memberId={data.id} memberData={data.data()} />
               </RecoilRoot>
             </Td>
           </>
@@ -279,34 +300,78 @@ const MemberRow: React.FC<{
   </>
 );
 
+const MembersListTable: React.FC<{
+  membersData: QueryDocumentSnapshot<Member>[];
+  isSimple?: boolean;
+}> = ({ membersData, isSimple = false }) => {
+  const { currentId } = useContext(GroupContext);
+  const [showCardModal, setShowCardModal] = useBoolean(false);
+  console.info(showCardModal);
+  return useMemo(
+    () => (
+      <>
+        {membersData?.map((member) => (
+          <>
+            <MemberRow
+              key={member.id}
+              data={member}
+              isSimple={isSimple}
+              buttons={
+                <ButtonGroup colorScheme="gray" variant="ghost" spacing="1">
+                  <Tooltip label="アクティビティーを見る">
+                    <IconButton
+                      aria-label="アクティビティーを見る"
+                      icon={<IoAnalytics />}
+                      as={RouterLink}
+                      to={`/member/${member.id}`}
+                    />
+                  </Tooltip>
+                </ButtonGroup>
+              }
+            />
+            <Modal isOpen={showCardModal} onClose={setShowCardModal.off}>
+              <ModalOverlay />
+              <ModalBody>
+                <ModalCloseButton />
+                {currentId && (
+                  <MemberCardDrawer groupId={currentId} member={member} />
+                )}
+              </ModalBody>
+            </Modal>
+          </>
+        ))}
+      </>
+    ),
+    [currentId, isSimple, membersData, setShowCardModal, showCardModal]
+  );
+};
 const MembersList: React.FC<{
   onlyOnline?: boolean;
   update?: boolean;
   isSimple?: boolean;
 }> = ({ onlyOnline = false, update, isSimple = false }) => {
-  const { currentId, currentMember, isAdmin } = useContext(GroupContext);
+  const { currentId } = useContext(GroupContext);
   const [isUpdating, setIsUpdating] = useState(true);
-  const [memberCardDisplay, setMemberCardDisplay] = useBoolean(false);
-  const [displayCardMember, setDisplayCardMember] =
-    useState<QueryDocumentSnapshot<Member>>();
   const [shownMembers, setShownMembers] =
     useState<QueryDocumentSnapshot<Member>[]>();
   const [sortWithOnline, setSortWithOnline] = useState(onlyOnline);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot>();
 
+  const loadDataCount = 10;
+
   const loadMoreData = (startFrom: QueryDocumentSnapshot) => {
     if (currentId)
       listMembers(
         currentId,
-        5,
+        loadDataCount,
         undefined,
         sortWithOnline ? 'active' : undefined,
         startFrom
       ).then((members) => {
         const membersList: QueryDocumentSnapshot<Member>[] = [];
         members?.forEach((_) => membersList.push(_));
-        setLastDoc(membersList[4] ?? null);
-        setShownMembers([...(shownMembers ?? []), ...membersList]);
+        setLastDoc(membersList[loadDataCount - 1] ?? null);
+        setShownMembers((e) => [...(e ?? []), ...membersList]);
       });
   };
 
@@ -316,7 +381,7 @@ const MembersList: React.FC<{
     if (currentId) {
       listMembers(
         currentId,
-        5,
+        loadDataCount,
         undefined,
         sortWithOnline ? 'active' : undefined
       ).then((members) => {
@@ -325,7 +390,7 @@ const MembersList: React.FC<{
           members.forEach((member) => {
             _members.push(member);
           });
-          setLastDoc(_members[4]);
+          setLastDoc(_members[loadDataCount - 1] ?? null);
           setShownMembers(_members);
         }
         setIsUpdating(false);
@@ -336,14 +401,6 @@ const MembersList: React.FC<{
   }, [currentId, sortWithOnline, update]);
   return (
     <>
-      {displayCardMember && currentId && (
-        <MemberCardDrawer
-          member={displayCardMember}
-          isOpen={memberCardDisplay}
-          groupId={currentId}
-          onClose={() => setMemberCardDisplay.off()}
-        />
-      )}
       {!onlyOnline && (
         <HStack spacing="2" p="1" my="2" w="full">
           <Text>進行中のみ表示</Text>
@@ -379,40 +436,9 @@ const MembersList: React.FC<{
                 </Tr>
               </Thead>
               <Tbody>
-                {shownMembers?.map((member) => (
-                  <MemberRow
-                    key={member.id}
-                    data={member}
-                    isSimple={isSimple}
-                    buttons={
-                      <ButtonGroup
-                        colorScheme="gray"
-                        variant="ghost"
-                        spacing="1">
-                        {(currentMember?.id == member.id || isAdmin) && (
-                          <Tooltip label="カードを表示">
-                            <IconButton
-                              aria-label="カードを表示"
-                              icon={<IoCard />}
-                              onClick={() => {
-                                setDisplayCardMember(member);
-                                setMemberCardDisplay.on();
-                              }}
-                            />
-                          </Tooltip>
-                        )}
-                        <Tooltip label="アクティビティーを見る">
-                          <IconButton
-                            aria-label="アクティビティーを見る"
-                            icon={<IoAnalytics />}
-                            as={RouterLink}
-                            to={`/member/${member.id}`}
-                          />
-                        </Tooltip>
-                      </ButtonGroup>
-                    }
-                  />
-                ))}
+                {shownMembers && (
+                  <MembersListTable membersData={shownMembers} />
+                )}
               </Tbody>
             </Table>
             {lastDoc && (
