@@ -9,7 +9,7 @@ import { GroupTag } from './assets';
 
 export const GroupTagList: React.FC<{
   userTags: {
-    data: DocumentSnapshot<tag>[];
+    ids: string[];
     addTag: (e: DocumentSnapshot<tag>) => void;
     removeTag: (e: DocumentSnapshot<tag>) => void;
   };
@@ -40,7 +40,7 @@ export const GroupTagList: React.FC<{
           return (
             <Checkbox
               defaultChecked={
-                userTags.data.find((e) => e.id === tag.id) != undefined
+                userTags.ids.find((e) => e === tag.id) != undefined
               }
               onChange={(e) => {
                 if (e.target.checked) {

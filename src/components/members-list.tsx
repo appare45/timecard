@@ -149,7 +149,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
             <PopoverBody>
               <GroupTagList
                 userTags={{
-                  data: userTags,
+                  ids: userTags.map((e) => e.id),
                   addTag: addTag,
                   removeTag: removeTag,
                 }}
