@@ -5,8 +5,8 @@ import {
   Circle,
   Heading,
   HStack,
-  List,
-  ListItem,
+  Icon,
+  Link,
   Select,
   Spacer,
   Spinner,
@@ -83,20 +83,25 @@ const ScanButton: React.FC<{ setFrontMode: () => void }> = ({
 const MenuLink: React.FC<{
   children: string;
   to: string;
-  leftIcon: React.ReactElement;
+  leftIcon: React.FC;
 }> = ({ children, to, leftIcon }) => {
   return (
-    <Button
-      leftIcon={leftIcon}
+    <Link
       variant="link"
       color="black"
-      size="lg"
+      fontSize="lg"
       p="1.5"
+      w="full"
+      textAlign="left"
       as={routerLink}
       to={to}
+      fontWeight="bold"
       wordBreak="keep-all">
-      {children}
-    </Button>
+      <Stack direction="row" align="center" spacing="2">
+        <Icon as={leftIcon} />
+        <Text>{children}</Text>
+      </Stack>
+    </Link>
   );
 };
 
@@ -206,28 +211,23 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
           groups={groups}
           update={updateCurrentId}
         />
-        <List spacing="1" my="5">
-          <ListItem>
-            <MenuLink leftIcon={<IoHome />} to="/">
-              トップ
-            </MenuLink>
-          </ListItem>
-          <ListItem>
-            <MenuLink leftIcon={<IoAnalytics />} to="/activity">
-              タイムライン
-            </MenuLink>
-          </ListItem>
-          <ListItem>
-            <MenuLink leftIcon={<IoPeople />} to="/member">
-              メンバー
-            </MenuLink>
-          </ListItem>
-          <ListItem>
-            <MenuLink leftIcon={<IoSettings />} to="/setting">
-              設定
-            </MenuLink>
-          </ListItem>
-        </List>
+        <Stack spacing="1" my="5" align="flex-start">
+          <MenuLink leftIcon={IoHome} to="/">
+            トップ
+          </MenuLink>
+
+          <MenuLink leftIcon={IoAnalytics} to="/activity">
+            タイムライン
+          </MenuLink>
+
+          <MenuLink leftIcon={IoPeople} to="/member">
+            メンバー
+          </MenuLink>
+
+          <MenuLink leftIcon={IoSettings} to="/setting">
+            設定
+          </MenuLink>
+        </Stack>
       </Box>
       <Box w="full">
         <Suspense fallback={null}>
