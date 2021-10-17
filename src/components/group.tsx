@@ -8,7 +8,6 @@ import {
   Icon,
   Link,
   Select,
-  Spacer,
   Spinner,
   Stack,
   Text,
@@ -35,6 +34,7 @@ import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
+import { GroupTemplate } from '../templates/group';
 import { getAccount, getAdmin, getGroup, Group } from '../utils/group';
 import { Member, getMember } from '../utils/member';
 
@@ -234,26 +234,27 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
         <Suspense fallback={null}>
           <Switch>
             <Route exact path="/">
-              <Heading>最近のアクティビティー</Heading>
-              <HStack align="flex-start" w="full" py="6">
+              <GroupTemplate
+                title="最新のアクティビティー"
+                sideWidget={
+                  <>
+                    {isAdmin && (
+                      <ScanButton
+                        setFrontMode={() => {
+                          setFrontMode(true);
+                          if (document.fullscreenEnabled)
+                            document.body.requestFullscreen();
+                        }}
+                      />
+                    )}
+                    <Heading size="sm">オンラインのメンバー</Heading>
+                    <RecoilRoot>
+                      <MembersList onlyOnline isSimple />
+                    </RecoilRoot>
+                  </>
+                }>
                 <AllActivity loadMore={false} />
-                <Spacer />
-                <Stack spacing="4">
-                  {isAdmin && (
-                    <ScanButton
-                      setFrontMode={() => {
-                        setFrontMode(true);
-                        if (document.fullscreenEnabled)
-                          document.body.requestFullscreen();
-                      }}
-                    />
-                  )}
-                  <Heading size="sm">オンラインのメンバー</Heading>
-                  <RecoilRoot>
-                    <MembersList onlyOnline isSimple />
-                  </RecoilRoot>
-                </Stack>
-              </HStack>
+              </GroupTemplate>
             </Route>
             <Route path={`/activity/`}>
               <Activities />
@@ -275,7 +276,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const CreateGroup = React.lazy(() => import('./create-group'));
   const Setting = React.lazy(() => import('./setting'));
   const MembersList = React.lazy(() => import('./members-list'));
-  const Activities = React.lazy(() => import('./activity'));
+  const Activities = React.lazy(() => import('./../pages/timeline'));
   return (
     <>
       {!!groupIds.length && currentId && (
