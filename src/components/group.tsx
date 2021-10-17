@@ -270,7 +270,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
     </HStack>
   );
 
-  const Members = React.lazy(() => import('./members'));
+  const Members = React.lazy(() => import('../pages/members'));
   const Front = React.lazy(() => import('./front'));
   const CreateGroup = React.lazy(() => import('./create-group'));
   const Setting = React.lazy(() => import('./setting'));

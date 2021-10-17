@@ -1,14 +1,15 @@
-import { Heading, HStack, Spacer } from '@chakra-ui/react';
+import { Button, Heading, HStack, Spacer } from '@chakra-ui/react';
 import React, { Suspense, useContext, useState } from 'react';
 import { GroupContext } from '../contexts/group';
 import { Route, useRouteMatch, Switch as RouteSwitch } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
-import { AddMember } from './member-add';
+import { AddMember } from '../components/member-add';
+import { IoPrint } from 'react-icons/io5';
 
 const Members: React.FC = () => {
   const { path } = useRouteMatch();
-  const UserActivity = React.lazy(() => import('./user-activity'));
-  const MembersList = React.lazy(() => import('./members-list'));
+  const UserActivity = React.lazy(() => import('../components/user-activity'));
+  const MembersList = React.lazy(() => import('../components/members-list'));
   const groupContext = useContext(GroupContext);
   const [update, setUpdate] = useState(false);
   return (
@@ -19,15 +20,24 @@ const Members: React.FC = () => {
             <Heading>メンバー</Heading>
             <Spacer />
             {groupContext.currentId && (
-              <RecoilRoot>
-                <AddMember
-                  groupId={groupContext.currentId}
-                  onUpdate={() => {
-                    console.info('updated');
-                    setUpdate(!update);
-                  }}
-                />
-              </RecoilRoot>
+              <>
+                <RecoilRoot>
+                  <AddMember
+                    groupId={groupContext.currentId}
+                    onUpdate={() => {
+                      console.info('updated');
+                      setUpdate(!update);
+                    }}
+                  />
+                </RecoilRoot>
+                <Button
+                  leftIcon={<IoPrint />}
+                  colorScheme="blackAlpha"
+                  bg="black"
+                  size="sm">
+                  印刷
+                </Button>
+              </>
             )}
           </HStack>
           <RecoilRoot>
