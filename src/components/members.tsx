@@ -20,6 +20,7 @@ import { GroupContext } from '../contexts/group';
 import { IoPersonAdd } from 'react-icons/io5';
 import { Route, useRouteMatch, Switch as RouteSwitch } from 'react-router-dom';
 import { Member, addMember } from '../utils/member';
+import { RecoilRoot } from 'recoil';
 
 const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
   groupId,
@@ -118,7 +119,9 @@ const Members: React.FC = () => {
               />
             )}
           </HStack>
-          <MembersList update={update} />
+          <RecoilRoot>
+            <MembersList update={update} />
+          </RecoilRoot>
         </Route>
         <Route path={`${path}:memberId`}>
           <Suspense fallback={null}>

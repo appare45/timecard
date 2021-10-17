@@ -1,4 +1,4 @@
-import { Box, HStack, Spacer, Stack } from '@chakra-ui/layout';
+import { Box, HStack, Spacer } from '@chakra-ui/layout';
 import {
   Skeleton,
   Table,
@@ -27,7 +27,6 @@ import {
   PopoverCloseButton,
   PopoverHeader,
   PopoverBody,
-  Checkbox,
   Select,
 } from '@chakra-ui/react';
 import React, {
@@ -57,6 +56,7 @@ import {
   useRecoilValue,
   useSetRecoilState,
 } from 'recoil';
+import { GroupTagList } from './group-tag-control';
 
 const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
   data,
@@ -70,66 +70,17 @@ const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
         const _member = data.data();
         _member.name = e;
         if (currentId)
-          setMember(_member, data.id, currentId, { merge: true })
-            .then(() =>
-              toast({
-                title: '保存しました',
-                status: 'success',
-              })
-            )
-            .catch(() =>
-              toast({
-                title: '保存に失敗しました',
-                status: 'error',
-              })
-            );
+          setMember(_member, data.id, currentId, { merge: true }).catch(() =>
+            toast({
+              title: '保存に失敗しました',
+              status: 'error',
+            })
+          );
       }}>
       <EditablePreview />
       <EditableInput />
     </Editable>
   );
-};
-
-const GroupTagList: React.FC<{
-  groupTags: DocumentSnapshot<tag>[];
-  userTags: {
-    data: DocumentSnapshot<tag>[];
-    addTag: (e: DocumentSnapshot<tag>) => void;
-    removeTag: (e: DocumentSnapshot<tag>) => void;
-  };
-}> = ({ groupTags, userTags }) => {
-  return useMemo(() => {
-    // 各タグ
-    const GroupTagMemo: React.FC<{ tag: DocumentSnapshot<tag> }> = ({ tag }) =>
-      useMemo(() => {
-        const tagData = tag.data();
-        if (tagData) {
-          return (
-            <Checkbox
-              defaultChecked={
-                userTags.data.find((e) => e.id === tag.id) != undefined
-              }
-              onChange={(e) => {
-                if (e.target.checked) {
-                  userTags.addTag(tag);
-                } else {
-                  userTags.removeTag(tag);
-                }
-              }}>
-              <GroupTag label={tagData.name} color={tagData.color} />
-            </Checkbox>
-          );
-        } else return null;
-      }, [tag]);
-
-    return (
-      <Stack spacing="2">
-        {groupTags.map((tag) => (
-          <GroupTagMemo tag={tag} key={tag.id} />
-        ))}
-      </Stack>
-    );
-  }, [groupTags, userTags]);
 };
 
 const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
@@ -138,20 +89,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
 }) => {
   // ユーザーが持つタグ
   const [userTags, setUserTags] = useState<DocumentSnapshot<tag>[]>([]);
-
-  // グループのタグ
-  const [groupTags, setGroupTags] = useState<DocumentSnapshot<tag>[]>([]);
   const { currentId } = useContext(GroupContext);
-  useEffect(() => {
-    if (currentId) {
-      // タグ一覧を取得
-      listTag(currentId).then((e) => {
-        const newTags: QueryDocumentSnapshot<tag>[] = [];
-        e.forEach((f) => newTags.push(f));
-        setGroupTags(newTags);
-      });
-    }
-  }, [currentId]);
 
   const addTag = useCallback(
     (tag: DocumentSnapshot<tag>) => {
@@ -200,7 +138,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
       <Box>
         <Popover isLazy lazyBehavior="keepMounted">
           <PopoverTrigger>
-            <Button leftIcon={<IoAdd />} variant="outline" size="sm">
+            <Button leftIcon={<IoAdd />} variant="outline" size="xs">
               タグを追加
             </Button>
           </PopoverTrigger>
@@ -210,7 +148,6 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
             <PopoverHeader>タグを選択</PopoverHeader>
             <PopoverBody>
               <GroupTagList
-                groupTags={groupTags}
                 userTags={{
                   data: userTags,
                   addTag: addTag,
@@ -232,7 +169,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
           color={tag.data()?.color ?? 'gray'}
           key={tag.id}
           onRemove={() => removeTag(tag)}
-          size="md"
+          size="sm"
         />
       ))}
       <AddTagButton />

@@ -32,6 +32,7 @@ import {
   IoSettings,
 } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
+import { RecoilRoot } from 'recoil';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { getAccount, getAdmin, getGroup, Group } from '../utils/group';
@@ -248,7 +249,9 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
                     />
                   )}
                   <Heading size="sm">オンラインのメンバー</Heading>
-                  <MembersList onlyOnline isSimple />
+                  <RecoilRoot>
+                    <MembersList onlyOnline isSimple />
+                  </RecoilRoot>
                 </Stack>
               </HStack>
             </Route>
