@@ -31,7 +31,7 @@ const Members: React.FC = () => {
             )}
           </HStack>
           <RecoilRoot>
-            <MembersList update={update} />
+            <MembersList />
           </RecoilRoot>
         </Route>
         <Route path={`${path}:memberId`}>

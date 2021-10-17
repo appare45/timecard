@@ -10,7 +10,7 @@ import {
   ModalBody,
   ModalFooter,
 } from '@chakra-ui/modal';
-import { Button } from '@chakra-ui/react';
+import { Button, Stack } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { IoPersonAdd } from 'react-icons/io5';
 import { atom, useRecoilState } from 'recoil';
@@ -69,54 +69,56 @@ export const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
             <ModalHeader>メンバーを追加</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              <FormControl isRequired>
-                <FormLabel>名前</FormLabel>
-                <Input
-                  colorScheme="blackAlpha"
-                  maxLength={20}
-                  autoFocus
-                  value={newMember.name}
-                  onChange={(e) => {
-                    const _data: Member = Object.assign({}, newMember);
-                    if (e.target.value.length <= 20) {
-                      _data.name = e.target.value;
-                    }
-                    setNewMember(_data);
-                  }}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel>ラベル</FormLabel>
-                <GroupTagList
-                  userTags={{
-                    ids: newMember.tag.map((e) => e.id),
-                    addTag: (e) => {
-                      setNewMember((member) => {
-                        return {
-                          ...member,
-                          ...{ tag: [...member.tag, e.ref] },
-                        };
-                      });
-                    },
-                    removeTag: (e) => {
-                      setNewMember((member) => {
-                        const index = member.tag.findIndex(
-                          (tag) => tag.id == e.id
-                        );
-                        return {
-                          ...member,
-                          ...{
-                            tag: [
-                              ...member.tag.slice(0, index),
-                              ...member.tag.slice(index + 1),
-                            ],
-                          },
-                        };
-                      });
-                    },
-                  }}
-                />
-              </FormControl>
+              <Stack>
+                <FormControl isRequired>
+                  <FormLabel>名前</FormLabel>
+                  <Input
+                    colorScheme="blackAlpha"
+                    maxLength={20}
+                    autoFocus
+                    value={newMember.name}
+                    onChange={(e) => {
+                      const _data: Member = Object.assign({}, newMember);
+                      if (e.target.value.length <= 20) {
+                        _data.name = e.target.value;
+                      }
+                      setNewMember(_data);
+                    }}
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormLabel>タグ</FormLabel>
+                  <GroupTagList
+                    userTags={{
+                      ids: newMember.tag.map((e) => e.id),
+                      addTag: (e) => {
+                        setNewMember((member) => {
+                          return {
+                            ...member,
+                            ...{ tag: [...member.tag, e.ref] },
+                          };
+                        });
+                      },
+                      removeTag: (e) => {
+                        setNewMember((member) => {
+                          const index = member.tag.findIndex(
+                            (tag) => tag.id == e.id
+                          );
+                          return {
+                            ...member,
+                            ...{
+                              tag: [
+                                ...member.tag.slice(0, index),
+                                ...member.tag.slice(index + 1),
+                              ],
+                            },
+                          };
+                        });
+                      },
+                    }}
+                  />
+                </FormControl>
+              </Stack>
             </ModalBody>
             <ModalFooter>
               <Button

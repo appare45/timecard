@@ -288,12 +288,10 @@ const filteredMemberFilterState = selectorFamily<
 
 const MembersList: React.FC<{
   onlyOnline?: boolean;
-  update?: boolean;
   isSimple?: boolean;
-}> = ({ onlyOnline = false, update, isSimple = false }) => {
+}> = ({ onlyOnline = false, isSimple = false }) => {
   const loadDataCount = 10;
   const { currentId } = useContext(GroupContext);
-  const [isUpdating, setIsUpdating] = useState(true);
   const setShownMembers = useSetRecoilState(ShowMembersState);
   const shownMembers = useRecoilValue(
     filteredMemberFilterState({
@@ -327,37 +325,7 @@ const MembersList: React.FC<{
     [onlyOnline, setSortWithOnline]
   );
 
-  useEffect(() => {
-    console.info(update);
-    setIsUpdating(true);
-    if (currentId) {
-      listMembers(
-        currentId,
-        loadDataCount,
-        undefined,
-        onlyOnline ? 'active' : undefined
-      ).then((members) => {
-        if (members) {
-          const _members: QueryDocumentSnapshot<Member>[] = [];
-          members.forEach((member) => {
-            _members.push(member);
-          });
-          setLastDoc(_members[loadDataCount - 1] ?? null);
-          setShownMembers(_members);
-        }
-        setIsUpdating(false);
-      });
-
-      setIsUpdating(false);
-    }
-  }, [
-    currentId,
-    onlyOnline,
-    setShownMembers,
-    setSortWithOnline,
-    sortWithOnline,
-    update,
-  ]);
+  const MemoedMemberFilter = () => useMemo(() => <MemberFilter />, []);
   return (
     <>
       {!onlyOnline && (
@@ -371,7 +339,7 @@ const MembersList: React.FC<{
             colorScheme="green"
           />
           <Spacer />
-          <MemberFilter />
+          <MemoedMemberFilter />
         </HStack>
       )}
       {shownMembers?.length == 0 ? (
@@ -382,7 +350,7 @@ const MembersList: React.FC<{
             : '表示するメンバーがいません'}
         </Alert>
       ) : (
-        <Skeleton isLoaded={!isUpdating} w="full">
+        <Skeleton isLoaded={!!shownMembers.length} w="full">
           <VStack spacing="4">
             <Table
               colorScheme="blackAlpha"
@@ -413,13 +381,16 @@ const MembersList: React.FC<{
 };
 
 const MemberFilter = () => {
-  const [GroupTags, setGroupTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
+  const [groupTags, setGroupTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
   const { currentId } = useContext(GroupContext);
   useEffect(() => {
-    const newGroupTags: QueryDocumentSnapshot<tag>[] = [];
-    if (currentId)
-      listTag(currentId).then((e) => e.forEach((f) => newGroupTags.push(f)));
-    setGroupTags(newGroupTags);
+    if (currentId) {
+      listTag(currentId).then((e) =>
+        e.forEach((f) => {
+          setGroupTags((oldTags) => [...oldTags, f]);
+        })
+      );
+    }
   }, [currentId]);
 
   const [currentFilter, setFilter] = useRecoilState(showMemberFilterState);
@@ -427,11 +398,11 @@ const MemberFilter = () => {
     <Select
       w="md"
       onChange={(e) => {
-        setFilter(GroupTags.find((tag) => tag.id == e.target.value) ?? null);
+        setFilter(groupTags.find((tag) => tag.id == e.target.value) ?? null);
       }}
       value={currentFilter?.id ?? 'default'}>
       <option value="default">フィルターを選択</option>
-      {GroupTags.map((e) => (
+      {groupTags.map((e) => (
         <option key={e.id} value={e.id}>
           {e.data().name}
         </option>
