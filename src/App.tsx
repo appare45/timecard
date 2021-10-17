@@ -1,34 +1,35 @@
 import { ChakraProvider, Spinner } from '@chakra-ui/react';
-import React, { Suspense } from 'react';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { enableIndexedDbPersistence } from 'firebase/firestore';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
 import Offline from './pages/offline';
+import { Db } from './utils/firebase';
 
 function App(): JSX.Element {
-  const [isOffline, setIsOffline] = useState(navigator.onLine);
-  useEffect(() => {
-    window.addEventListener('offline', () => {
-      setIsOffline(true);
-    });
-    window.addEventListener('online', () => {
-      setIsOffline(false);
-    });
-  }, []);
   const UserUI = React.lazy(() => import('./components/user'));
+  // オフライン接続対応
+  useEffect(() => {
+    enableIndexedDbPersistence(Db())
+      .then(() => {
+        console.info('Offline connection enabled');
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
   return (
-    <BrowserRouter>
-      <div className="App">
-        <ChakraProvider>
+    <ChakraProvider>
+      <BrowserRouter>
+        <div className="App">
           <RecoilRoot>
             <Suspense fallback={<Spinner />}>
-              {isOffline ? <UserUI /> : <Offline />}
+              {navigator.onLine ? <UserUI /> : <Offline />}
             </Suspense>
           </RecoilRoot>
-        </ChakraProvider>
-      </div>
-    </BrowserRouter>
+        </div>
+      </BrowserRouter>
+    </ChakraProvider>
   );
 }
 

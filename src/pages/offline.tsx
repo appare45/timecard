@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Button,
@@ -14,6 +14,11 @@ import { useHistory } from 'react-router-dom';
 
 const Offline: React.FC = () => {
   const history = useHistory();
+  useEffect(() => {
+    window.addEventListener('offline', () => {
+      history.go(0);
+    });
+  });
   return (
     <>
       <Box w="100vw" h="100vh" overflow="hidden" pos="fixed">

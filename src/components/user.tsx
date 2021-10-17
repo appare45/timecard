@@ -75,6 +75,7 @@ export default function UserUI(): JSX.Element {
   const [authData, setAuthData] = useState<User>();
   const [defaultName, setDefaultName] = useState<string | null>(null);
   const [accountStatus, updateAccountStatus] = useState<User>();
+
   useMemo(() => {
     const unregisterAuthObserver = onAuthStateChanged(Auth, (account) => {
       if (updateLoginStatus) {

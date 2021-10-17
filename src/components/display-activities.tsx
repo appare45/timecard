@@ -90,12 +90,10 @@ export const AllActivity: React.FC<{ loadMore?: boolean }> = ({
   );
 
   return (
-    <Suspense fallback={null}>
-      <VStack>
-        {activities ? <DataDisplay /> : <Skeleton />}
-        {loadMore && lastDoc && <LoadMore />}
-      </VStack>
-    </Suspense>
+    <VStack>
+      {activities ? <DataDisplay /> : <Skeleton />}
+      {loadMore && lastDoc && <LoadMore />}
+    </VStack>
   );
 };
 
