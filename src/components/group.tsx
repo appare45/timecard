@@ -12,10 +12,17 @@ import {
   Spinner,
   Stack,
   Text,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { DocumentSnapshot } from 'firebase/firestore';
-import React, { Suspense, useContext, useEffect, useState } from 'react';
+import React, {
+  Suspense,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useMemo } from 'react';
 import {
   IoAnalytics,
@@ -101,6 +108,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const [currentMemberData, setCurrentMemberData] =
     useState<DocumentSnapshot<Member> | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const toast = useToast();
   // フロントモードの切り替え
   useEffect(() => {
     const dbName = 'Group';
@@ -164,6 +172,29 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
         }
       });
   }, [account, currentId]);
+
+  const offlineToastId = 'is-offline';
+  const offlineToastRef = useRef<string | number>('');
+
+  useEffect(() => {
+    window.addEventListener('offline', () => {
+      if (!toast.isActive(offlineToastId))
+        // 何故かundefinedを許容しない
+        // https://chakra-ui.com/docs/feedback/toast#closing-toasts
+        offlineToastRef.current =
+          toast({
+            title: '接続はオフラインです',
+            description: '変更はオンライン復帰後に反映されます',
+            status: 'info',
+            position: 'bottom-right',
+            duration: null,
+            isClosable: false,
+          }) ?? '';
+    });
+    window.addEventListener('online', () => {
+      toast.close(offlineToastRef.current);
+    });
+  }, [toast]);
 
   const AllActivity = React.lazy(() => import('./display-activities'));
 

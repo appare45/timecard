@@ -142,7 +142,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
   // グループのタグ
   const [groupTags, setGroupTags] = useState<DocumentSnapshot<tag>[]>([]);
   const { currentId } = useContext(GroupContext);
-  useMemo(() => {
+  useEffect(() => {
     if (currentId) {
       // タグ一覧を取得
       listTag(currentId).then((e) => {
