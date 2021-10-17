@@ -61,7 +61,7 @@
     "eslint-plugin-react": "^7.26.1",
     "eslint-plugin-react-hooks": "^4.2.0",
     "prettier": "^2.4.1",
-    "ts-jest": "26",
+    "ts-jest": "27",
     "tslib": "^2.3.0"
   }
 }
