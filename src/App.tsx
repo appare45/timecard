@@ -4,6 +4,7 @@ import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import Offline from './pages/offline';
 import { Db } from './utils/firebase';
+import { observeFps } from './utils/fps-observe';
 
 function App(): JSX.Element {
   const UserUI = React.lazy(() => import('./components/user'));
@@ -17,6 +18,10 @@ function App(): JSX.Element {
         console.error(error);
       });
   }, []);
+  useEffect(() => {
+    if (window.location.hostname !== process.env.REACT_APP_URL) observeFps();
+    console.info(window.location.origin, process.env.REACT_APP_URL);
+  });
   return (
     <ChakraProvider>
       <BrowserRouter>
