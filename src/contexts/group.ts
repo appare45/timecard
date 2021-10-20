@@ -1,5 +1,6 @@
 import { DocumentSnapshot } from 'firebase/firestore';
 import { createContext } from 'react';
+import { Group } from '../utils/group';
 import { Member } from '../utils/member';
 
 export type groupId = {
@@ -9,6 +10,7 @@ export type groupId = {
   setFrontMode: (e: boolean) => void | null;
   currentMember: DocumentSnapshot<Member> | null;
   updateCurrentMember: (e: DocumentSnapshot<Member>) => void;
+  currentGroup: Group;
 };
 
 export const GroupContext = createContext<Partial<groupId>>({});

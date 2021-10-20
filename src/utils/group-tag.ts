@@ -67,7 +67,7 @@ export async function createTag(
   if (tag.name.length > 0) {
     try {
       return await addDoc(
-        collection(Db, `group/${groupId}/tag`).withConverter(TagConverter),
+        collection(Db(), `group/${groupId}/tag`).withConverter(TagConverter),
         tag
       );
     } catch (error) {
@@ -88,7 +88,7 @@ export async function listTag(
     if (limitNumber) qcs.push(limit(limitNumber));
     if (lastDoc) qcs.push(startAfter(lastDoc));
     return getDocs(
-      query(collection(Db, `group/${groupId}/tag`), ...qcs).withConverter(
+      query(collection(Db(), `group/${groupId}/tag`), ...qcs).withConverter(
         TagConverter
       )
     );

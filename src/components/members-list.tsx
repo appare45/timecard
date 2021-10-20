@@ -1,4 +1,4 @@
-import { Box, HStack, Spacer, Stack } from '@chakra-ui/layout';
+import { Box, Grid, HStack, Spacer } from '@chakra-ui/layout';
 import {
   Skeleton,
   Table,
@@ -27,8 +27,12 @@ import {
   PopoverCloseButton,
   PopoverHeader,
   PopoverBody,
-  Checkbox,
   Select,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
 } from '@chakra-ui/react';
 import React, {
   useContext,
@@ -57,6 +61,8 @@ import {
   useRecoilValue,
   useSetRecoilState,
 } from 'recoil';
+import { GroupTagList } from './group-tag-control';
+import Card, { cardWidth } from './createCard';
 
 const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
   data,
@@ -70,66 +76,17 @@ const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
         const _member = data.data();
         _member.name = e;
         if (currentId)
-          setMember(_member, data.id, currentId, { merge: true })
-            .then(() =>
-              toast({
-                title: '保存しました',
-                status: 'success',
-              })
-            )
-            .catch(() =>
-              toast({
-                title: '保存に失敗しました',
-                status: 'error',
-              })
-            );
+          setMember(_member, data.id, currentId, { merge: true }).catch(() =>
+            toast({
+              title: '保存に失敗しました',
+              status: 'error',
+            })
+          );
       }}>
       <EditablePreview />
       <EditableInput />
     </Editable>
   );
-};
-
-const GroupTagList: React.FC<{
-  groupTags: DocumentSnapshot<tag>[];
-  userTags: {
-    data: DocumentSnapshot<tag>[];
-    addTag: (e: DocumentSnapshot<tag>) => void;
-    removeTag: (e: DocumentSnapshot<tag>) => void;
-  };
-}> = ({ groupTags, userTags }) => {
-  return useMemo(() => {
-    // 各タグ
-    const GroupTagMemo: React.FC<{ tag: DocumentSnapshot<tag> }> = ({ tag }) =>
-      useMemo(() => {
-        const tagData = tag.data();
-        if (tagData) {
-          return (
-            <Checkbox
-              defaultChecked={
-                userTags.data.find((e) => e.id === tag.id) != undefined
-              }
-              onChange={(e) => {
-                if (e.target.checked) {
-                  userTags.addTag(tag);
-                } else {
-                  userTags.removeTag(tag);
-                }
-              }}>
-              <GroupTag label={tagData.name} color={tagData.color} />
-            </Checkbox>
-          );
-        } else return null;
-      }, [tag]);
-
-    return (
-      <Stack spacing="2">
-        {groupTags.map((tag) => (
-          <GroupTagMemo tag={tag} key={tag.id} />
-        ))}
-      </Stack>
-    );
-  }, [groupTags, userTags]);
 };
 
 const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
@@ -138,20 +95,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
 }) => {
   // ユーザーが持つタグ
   const [userTags, setUserTags] = useState<DocumentSnapshot<tag>[]>([]);
-
-  // グループのタグ
-  const [groupTags, setGroupTags] = useState<DocumentSnapshot<tag>[]>([]);
   const { currentId } = useContext(GroupContext);
-  useMemo(() => {
-    if (currentId) {
-      // タグ一覧を取得
-      listTag(currentId).then((e) => {
-        const newTags: QueryDocumentSnapshot<tag>[] = [];
-        e.forEach((f) => newTags.push(f));
-        setGroupTags(newTags);
-      });
-    }
-  }, [currentId]);
 
   const addTag = useCallback(
     (tag: DocumentSnapshot<tag>) => {
@@ -200,7 +144,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
       <Box>
         <Popover isLazy lazyBehavior="keepMounted">
           <PopoverTrigger>
-            <Button leftIcon={<IoAdd />} variant="outline" size="sm">
+            <Button leftIcon={<IoAdd />} variant="outline" size="xs">
               タグを追加
             </Button>
           </PopoverTrigger>
@@ -210,9 +154,8 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
             <PopoverHeader>タグを選択</PopoverHeader>
             <PopoverBody>
               <GroupTagList
-                groupTags={groupTags}
                 userTags={{
-                  data: userTags,
+                  ids: userTags.map((e) => e.id),
                   addTag: addTag,
                   removeTag: removeTag,
                 }}
@@ -232,7 +175,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
           color={tag.data()?.color ?? 'gray'}
           key={tag.id}
           onRemove={() => removeTag(tag)}
-          size="md"
+          size="sm"
         />
       ))}
       <AddTagButton />
@@ -305,6 +248,27 @@ const MembersListTable: React.FC<{
   );
 };
 
+const MembersListCard: React.FC<{
+  membersData: QueryDocumentSnapshot<Member>[];
+}> = ({ membersData }) => {
+  const { currentGroup } = useContext(GroupContext);
+  return (
+    <Grid
+      templateColumns={`repeat( auto-fit, minmax(${cardWidth}mm, 1fr))`}
+      gap="4">
+      {currentGroup &&
+        membersData.map((member) => (
+          <Box key={member.id}>
+            <Card
+              member={{ data: member.data(), id: member.id }}
+              group={currentGroup}
+            />
+          </Box>
+        ))}
+    </Grid>
+  );
+};
+
 // メンバー一覧のatom
 const ShowMembersState = atom<QueryDocumentSnapshot<Member>[]>({
   key: 'shownMemberState_MembersList',
@@ -351,12 +315,10 @@ const filteredMemberFilterState = selectorFamily<
 
 const MembersList: React.FC<{
   onlyOnline?: boolean;
-  update?: boolean;
   isSimple?: boolean;
-}> = ({ onlyOnline = false, update, isSimple = false }) => {
+}> = ({ onlyOnline = false, isSimple = false }) => {
   const loadDataCount = 10;
   const { currentId } = useContext(GroupContext);
-  const [isUpdating, setIsUpdating] = useState(true);
   const setShownMembers = useSetRecoilState(ShowMembersState);
   const shownMembers = useRecoilValue(
     filteredMemberFilterState({
@@ -390,37 +352,7 @@ const MembersList: React.FC<{
     [onlyOnline, setSortWithOnline]
   );
 
-  useEffect(() => {
-    console.info(update);
-    setIsUpdating(true);
-    if (currentId) {
-      listMembers(
-        currentId,
-        loadDataCount,
-        undefined,
-        onlyOnline ? 'active' : undefined
-      ).then((members) => {
-        if (members) {
-          const _members: QueryDocumentSnapshot<Member>[] = [];
-          members.forEach((member) => {
-            _members.push(member);
-          });
-          setLastDoc(_members[loadDataCount - 1] ?? null);
-          setShownMembers(_members);
-        }
-        setIsUpdating(false);
-      });
-
-      setIsUpdating(false);
-    }
-  }, [
-    currentId,
-    onlyOnline,
-    setShownMembers,
-    setSortWithOnline,
-    sortWithOnline,
-    update,
-  ]);
+  const MemoedMemberFilter = () => useMemo(() => <MemberFilter />, []);
   return (
     <>
       {!onlyOnline && (
@@ -434,7 +366,7 @@ const MembersList: React.FC<{
             colorScheme="green"
           />
           <Spacer />
-          <MemberFilter />
+          <MemoedMemberFilter />
         </HStack>
       )}
       {shownMembers?.length == 0 ? (
@@ -445,30 +377,46 @@ const MembersList: React.FC<{
             : '表示するメンバーがいません'}
         </Alert>
       ) : (
-        <Skeleton isLoaded={!isUpdating} w="full">
-          <VStack spacing="4">
-            <Table
-              colorScheme="blackAlpha"
-              size={isSimple ? 'sm' : 'md'}
-              mt={!isSimple ? '5' : '0.5'}
-              w="full">
-              <Thead>
-                <Tr>
-                  <Th>名前</Th>
-                  <Th></Th>
-                  <Th>タグ</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {shownMembers && (
-                  <MembersListTable membersData={shownMembers} />
-                )}
-              </Tbody>
-            </Table>
-            {lastDoc && (
-              <LoadMoreButton loadMore={() => loadMoreData(lastDoc)} />
-            )}
-          </VStack>
+        <Skeleton isLoaded={!!shownMembers.length} w="full">
+          <Tabs
+            variant="soft-rounded"
+            colorScheme="gray"
+            isLazy
+            lazyBehavior="keepMounted">
+            <TabList>
+              <Tab>表</Tab>
+              <Tab>カード</Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel>
+                <VStack spacing="4">
+                  <Table
+                    colorScheme="blackAlpha"
+                    size={isSimple ? 'sm' : 'md'}
+                    w="full">
+                    <Thead>
+                      <Tr>
+                        <Th>名前</Th>
+                        <Th></Th>
+                        <Th>タグ</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {shownMembers && (
+                        <MembersListTable membersData={shownMembers} />
+                      )}
+                    </Tbody>
+                  </Table>
+                  {lastDoc && (
+                    <LoadMoreButton loadMore={() => loadMoreData(lastDoc)} />
+                  )}
+                </VStack>
+              </TabPanel>
+              <TabPanel>
+                {shownMembers && <MembersListCard membersData={shownMembers} />}
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
         </Skeleton>
       )}
     </>
@@ -476,13 +424,16 @@ const MembersList: React.FC<{
 };
 
 const MemberFilter = () => {
-  const [GroupTags, setGroupTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
+  const [groupTags, setGroupTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
   const { currentId } = useContext(GroupContext);
   useEffect(() => {
-    const newGroupTags: QueryDocumentSnapshot<tag>[] = [];
-    if (currentId)
-      listTag(currentId).then((e) => e.forEach((f) => newGroupTags.push(f)));
-    setGroupTags(newGroupTags);
+    if (currentId) {
+      listTag(currentId).then((e) =>
+        e.forEach((f) => {
+          setGroupTags((oldTags) => [...oldTags, f]);
+        })
+      );
+    }
   }, [currentId]);
 
   const [currentFilter, setFilter] = useRecoilState(showMemberFilterState);
@@ -490,11 +441,11 @@ const MemberFilter = () => {
     <Select
       w="md"
       onChange={(e) => {
-        setFilter(GroupTags.find((tag) => tag.id == e.target.value) ?? null);
+        setFilter(groupTags.find((tag) => tag.id == e.target.value) ?? null);
       }}
       value={currentFilter?.id ?? 'default'}>
       <option value="default">フィルターを選択</option>
-      {GroupTags.map((e) => (
+      {groupTags.map((e) => (
         <option key={e.id} value={e.id}>
           {e.data().name}
         </option>

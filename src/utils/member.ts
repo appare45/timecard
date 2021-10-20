@@ -80,7 +80,7 @@ export async function addMember(
 ): Promise<string> {
   try {
     const group = await addDoc<Member>(
-      collection(Db, `group/${groupId}/member/`).withConverter(
+      collection(Db(), `group/${groupId}/member/`).withConverter(
         memberDataConverter
       ),
       member
@@ -100,7 +100,7 @@ export async function setMember(
 ): Promise<void> {
   try {
     return await setDoc<Member>(
-      doc(Db, `group/${groupId}/member/${memberId}`).withConverter(
+      doc(Db(), `group/${groupId}/member/${memberId}`).withConverter(
         memberDataConverter
       ),
       member,
@@ -118,7 +118,7 @@ export async function getMember(
 ): Promise<DocumentSnapshot<Member> | null> {
   try {
     const member = getDoc(
-      doc(Db, `group/${groupId}/member/${memberId}`).withConverter(
+      doc(Db(), `group/${groupId}/member/${memberId}`).withConverter(
         memberDataConverter
       )
     );
@@ -136,7 +136,7 @@ export const setMemberStatus = async (
 ): Promise<void> => {
   try {
     await setDoc(
-      doc(Db, `group/${groupId}/member/${memberId}`),
+      doc(Db(), `group/${groupId}/member/${memberId}`),
       {
         status: status,
       },
@@ -165,13 +165,17 @@ export const listMembers = async (
       if (lastDoc) qcs.push(startAfter(lastDoc));
       if (tag) qcs.push(where('tag', 'array-contains', tag));
       const q: Query<Member> = query(
-        collection(Db, `group/${id}/member`).withConverter(memberDataConverter),
+        collection(Db(), `group/${id}/member`).withConverter(
+          memberDataConverter
+        ),
         ...qcs
       );
       return await getDocs(q);
     } else {
       return await getDocs(
-        collection(Db, `group/${id}/member`).withConverter(memberDataConverter)
+        collection(Db(), `group/${id}/member`).withConverter(
+          memberDataConverter
+        )
       );
     }
   } catch (error) {
@@ -187,7 +191,7 @@ export const setMemberTag = async (
 ): Promise<void> => {
   try {
     await setDoc(
-      doc(Db, `group/${groupId}/member/${memberId}`),
+      doc(Db(), `group/${groupId}/member/${memberId}`),
       {
         tag: tags,
       },

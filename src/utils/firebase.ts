@@ -1,4 +1,9 @@
-import { getFirestore } from '@firebase/firestore';
+import {
+  CACHE_SIZE_UNLIMITED,
+  Firestore,
+  getFirestore,
+  initializeFirestore,
+} from '@firebase/firestore';
 import { initializeApp } from 'firebase/app';
 
 const firebaseConfig = {
@@ -18,6 +23,16 @@ export type dataWithId<T> = {
   data: T;
 };
 
-export const Db = getFirestore(app);
+let hasInitialized = false;
+
+export const Db = (): Firestore => {
+  if (hasInitialized) return getFirestore(app);
+  else {
+    hasInitialized = true;
+    return initializeFirestore(app, {
+      cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+    });
+  }
+};
 
 export { app };

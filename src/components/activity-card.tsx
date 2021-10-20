@@ -229,12 +229,11 @@ const ActivityCard: React.FC<{
   editable = false,
   showMemberData = true,
 }) => {
-  console.log(activitySnapshot.id);
   const [memberInfo, setMemberInfo] = useState<Member | null>(null);
   const { currentId } = useContext(GroupContext);
   const activityData: activity<work> | null = activitySnapshot.data() ?? null;
   const { currentMember } = useContext(GroupContext);
-  useMemo(() => {
+  useEffect(() => {
     let subscription = true;
     if (member) {
       setMemberInfo(member);

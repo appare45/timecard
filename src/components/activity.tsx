@@ -1,48 +1,32 @@
 import {
-  Box,
   Button,
   ButtonGroup,
   Circle,
   FormControl,
   FormHelperText,
   FormLabel,
-  Heading,
   HStack,
   Skeleton,
-  Spacer,
   Text,
   Textarea,
   useToast,
 } from '@chakra-ui/react';
 import React, { Suspense } from 'react';
-import { useEffect } from 'react';
 import { useContext } from 'react';
 import { useState } from 'react';
-import { useParams } from 'react-router';
-import { Route, Switch, useHistory, useRouteMatch } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
-import { dataWithId } from '../utils/firebase';
-import { Link as RouterLink } from 'react-router-dom';
 import {
   activity,
-  getActivitySnapshot,
   setWork,
   statusToText,
   work,
   workStatus,
 } from '../utils/group';
-import {
-  IoArrowBack,
-  IoCreateOutline,
-  IoPencilOutline,
-  IoScan,
-} from 'react-icons/io5';
-import { MemberAction } from './qrcodeScan';
+import { IoCreateOutline, IoPencilOutline } from 'react-icons/io5';
 import { useMemo } from 'react';
 import { DocumentSnapshot } from 'firebase/firestore';
-import { SideWidget } from './assets';
 import { millisToText } from '../utils/time';
-import { Member, getMember } from '../utils/member';
+import { Member } from '../utils/member';
 
 export const ActivityStatus: React.FC<{
   workStatus: workStatus;
@@ -165,7 +149,7 @@ const ActivityMemo: React.FC<{
   );
 };
 
-const ActivityDetail: React.FC<{
+export const ActivityDetail: React.FC<{
   activity: DocumentSnapshot<activity<work>>;
   member: DocumentSnapshot<Member>;
 }> = ({ activity, member }) => {
@@ -173,7 +157,6 @@ const ActivityDetail: React.FC<{
   const { currentMember } = useContext(GroupContext);
   return (
     <>
-      <Heading>{member.data()?.name}のアクティビティー</Heading>
       {activityData && (
         <>
           {activityData?.content.status === 'done' &&
@@ -197,100 +180,3 @@ const ActivityDetail: React.FC<{
     </>
   );
 };
-
-const SingleActivity = () => {
-  const { activityId } = useParams<{ activityId: string }>();
-  const [activitySnapshot, setActivitySnapshot] = useState<DocumentSnapshot<
-    activity<work>
-  > | null>(null);
-  const history = useHistory();
-  const { currentId } = useContext(GroupContext);
-  useEffect(() => {
-    if (activityId && currentId) {
-      getActivitySnapshot(activityId, currentId).then((e) =>
-        setActivitySnapshot(e)
-      );
-    }
-  }, [activityId, currentId]);
-  const [member, setMember] = useState<DocumentSnapshot<Member> | null>();
-  useMemo(() => {
-    const activityData = activitySnapshot?.data() ?? null;
-    if (activitySnapshot && activityData && currentId)
-      getMember(activityData.memberId, currentId).then((e) =>
-        setMember(e ?? null)
-      );
-  }, [activitySnapshot, currentId]);
-  return (
-    <>
-      <Button
-        leftIcon={<IoArrowBack />}
-        variant="link"
-        onClick={history.goBack}>
-        戻る
-      </Button>
-      <Box my="2">
-        {activitySnapshot && member && (
-          <ActivityDetail activity={activitySnapshot} member={member} />
-        )}
-      </Box>
-    </>
-  );
-};
-
-const Activities: React.FC = () => {
-  const { path } = useRouteMatch();
-  const { isAdmin } = useContext(GroupContext);
-  const history = useHistory();
-  const [detectedMember, setDetectedMember] =
-    useState<dataWithId<Member> | null>(null);
-  const QRCodeScan = React.lazy(() => import('./qrcodeScan'));
-  const Activities = React.lazy(() => import('./display-activities'));
-  return (
-    <>
-      <Switch>
-        <Route exact path={path}>
-          <Box mb="3">
-            <Heading>タイムライン</Heading>
-            <Text>全てのアクティビティーが時間順で並びます</Text>
-          </Box>
-          <HStack align="flex-start" py="5">
-            <Suspense fallback={<Skeleton />}>
-              <Activities />
-            </Suspense>
-            <Spacer />
-            <SideWidget>
-              <>
-                {isAdmin && (
-                  <Button
-                    leftIcon={<IoScan />}
-                    as={RouterLink}
-                    to="/activity/scan">
-                    スキャン
-                  </Button>
-                )}
-              </>
-            </SideWidget>
-          </HStack>
-        </Route>
-        <Route exact path={`${path}scan`}>
-          {!detectedMember ? (
-            <QRCodeScan onDetect={(e) => setDetectedMember(e)} />
-          ) : (
-            <MemberAction
-              member={detectedMember}
-              onClose={() => {
-                history.push(path);
-                setDetectedMember(null);
-              }}
-            />
-          )}
-        </Route>
-        <Route path={`${path}:activityId`}>
-          <SingleActivity />
-        </Route>
-      </Switch>
-    </>
-  );
-};
-
-export default Activities;

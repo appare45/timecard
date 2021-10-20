@@ -1,5 +1,5 @@
 import { Button } from '@chakra-ui/button';
-import { Heading, HStack, VStack } from '@chakra-ui/layout';
+import { VStack } from '@chakra-ui/layout';
 import {
   AlertDialog,
   AlertDialogOverlay,
@@ -19,10 +19,11 @@ import React, {
   Suspense,
   useCallback,
 } from 'react';
-import { IoArrowBack, IoPersonCircleOutline, IoQrCode } from 'react-icons/io5';
-import { useParams, useHistory } from 'react-router';
+import { IoPersonCircleOutline, IoQrCode } from 'react-icons/io5';
+import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
+import { GroupTemplate } from '../templates/group';
 import {
   activity,
   work,
@@ -31,8 +32,8 @@ import {
   getUserActivities,
 } from '../utils/group';
 import { Member, getMember } from '../utils/member';
-import { LoadMoreButton, SideWidget } from './assets';
-import { DisplayActivities } from './display-activities';
+import { LoadMoreButton } from '../components/assets';
+import { DisplayActivities } from '../components/display-activities';
 
 function UserActivity(): JSX.Element {
   const [lastActivityDoc, setLastActivityDoc] = useState<
@@ -66,7 +67,6 @@ function UserActivity(): JSX.Element {
       }
     }
   }, [currentId, currentMember, memberId, user]);
-  const history = useHistory();
 
   const loadMoreData = useCallback(() => {
     if (currentId)
@@ -104,7 +104,7 @@ function UserActivity(): JSX.Element {
         return () => (subscription = false);
       });
   }, [currentId, memberId]);
-  const Card = React.lazy(() => import('./createCard'));
+  const Card = React.lazy(() => import('../components/createCard'));
   const Activities: React.FC<{
     data: QueryDocumentSnapshot<activity<work>>[];
   }> = ({ data }) =>
@@ -128,63 +128,65 @@ function UserActivity(): JSX.Element {
     useMemo(() => <LoadMoreButton loadMore={loadMoreData} />, []);
   return (
     <>
-      {history.length > 0 && (
-        <Button
-          leftIcon={<IoArrowBack />}
-          onClick={() => history.goBack()}
-          variant="link">
-          戻る
-        </Button>
+      {user && (
+        <GroupTemplate
+          title={`${user.name ?? 'ユーザー'}の履歴`}
+          displayGoBackButton
+          sideWidget={
+            <>
+              {(isAdmin || isOwnMember) && (
+                <Button leftIcon={<IoQrCode />} onClick={() => setDialog(true)}>
+                  QRコード表示
+                </Button>
+              )}
+              {isOwnMember && (
+                <Button
+                  leftIcon={<IoPersonCircleOutline />}
+                  as={Link}
+                  to={`/setting`}>
+                  プロフィールを編集
+                </Button>
+              )}
+            </>
+          }>
+          <>
+            <VStack w="full" spacing="4" pb="2">
+              {activities && <Activities data={activities} />}
+              {lastActivityDoc && <LoadMore />}
+            </VStack>
+            <AlertDialog
+              isOpen={dialog}
+              closeOnEsc
+              closeOnOverlayClick
+              onClose={() => setDialog(false)}
+              leastDestructiveRef={dialogCancel}>
+              <AlertDialogOverlay />
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  {user?.name}のカード
+                  <AlertDialogCloseButton />
+                </AlertDialogHeader>
+                <AlertDialogBody>
+                  {user && group && (
+                    <Suspense fallback={<Skeleton />}>
+                      <Card
+                        member={{ data: user, id: memberId }}
+                        group={group}
+                      />
+                    </Suspense>
+                  )}
+                  <Button
+                    ref={dialogCancel}
+                    onClick={() => setDialog(false)}
+                    mx="5">
+                    閉じる
+                  </Button>
+                </AlertDialogBody>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        </GroupTemplate>
       )}
-      {user?.name && (
-        <Heading mb="10">{`${user?.name ?? 'ユーザー'}の履歴`}</Heading>
-      )}
-
-      <HStack align="flex-start">
-        <VStack w="full" spacing="4" pb="2">
-          {activities && <Activities data={activities} />}
-          {lastActivityDoc && <LoadMore />}
-        </VStack>
-        <SideWidget>
-          {(isAdmin || isOwnMember) && (
-            <Button leftIcon={<IoQrCode />} onClick={() => setDialog(true)}>
-              QRコード表示
-            </Button>
-          )}
-          {isOwnMember && (
-            <Button
-              leftIcon={<IoPersonCircleOutline />}
-              as={Link}
-              to={`/setting`}>
-              プロフィールを編集
-            </Button>
-          )}
-        </SideWidget>
-      </HStack>
-      <AlertDialog
-        isOpen={dialog}
-        closeOnEsc
-        closeOnOverlayClick
-        onClose={() => setDialog(false)}
-        leastDestructiveRef={dialogCancel}>
-        <AlertDialogOverlay />
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            {user?.name}のカード
-            <AlertDialogCloseButton />
-          </AlertDialogHeader>
-          <AlertDialogBody>
-            {user && group && (
-              <Suspense fallback={<Skeleton />}>
-                <Card member={{ data: user, id: memberId }} group={group} />
-              </Suspense>
-            )}
-            <Button ref={dialogCancel} onClick={() => setDialog(false)} mx="5">
-              閉じる
-            </Button>
-          </AlertDialogBody>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

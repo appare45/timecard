@@ -1,13 +1,7 @@
-import {
-  AspectRatio,
-  Box,
-  Button,
-  ButtonGroup,
-  Link,
-  Skeleton,
-} from '@chakra-ui/react';
+import { AspectRatio, Box, IconButton, Link, Skeleton } from '@chakra-ui/react';
 import React, { useEffect, useRef, useState } from 'react';
 import { IoDownloadOutline } from 'react-icons/io5';
+import { useIsPrint } from '../hooks/media-query';
 import { dataWithId } from '../utils/firebase';
 import { Group } from '../utils/group';
 import { Member } from '../utils/member';
@@ -24,6 +18,7 @@ const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
   const groupName = group.name.toUpperCase().replace('　', ' ');
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const isPrint = useIsPrint();
   useEffect(() => {
     if (canvasRef.current) {
       const ctx = canvasRef.current.getContext('2d');
@@ -98,21 +93,23 @@ const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
     }
   }, [groupName, member.id, name]);
   return (
-    <>
-      <Box pos="fixed" top="0" left="0" zIndex="-1" opacity="0">
+    <Box pos="relative">
+      <Box pos="fixed" top="0" left="0" zIndex="-10000" opacity="0">
         <img alt="qrコード" ref={qrRef} />
       </Box>
       {isLoading && (
         <Skeleton
-          w={`${cardWidth * 4}`}
-          h={`${cardHeight * 4}`}
+          w={`${cardWidth}mm`}
+          h={`${cardHeight}mm`}
           isLoaded={!isLoading}
         />
       )}
       <AspectRatio
-        w="sm"
+        w={`${cardWidth}mm`}
+        h={`${cardHeight}mm`}
         ratio={cardWidth / cardHeight}
-        display={isLoading ? 'none' : 'block'}>
+        display={isLoading ? 'none' : 'block'}
+        pos="relative">
         <canvas
           ref={canvasRef}
           width={cardWidth * 16}
@@ -122,18 +119,19 @@ const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
           }}
         />
       </AspectRatio>
-      {dataUrl && (
-        <ButtonGroup>
-          <Button
-            leftIcon={<IoDownloadOutline />}
-            href={dataUrl}
-            as={Link}
-            download>
-            ダウンロード
-          </Button>
-        </ButtonGroup>
+      {dataUrl && !isPrint && (
+        <IconButton
+          aria-label="カードをダウンロード"
+          icon={<IoDownloadOutline />}
+          href={dataUrl}
+          as={Link}
+          download
+          pos="absolute"
+          top="2"
+          left="2"
+        />
       )}
-    </>
+    </Box>
   );
 };
 
