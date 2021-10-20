@@ -62,7 +62,7 @@ import {
   useSetRecoilState,
 } from 'recoil';
 import { GroupTagList } from './group-tag-control';
-import Card from './createCard';
+import Card, { cardWidth } from './createCard';
 
 const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
   data,
@@ -253,7 +253,9 @@ const MembersListCard: React.FC<{
 }> = ({ membersData }) => {
   const { currentGroup } = useContext(GroupContext);
   return (
-    <Grid templateColumns="repeat( auto-fit, minmax(300px, 1fr))" gap="4">
+    <Grid
+      templateColumns={`repeat( auto-fit, minmax(${cardWidth}mm, 1fr))`}
+      gap="4">
       {currentGroup &&
         membersData.map((member) => (
           <Box key={member.id}>
