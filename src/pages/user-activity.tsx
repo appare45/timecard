@@ -32,8 +32,8 @@ import {
   getUserActivities,
 } from '../utils/group';
 import { Member, getMember } from '../utils/member';
-import { LoadMoreButton } from './assets';
-import { DisplayActivities } from './display-activities';
+import { LoadMoreButton } from '../components/assets';
+import { DisplayActivities } from '../components/display-activities';
 
 function UserActivity(): JSX.Element {
   const [lastActivityDoc, setLastActivityDoc] = useState<
@@ -104,7 +104,7 @@ function UserActivity(): JSX.Element {
         return () => (subscription = false);
       });
   }, [currentId, memberId]);
-  const Card = React.lazy(() => import('./createCard'));
+  const Card = React.lazy(() => import('../components/createCard'));
   const Activities: React.FC<{
     data: QueryDocumentSnapshot<activity<work>>[];
   }> = ({ data }) =>
@@ -128,60 +128,65 @@ function UserActivity(): JSX.Element {
     useMemo(() => <LoadMoreButton loadMore={loadMoreData} />, []);
   return (
     <>
-      <GroupTemplate
-        title={`${user?.name ?? 'ユーザー'}の履歴`}
-        displayGoBackButton
-        sideWidget={
-          <>
-            {(isAdmin || isOwnMember) && (
-              <Button leftIcon={<IoQrCode />} onClick={() => setDialog(true)}>
-                QRコード表示
-              </Button>
-            )}
-            {isOwnMember && (
-              <Button
-                leftIcon={<IoPersonCircleOutline />}
-                as={Link}
-                to={`/setting`}>
-                プロフィールを編集
-              </Button>
-            )}
-          </>
-        }>
-        <>
-          <VStack w="full" spacing="4" pb="2">
-            {activities && <Activities data={activities} />}
-            {lastActivityDoc && <LoadMore />}
-          </VStack>
-          <AlertDialog
-            isOpen={dialog}
-            closeOnEsc
-            closeOnOverlayClick
-            onClose={() => setDialog(false)}
-            leastDestructiveRef={dialogCancel}>
-            <AlertDialogOverlay />
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                {user?.name}のカード
-                <AlertDialogCloseButton />
-              </AlertDialogHeader>
-              <AlertDialogBody>
-                {user && group && (
-                  <Suspense fallback={<Skeleton />}>
-                    <Card member={{ data: user, id: memberId }} group={group} />
-                  </Suspense>
-                )}
-                <Button
-                  ref={dialogCancel}
-                  onClick={() => setDialog(false)}
-                  mx="5">
-                  閉じる
+      {user && (
+        <GroupTemplate
+          title={`${user.name ?? 'ユーザー'}の履歴`}
+          displayGoBackButton
+          sideWidget={
+            <>
+              {(isAdmin || isOwnMember) && (
+                <Button leftIcon={<IoQrCode />} onClick={() => setDialog(true)}>
+                  QRコード表示
                 </Button>
-              </AlertDialogBody>
-            </AlertDialogContent>
-          </AlertDialog>
-        </>
-      </GroupTemplate>
+              )}
+              {isOwnMember && (
+                <Button
+                  leftIcon={<IoPersonCircleOutline />}
+                  as={Link}
+                  to={`/setting`}>
+                  プロフィールを編集
+                </Button>
+              )}
+            </>
+          }>
+          <>
+            <VStack w="full" spacing="4" pb="2">
+              {activities && <Activities data={activities} />}
+              {lastActivityDoc && <LoadMore />}
+            </VStack>
+            <AlertDialog
+              isOpen={dialog}
+              closeOnEsc
+              closeOnOverlayClick
+              onClose={() => setDialog(false)}
+              leastDestructiveRef={dialogCancel}>
+              <AlertDialogOverlay />
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  {user?.name}のカード
+                  <AlertDialogCloseButton />
+                </AlertDialogHeader>
+                <AlertDialogBody>
+                  {user && group && (
+                    <Suspense fallback={<Skeleton />}>
+                      <Card
+                        member={{ data: user, id: memberId }}
+                        group={group}
+                      />
+                    </Suspense>
+                  )}
+                  <Button
+                    ref={dialogCancel}
+                    onClick={() => setDialog(false)}
+                    mx="5">
+                    閉じる
+                  </Button>
+                </AlertDialogBody>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        </GroupTemplate>
+      )}
     </>
   );
 }

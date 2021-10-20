@@ -104,7 +104,7 @@ export default function UserUI(): JSX.Element {
   }, [Auth]);
   const Login = React.lazy(() => import('./login'));
   const NewAccount = React.lazy(() => import('./new_account'));
-  const GroupUI = React.lazy(() => import('./group'));
+  const GroupUI = React.lazy(() => import('../pages/group'));
   return (
     <AuthContext.Provider
       value={{

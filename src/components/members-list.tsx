@@ -1,4 +1,4 @@
-import { Box, HStack, Spacer } from '@chakra-ui/layout';
+import { Box, Grid, HStack, Spacer } from '@chakra-ui/layout';
 import {
   Skeleton,
   Table,
@@ -28,6 +28,11 @@ import {
   PopoverHeader,
   PopoverBody,
   Select,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
 } from '@chakra-ui/react';
 import React, {
   useContext,
@@ -57,6 +62,7 @@ import {
   useSetRecoilState,
 } from 'recoil';
 import { GroupTagList } from './group-tag-control';
+import Card from './createCard';
 
 const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
   data,
@@ -242,6 +248,25 @@ const MembersListTable: React.FC<{
   );
 };
 
+const MembersListCard: React.FC<{
+  membersData: QueryDocumentSnapshot<Member>[];
+}> = ({ membersData }) => {
+  const { currentGroup } = useContext(GroupContext);
+  return (
+    <Grid templateColumns="repeat( auto-fit, minmax(300px, 1fr))" gap="4">
+      {currentGroup &&
+        membersData.map((member) => (
+          <Box key={member.id}>
+            <Card
+              member={{ data: member.data(), id: member.id }}
+              group={currentGroup}
+            />
+          </Box>
+        ))}
+    </Grid>
+  );
+};
+
 // メンバー一覧のatom
 const ShowMembersState = atom<QueryDocumentSnapshot<Member>[]>({
   key: 'shownMemberState_MembersList',
@@ -351,29 +376,45 @@ const MembersList: React.FC<{
         </Alert>
       ) : (
         <Skeleton isLoaded={!!shownMembers.length} w="full">
-          <VStack spacing="4">
-            <Table
-              colorScheme="blackAlpha"
-              size={isSimple ? 'sm' : 'md'}
-              mt={!isSimple ? '5' : '0.5'}
-              w="full">
-              <Thead>
-                <Tr>
-                  <Th>名前</Th>
-                  <Th></Th>
-                  <Th>タグ</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {shownMembers && (
-                  <MembersListTable membersData={shownMembers} />
-                )}
-              </Tbody>
-            </Table>
-            {lastDoc && (
-              <LoadMoreButton loadMore={() => loadMoreData(lastDoc)} />
-            )}
-          </VStack>
+          <Tabs
+            variant="soft-rounded"
+            colorScheme="gray"
+            isLazy
+            lazyBehavior="keepMounted">
+            <TabList>
+              <Tab>表</Tab>
+              <Tab>カード</Tab>
+            </TabList>
+            <TabPanels>
+              <TabPanel>
+                <VStack spacing="4">
+                  <Table
+                    colorScheme="blackAlpha"
+                    size={isSimple ? 'sm' : 'md'}
+                    w="full">
+                    <Thead>
+                      <Tr>
+                        <Th>名前</Th>
+                        <Th></Th>
+                        <Th>タグ</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {shownMembers && (
+                        <MembersListTable membersData={shownMembers} />
+                      )}
+                    </Tbody>
+                  </Table>
+                  {lastDoc && (
+                    <LoadMoreButton loadMore={() => loadMoreData(lastDoc)} />
+                  )}
+                </VStack>
+              </TabPanel>
+              <TabPanel>
+                {shownMembers && <MembersListCard membersData={shownMembers} />}
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
         </Skeleton>
       )}
     </>

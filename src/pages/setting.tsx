@@ -14,7 +14,8 @@ import { GroupContext } from '../contexts/group';
 import { getMember, Member, setMember } from '../utils/member';
 import { DocumentSnapshot } from '@firebase/firestore';
 import { AuthContext } from '../contexts/user';
-import { FormButtons, MemberAvatar } from './assets';
+import { FormButtons, MemberAvatar } from '../components/assets';
+import { GroupTemplate } from '../templates/group';
 
 const PersonalSetting: React.FC = () => {
   const { currentId, currentMember, updateCurrentMember } =
@@ -148,16 +149,15 @@ const PersonalSetting: React.FC = () => {
 };
 
 const Setting: React.FC = () => {
-  const AdminSetting = React.lazy(() => import('./admin-setting'));
+  const AdminSetting = React.lazy(() => import('../components/admin-setting'));
   const { isAdmin } = useContext(GroupContext);
   return (
-    <>
-      <Heading>設定</Heading>
+    <GroupTemplate title="設定">
       <Stack spacing="5" py="3">
         <PersonalSetting />
         {isAdmin && <AdminSetting />}
       </Stack>
-    </>
+    </GroupTemplate>
   );
 };
 

@@ -11,6 +11,7 @@ import {
   Spinner,
   Stack,
   Text,
+  useMediaQuery,
   useToast,
   VStack,
 } from '@chakra-ui/react';
@@ -109,12 +110,16 @@ const MenuLink: React.FC<{
 const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const [groups, updateGroups] = useState<Group[]>([]);
   const [currentId, updateCurrentId] = useState<string>();
+  const [currentGroup, updateCurrentGroup] = useState<Group>();
   const [frontMode, setFrontMode] = useState<boolean>();
   const { account } = useContext(AuthContext);
   const [currentMemberData, setCurrentMemberData] =
     useState<DocumentSnapshot<Member> | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const toast = useToast();
+
+  const [isPrint] = useMediaQuery(['print']);
+
   // フロントモードの切り替え
   useEffect(() => {
     const dbName = 'Group';
@@ -158,6 +163,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
         if (group) {
           updateGroups([..._groups, group]);
           updateCurrentId(groupIds[0]);
+          updateCurrentGroup(group);
         }
       });
     });
@@ -202,81 +208,36 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
     });
   }, [toast]);
 
-  const AllActivity = React.lazy(() => import('./display-activities'));
-
-  const Nav: React.FC = () => (
-    <HStack align="start" h="100vh" py="10" px="5" spacing="20">
-      <Box pos="sticky" top="10">
-        <GroupSelector
-          ids={groupIds}
-          groups={groups}
-          update={updateCurrentId}
-        />
-        <Stack spacing="1" my="5" align="flex-start">
-          <MenuLink leftIcon={IoHome} to="/">
-            トップ
-          </MenuLink>
-
-          <MenuLink leftIcon={IoAnalytics} to="/activity">
-            タイムライン
-          </MenuLink>
-
-          <MenuLink leftIcon={IoPeople} to="/member">
-            メンバー
-          </MenuLink>
-
-          <MenuLink leftIcon={IoSettings} to="/setting">
-            設定
-          </MenuLink>
-        </Stack>
-      </Box>
-      <Box w="full">
-        <Suspense fallback={null}>
-          <Switch>
-            <Route exact path="/">
-              <GroupTemplate
-                title="最新のアクティビティー"
-                sideWidget={
-                  <>
-                    {isAdmin && (
-                      <ScanButton
-                        setFrontMode={() => {
-                          setFrontMode(true);
-                          if (document.fullscreenEnabled)
-                            document.body.requestFullscreen();
-                        }}
-                      />
-                    )}
-                    <Heading size="sm">オンラインのメンバー</Heading>
-                    <RecoilRoot>
-                      <MembersList onlyOnline isSimple />
-                    </RecoilRoot>
-                  </>
-                }>
-                <AllActivity loadMore={false} />
-              </GroupTemplate>
-            </Route>
-            <Route path={`/activity/`}>
-              <Activities />
-            </Route>
-            <Route path={`/member/`}>
-              <Members />
-            </Route>
-            <Route path={`/setting/`}>
-              <Setting />
-            </Route>
-          </Switch>
-        </Suspense>
-      </Box>
-    </HStack>
+  const AllActivity = React.lazy(
+    () => import('../components/display-activities')
   );
 
-  const Members = React.lazy(() => import('../pages/members'));
-  const Front = React.lazy(() => import('./front'));
-  const CreateGroup = React.lazy(() => import('./create-group'));
+  const Nav: React.FC = () => (
+    <Box pos="sticky" top="10" h="full">
+      <GroupSelector ids={groupIds} groups={groups} update={updateCurrentId} />
+      <Stack spacing="1" my="5" align="flex-start">
+        <MenuLink leftIcon={IoHome} to="/">
+          トップ
+        </MenuLink>
+        <MenuLink leftIcon={IoAnalytics} to="/activity">
+          タイムライン
+        </MenuLink>
+        <MenuLink leftIcon={IoPeople} to="/member">
+          メンバー
+        </MenuLink>
+        <MenuLink leftIcon={IoSettings} to="/setting">
+          設定
+        </MenuLink>
+      </Stack>
+    </Box>
+  );
+
+  const Members = React.lazy(() => import('./members'));
+  const Front = React.lazy(() => import('../components/front'));
+  const CreateGroup = React.lazy(() => import('../components/create-group'));
   const Setting = React.lazy(() => import('./setting'));
-  const MembersList = React.lazy(() => import('./members-list'));
-  const Activities = React.lazy(() => import('./../pages/timeline'));
+  const MembersList = React.lazy(() => import('../components/members-list'));
+  const Activities = React.lazy(() => import('./timeline'));
   return (
     <>
       {!!groupIds.length && currentId && (
@@ -288,13 +249,56 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
             isAdmin: isAdmin,
             currentMember: currentMemberData,
             updateCurrentMember: setCurrentMemberData,
+            currentGroup: currentGroup,
           }}>
           {frontMode ? (
             <Suspense fallback={<Spinner />}>
               <Front />
             </Suspense>
           ) : (
-            <Nav />
+            <>
+              <HStack align="start" h="100vh" py="10" px="5" spacing="20">
+                {!isPrint && <Nav />}
+                <Box flexGrow={1}>
+                  <Suspense fallback={null}>
+                    <Switch>
+                      <Route exact path="/">
+                        <GroupTemplate
+                          title="最新のアクティビティー"
+                          sideWidget={
+                            <>
+                              {isAdmin && (
+                                <ScanButton
+                                  setFrontMode={() => {
+                                    setFrontMode(true);
+                                    if (document.fullscreenEnabled)
+                                      document.body.requestFullscreen();
+                                  }}
+                                />
+                              )}
+                              <Heading size="sm">オンラインのメンバー</Heading>
+                              <RecoilRoot>
+                                <MembersList onlyOnline isSimple />
+                              </RecoilRoot>
+                            </>
+                          }>
+                          <AllActivity loadMore={false} />
+                        </GroupTemplate>
+                      </Route>
+                      <Route path={`/activity/`}>
+                        <Activities />
+                      </Route>
+                      <Route path={`/member/`}>
+                        <Members />
+                      </Route>
+                      <Route path={`/setting/`}>
+                        <Setting />
+                      </Route>
+                    </Switch>
+                  </Suspense>
+                </Box>
+              </HStack>
+            </>
           )}
         </GroupContext.Provider>
       )}

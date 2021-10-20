@@ -9,7 +9,7 @@ import { GroupTemplate } from '../templates/group';
 
 const Members: React.FC = () => {
   const { path } = useRouteMatch();
-  const UserActivity = React.lazy(() => import('../components/user-activity'));
+  const UserActivity = React.lazy(() => import('./user-activity'));
   const MembersList = React.lazy(() => import('../components/members-list'));
   const groupContext = useContext(GroupContext);
   const [update, setUpdate] = useState(false);
@@ -36,6 +36,7 @@ const Members: React.FC = () => {
                       leftIcon={<IoPrint />}
                       colorScheme="blackAlpha"
                       bg="black"
+                      onClick={window.print}
                       size="sm">
                       印刷
                     </Button>
