@@ -11,7 +11,6 @@ import {
   Spinner,
   Stack,
   Text,
-  useMediaQuery,
   useToast,
   VStack,
 } from '@chakra-ui/react';
@@ -35,6 +34,7 @@ import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
+import { useIsPrint } from '../hooks/media-query';
 import { GroupTemplate } from '../templates/group';
 import { getAccount, getAdmin, getGroup, Group } from '../utils/group';
 import { Member, getMember } from '../utils/member';
@@ -118,8 +118,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const toast = useToast();
 
-  const [isPrint] = useMediaQuery(['print']);
-
+  const isPrint = useIsPrint();
   // フロントモードの切り替え
   useEffect(() => {
     const dbName = 'Group';
@@ -212,25 +211,31 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
     () => import('../components/display-activities')
   );
 
-  const Nav: React.FC = () => (
-    <Box pos="sticky" top="10" h="full">
-      <GroupSelector ids={groupIds} groups={groups} update={updateCurrentId} />
-      <Stack spacing="1" my="5" align="flex-start">
-        <MenuLink leftIcon={IoHome} to="/">
-          トップ
-        </MenuLink>
-        <MenuLink leftIcon={IoAnalytics} to="/activity">
-          タイムライン
-        </MenuLink>
-        <MenuLink leftIcon={IoPeople} to="/member">
-          メンバー
-        </MenuLink>
-        <MenuLink leftIcon={IoSettings} to="/setting">
-          設定
-        </MenuLink>
-      </Stack>
-    </Box>
-  );
+  const Nav: React.FC = () => {
+    return (
+      <Box pos="sticky" top="10" h="full">
+        <GroupSelector
+          ids={groupIds}
+          groups={groups}
+          update={updateCurrentId}
+        />
+        <Stack spacing="1" my="5" align="flex-start">
+          <MenuLink leftIcon={IoHome} to="/">
+            トップ
+          </MenuLink>
+          <MenuLink leftIcon={IoAnalytics} to="/activity">
+            タイムライン
+          </MenuLink>
+          <MenuLink leftIcon={IoPeople} to="/member">
+            メンバー
+          </MenuLink>
+          <MenuLink leftIcon={IoSettings} to="/setting">
+            設定
+          </MenuLink>
+        </Stack>
+      </Box>
+    );
+  };
 
   const Members = React.lazy(() => import('./members'));
   const Front = React.lazy(() => import('../components/front'));
