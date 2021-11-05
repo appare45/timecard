@@ -170,8 +170,8 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
 
   // アカウント情報の取得
   useMemo(() => {
-    if (account && currentId)
-      getAccount(account.uid, currentId).then((e) => {
+    if (account?.email && currentId)
+      getAccount(account.email, currentId).then((e) => {
         const memberId = e.data()?.memberId;
         if (memberId) {
           getMember(memberId, currentId).then((e) =>
@@ -310,13 +310,15 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
       {!currentId && <Circle />}
       {!groupIds.length && (
         <Center h="100vh">
-          <VStack p="10" rounded="2xl" shadow="lg">
-            <Heading>グループの作成</Heading>
-            <section>
-              <Text>現在では既存のグループに参加することはできません。</Text>
-              <Text>将来的に対応予定なのでしばらくお待ちください</Text>
-            </section>
-            <CreateGroup />
+          <VStack p="10" rounded="2xl" shadow="lg" spacing="10">
+            <Box>
+              <Heading>グループに参加</Heading>
+              <Text>管理者からの承認をお待ち下さい</Text>
+            </Box>
+            <Box>
+              <Heading>グループの作成</Heading>
+              <CreateGroup />
+            </Box>
           </VStack>
         </Center>
       )}
