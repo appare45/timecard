@@ -32,6 +32,7 @@ import {
 } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
+import JoinGroup from '../components/join-group';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { useIsPrint } from '../hooks/media-query';
@@ -170,8 +171,8 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
 
   // アカウント情報の取得
   useMemo(() => {
-    if (account && currentId)
-      getAccount(account.uid, currentId).then((e) => {
+    if (account?.email && currentId)
+      getAccount(account.email, currentId).then((e) => {
         const memberId = e.data()?.memberId;
         if (memberId) {
           getMember(memberId, currentId).then((e) =>
@@ -310,13 +311,16 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
       {!currentId && <Circle />}
       {!groupIds.length && (
         <Center h="100vh">
-          <VStack p="10" rounded="2xl" shadow="lg">
-            <Heading>グループの作成</Heading>
-            <section>
-              <Text>現在では既存のグループに参加することはできません。</Text>
-              <Text>将来的に対応予定なのでしばらくお待ちください</Text>
-            </section>
-            <CreateGroup />
+          <VStack p="10" rounded="2xl" shadow="lg" spacing="10">
+            <Box>
+              <Heading>グループに参加</Heading>
+              <Text>招待コードを入力してください</Text>
+              <JoinGroup />
+            </Box>
+            <Box>
+              <Heading>グループの作成</Heading>
+              <CreateGroup />
+            </Box>
           </VStack>
         </Center>
       )}

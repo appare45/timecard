@@ -1,22 +1,17 @@
 import React, { useEffect } from 'react';
 import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogCloseButton,
-  AlertDialogContent,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogOverlay,
   AspectRatio,
   Box,
   Button,
   ButtonGroup,
+  Center,
   Heading,
   HStack,
   Skeleton,
   Spacer,
   Text,
   useToast,
+  VStack,
 } from '@chakra-ui/react';
 import { QRCodeScan } from './qrcodeScan';
 import { useState } from 'react';
@@ -50,81 +45,84 @@ const Front: React.FC = () => {
   const toast = useToast();
   const { currentMember } = useContext(GroupContext);
 
+  const [time, setTime] = useState('');
+
+  useEffect(() => {
+    setTime(
+      latestActivity?.data().content.startTime.toMillis()
+        ? millisToText(
+            Date.now() -
+              (latestActivity?.data().content.startTime.toDate().getTime() ?? 0)
+          )
+        : '0'
+    );
+  }, [latestActivity]);
+
+  const audio = useRef<HTMLAudioElement>(null);
   // メンバーの最終活動を表示する
   useEffect(() => {
     if (currentId && detectedMember) {
       getLatestActivity(currentId, detectedMember.id).then((activity) =>
         setLatestActivity(activity)
       );
+      if (audio.current) audio.current.play();
+      console.info(audio);
     }
   }, [currentId, detectedMember]);
 
   return (
     <Box p="10" bg="white">
-      <HStack>
-        <Box>
-          <Heading>QRコードをスキャンしてください</Heading>
-          <Text>
-            管理者モードに切り替えるには
-            {userContext.account?.displayName ?? '管理者'}
-            のQRコードをスキャンしてください
-          </Text>
-        </Box>
-        <Spacer />
-      </HStack>
-      <Box m="10">
-        {detectedMember ? (
-          <Skeleton>
-            <AspectRatio
-              maxH="100vh"
-              h="full"
-              ratio={cardWidth / cardHeight}
-              borderRadius="lg"
-              bg="gray.400"
-              overflow="hidden">
-              <Box />
-            </AspectRatio>
-          </Skeleton>
-        ) : (
-          <Box h="90vh">
-            <QRCodeScan onDetect={(e) => setDetectedMember(e)} />
+      <audio src="/audio/notification_high-intensity.wav" ref={audio} />
+      {!detectedMember ? (
+        <>
+          <HStack>
+            <Box>
+              <Heading>QRコードをスキャンしてください</Heading>
+              <Text>
+                管理者モードに切り替えるには
+                {userContext.account?.displayName ?? '管理者'}
+                のQRコードをスキャンしてください
+              </Text>
+            </Box>
+            <Spacer />
+          </HStack>
+          <Box m="10">
+            {detectedMember ? (
+              <Skeleton>
+                <AspectRatio
+                  maxH="100vh"
+                  h="full"
+                  ratio={cardWidth / cardHeight}
+                  borderRadius="lg"
+                  bg="gray.400"
+                  overflow="hidden">
+                  <Box />
+                </AspectRatio>
+              </Skeleton>
+            ) : (
+              <Box h="90vh">
+                <QRCodeScan onDetect={(e) => setDetectedMember(e)} />
+              </Box>
+            )}
           </Box>
-        )}
-      </Box>
-      <AlertDialog
-        leastDestructiveRef={cancelRef}
-        isOpen={!!detectedMember}
-        motionPreset="slideInBottom"
-        isCentered
-        onClose={() => setDetectedMember(null)}
-        size="lg">
-        <AlertDialogOverlay />
-        <AlertDialogContent>
-          <AlertDialogHeader>
+        </>
+      ) : (
+        <Center h="100vh">
+          <VStack spacing="10">
             <HStack spacing="4">
-              {detectedMember && (
-                <MemberAvatar member={detectedMember.data} size="md" />
+              {detectedMember && detectedMember?.data && (
+                <MemberAvatar member={detectedMember.data} size="lg" />
               )}
-              <Text fontSize="2xl" fontWeight="bold">
+              <Text fontSize="4xl" fontWeight="bold">
                 {detectedMember?.data.name}
               </Text>
+              {latestActivity?.data().content.status == 'running' && (
+                <HStack alignItems="baseline">
+                  <Text fontSize="4xl">{time.toString()}</Text>
+                  <Text>経過</Text>
+                </HStack>
+              )}
             </HStack>
-            <AlertDialogCloseButton />
-          </AlertDialogHeader>
-          <AlertDialogBody>
-            {latestActivity?.data().content.status == 'running' && (
-              <HStack alignItems="baseline">
-                <Text fontSize="2xl">
-                  {millisToText(
-                    Date.now() -
-                      latestActivity?.data().content.startTime.toMillis()
-                  )}
-                </Text>
-                <Text>経過</Text>
-              </HStack>
-            )}
-          </AlertDialogBody>
-          <AlertDialogFooter>
             <ButtonGroup size="lg">
               <Button
                 colorScheme={
@@ -170,6 +168,7 @@ const Front: React.FC = () => {
                       });
                     }
                   }
+                  setDetectedMember(null);
                 }}>
                 {latestActivity?.data().content.status === 'running'
                   ? '終了'
@@ -184,17 +183,17 @@ const Front: React.FC = () => {
                   管理モードに切り替え
                 </Button>
               )}
-              <Button
-                variant="ghost"
-                colorScheme="red"
-                ref={cancelRef}
-                onClick={() => setDetectedMember(null)}>
-                キャンセル
-              </Button>
             </ButtonGroup>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            <Button
+              variant="ghost"
+              colorScheme="red"
+              ref={cancelRef}
+              onClick={() => setDetectedMember(null)}>
+              キャンセル
+            </Button>
+          </VStack>
+        </Center>
+      )}
     </Box>
   );
 };

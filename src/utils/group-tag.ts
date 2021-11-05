@@ -5,6 +5,7 @@ import {
   FirestoreDataConverter,
   getDocs,
   limit,
+  orderBy,
   query,
   QueryConstraint,
   QueryDocumentSnapshot,
@@ -87,6 +88,7 @@ export async function listTag(
     const qcs: QueryConstraint[] = [];
     if (limitNumber) qcs.push(limit(limitNumber));
     if (lastDoc) qcs.push(startAfter(lastDoc));
+    qcs.push(orderBy('name', 'asc'));
     return getDocs(
       query(collection(Db(), `group/${groupId}/tag`), ...qcs).withConverter(
         TagConverter

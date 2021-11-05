@@ -1,14 +1,20 @@
 import { Button, ButtonGroup } from '@chakra-ui/button';
-import { useBoolean } from '@chakra-ui/hooks';
+import { useBoolean, useClipboard } from '@chakra-ui/hooks';
 import { Input } from '@chakra-ui/input';
 import { Box, Heading, Text, HStack, Stack } from '@chakra-ui/layout';
 import {
   Alert,
   AlertIcon,
   AlertTitle,
+  Checkbox,
   Editable,
   EditableInput,
   EditablePreview,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  PinInput,
+  PinInputField,
   Spacer,
 } from '@chakra-ui/react';
 import { Select } from '@chakra-ui/select';
@@ -16,9 +22,19 @@ import { Tag as TagElement, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
 import { useToast } from '@chakra-ui/toast';
 import { QueryDocumentSnapshot } from '@firebase/firestore';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { IoAdd, IoKeyOutline } from 'react-icons/io5';
+import { IoAdd, IoCheckmark, IoClipboard, IoKeyOutline } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
-import { getGroup, Group, setGroup } from '../utils/group';
+import { AuthContext } from '../contexts/user';
+import {
+  Account,
+  addAccount,
+  addAdmin,
+  getGroup,
+  Group,
+  setGroup,
+} from '../utils/group';
+import { createInvite } from '../utils/invite';
+import { listMembers, Member } from '../utils/member';
 import { createTag, listTag, tag, tagColors } from './../utils/group-tag';
 import { FormButtons, GroupTag } from './assets';
 
@@ -217,6 +233,119 @@ const TagList = () => {
   );
 };
 
+const CreateInvite = ({
+  email,
+  isAdmin,
+  memberId,
+}: {
+  email: string;
+  isAdmin: boolean;
+  memberId: string;
+}) => {
+  const [code] = useState(Math.random().toString(32).substring(2).slice(0, 6));
+  const clipBoard = useClipboard(code);
+
+  const { account } = useContext(AuthContext);
+  const { currentId } = useContext(GroupContext);
+
+  useEffect(() => {
+    if (account?.email && currentId)
+      createInvite(account?.email, currentId, code).then(() => {
+        addAccount(email, new Account(memberId), currentId);
+        if (isAdmin) addAdmin(email, memberId, currentId);
+      });
+  }, [account?.email, code, currentId, email, isAdmin, memberId]);
+  return (
+    <HStack>
+      <PinInput type="alphanumeric" value={code} isDisabled>
+        <PinInputField />
+        <PinInputField />
+        <PinInputField />
+        <PinInputField />
+        <PinInputField />
+        <PinInputField />
+      </PinInput>
+      <Button
+        leftIcon={clipBoard.hasCopied ? <IoCheckmark /> : <IoClipboard />}
+        colorScheme={clipBoard.hasCopied ? 'green' : undefined}
+        variant={clipBoard.hasCopied ? 'outline' : undefined}
+        onClick={clipBoard.onCopy}>
+        コードをコピー
+      </Button>
+    </HStack>
+  );
+};
+
+const Invite = () => {
+  const [createState, setCreateState] = useBoolean(false);
+  const [email, setEmail] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [member, setMember] = useState('');
+  const [members, setMembers] = useState<QueryDocumentSnapshot<Member>[]>();
+
+  const { currentId } = useContext(GroupContext);
+  useEffect(() => {
+    if (currentId)
+      listMembers(currentId).then((e) => {
+        const _members: QueryDocumentSnapshot<Member>[] = [];
+        e?.forEach((f) => _members.push(f));
+        setMembers(_members);
+      });
+  }, [currentId]);
+  return (
+    <Box>
+      <Heading>招待を作成</Heading>
+      {createState ? (
+        <CreateInvite email={email} isAdmin={isAdmin} memberId={member} />
+      ) : (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (email.length) setCreateState.on();
+          }}>
+          <Box>
+            <FormControl isRequired>
+              <FormLabel>メールアドレス</FormLabel>
+              <Input
+                value={email}
+                type="email"
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <FormHelperText>
+                招待する人のメールアドレスを入力してください
+              </FormHelperText>
+            </FormControl>
+            <FormControl isRequired>
+              <FormLabel>関連付けるメンバー</FormLabel>
+              {members && (
+                <Select
+                  onChange={(e) => {
+                    setMember(members[e.target.selectedIndex].id);
+                  }}>
+                  {members.map((_member) => (
+                    <option id={_member.id} key={_member.id}>
+                      {_member.data().name}
+                    </option>
+                  ))}
+                </Select>
+              )}
+              <FormHelperText>招待するメンバーを選んでください</FormHelperText>
+            </FormControl>
+            <Checkbox
+              checked={isAdmin}
+              onChange={(e) => setIsAdmin(e.target.checked)}>
+              管理者として招待
+            </Checkbox>
+          </Box>
+          <Button colorScheme="green" type="submit">
+            作成
+          </Button>
+        </form>
+      )}
+    </Box>
+  );
+};
+
 const AdminSetting: React.FC = () => {
   return (
     <Box>
@@ -230,6 +359,7 @@ const AdminSetting: React.FC = () => {
       <Stack py="4">
         <OrganizationName />
         <TagSetting />
+        <Invite />
       </Stack>
     </Box>
   );

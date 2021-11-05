@@ -33,7 +33,7 @@ class Admin {
 }
 
 //** 管理はメンバーベースで行う */
-class Account {
+export class Account {
   constructor(readonly memberId: string) {
     this.memberId = memberId;
   }
@@ -244,12 +244,12 @@ async function addAccount(
 }
 
 async function getAccount(
-  memberId: string,
+  email: string,
   groupId: string
 ): Promise<DocumentSnapshot<Account>> {
   try {
     return await getDoc<Account>(
-      doc(Db, `group/${groupId}/account/`, memberId).withConverter<Account>(
+      doc(Db, `group/${groupId}/account/`, email).withConverter<Account>(
         accountDataConverter
       )
     );

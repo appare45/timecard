@@ -10,12 +10,16 @@ service cloud.firestore {
         return isAuthenticated() && userId == request.auth.uid;
     }
     // グループメンバーか
-    function isGroupMember(groupId) {
-      return isAuthenticated() && exists(/databases/$(database)/documents/group/$(groupId)/account/$(request.auth.uid))
+    function isGroupMember(groupId, email) {
+      return isAuthenticated() && exists(/databases/$(database)/documents/group/$(groupId)/account/$(email))
     }
 
-    function isAdmin(groupId, memberId) {
-      return isAuthenticated() && isGroupMember(groupId) && exists(/databases/$(database)/documents/group/$(groupId)/admin/$(memberId))
+    function getMemberId(groupId, email) {
+      return get(/databases/$(database)/documents/group/$(groupId)/account/$(email)).data.memberId
+    }
+
+    function isAdmin(groupId, email) {
+      return isAuthenticated() && isGroupMember(groupId, email) && exists(/databases/$(database)/documents/group/$(groupId)/admin/$(getMemberId(groupId, email)))
     }
 
     match /{document=**} {
@@ -23,19 +27,26 @@ service cloud.firestore {
         allow get, create, update: if isUserAuthenticated(uid)
       }
       match /group/{groupId} {
-        allow get, update: if isGroupMember(groupId)
+        allow get, update: if isGroupMember(groupId, request.auth.token.email)
       }
-      match /group/{groupId}/account/{accountId} {
-        allow get, create, update: if request.auth.uid == accountId
+      match /group/{groupId}/account/{email} {
+        allow get, create, update: if request.auth.token.email == email || isAdmin(groupId, request.auth.token.email)
+      }
+      match /group/{groupId}/tag/{activity} {
+        allow get, list, create, update: if isGroupMember(groupId, request.auth.token.email)
       }
       match /group/{groupId}/activity/{activity} {
-        allow get, list, create, update: if isGroupMember(groupId)
+        allow get, list, create, update: if isGroupMember(groupId, request.auth.token.email)
       }
       match /group/{groupId}/member/{memberId} {
-        allow get, list, create, update: if isGroupMember(groupId)
+        allow get, list, create, update: if isGroupMember(groupId, request.auth.token.email)
       }
       match /group/{groupId}/admin/{memberId} {
-        allow get, list: if isGroupMember(groupId)
+        allow get, list: if isGroupMember(groupId, request.auth.token.email)
+        allow create: if isAdmin(groupId, request.auth.token.email)
+      }
+      match /invite/{inviteId} {
+        allow get, create: if isAuthenticated()
       }
     }
   }
