@@ -32,6 +32,7 @@ import {
 } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
+import JoinGroup from '../components/join-group';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { useIsPrint } from '../hooks/media-query';
@@ -313,7 +314,8 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
           <VStack p="10" rounded="2xl" shadow="lg" spacing="10">
             <Box>
               <Heading>グループに参加</Heading>
-              <Text>管理者からの承認をお待ち下さい</Text>
+              <Text>招待コードを入力してください</Text>
+              <JoinGroup />
             </Box>
             <Box>
               <Heading>グループの作成</Heading>

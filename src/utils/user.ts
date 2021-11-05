@@ -20,31 +20,6 @@ export type User = {
   updated: FieldValue;
 };
 
-// Type guard
-const isUser = (item: {
-  name?: unknown;
-  updated?: unknown;
-  groupId?: unknown[];
-}): item is User => {
-  if (!(item.name && typeof item.name == 'string' && item.name.length > 0)) {
-    return false;
-  }
-  if (!item.updated) {
-    return false;
-  }
-  if (
-    !(
-      (item?.groupId &&
-        Array.isArray(item.groupId) &&
-        item.groupId.some((v) => typeof v === 'string')) ||
-      item?.groupId?.length == 0
-    )
-  ) {
-    return false;
-  }
-  return true;
-};
-
 const userDataConverter = {
   toFirestore(user: User): DocumentData {
     const data: User = user;
@@ -56,9 +31,6 @@ const userDataConverter = {
     option: SnapshotOptions
   ): User {
     const data = snapshot.data(option);
-    if (!isUser(data)) {
-      throw new Error('Invalid user data');
-    }
     return {
       name: data.name,
       updated: data.updated,
@@ -89,7 +61,6 @@ const getUser = async (id: string): Promise<Readonly<User> | null> => {
     const data = await getDoc(
       doc(Db, `user/${id}`).withConverter(userDataConverter)
     );
-
     return data.data() ?? null;
   } catch (error) {
     console.error(error);

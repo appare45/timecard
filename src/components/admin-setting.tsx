@@ -20,8 +20,7 @@ import {
 import { Select } from '@chakra-ui/select';
 import { Tag as TagElement, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
 import { useToast } from '@chakra-ui/toast';
-import { QueryDocumentSnapshot, QuerySnapshot } from '@firebase/firestore';
-import _ from 'lodash';
+import { QueryDocumentSnapshot } from '@firebase/firestore';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { IoAdd, IoCheckmark, IoClipboard, IoKeyOutline } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
