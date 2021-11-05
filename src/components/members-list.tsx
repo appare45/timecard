@@ -41,6 +41,8 @@ import React, {
   ReactElement,
   useMemo,
   useCallback,
+  SetStateAction,
+  Dispatch,
 } from 'react';
 import { IoAdd, IoAnalytics } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
@@ -54,13 +56,6 @@ import {
 import { GroupTag, LoadMoreButton, MemberAvatar } from './assets';
 import { listTag, tag } from '../utils/group-tag';
 import { listMembers, Member, setMember, setMemberTag } from '../utils/member';
-import {
-  atom,
-  selectorFamily,
-  useRecoilState,
-  useRecoilValue,
-  useSetRecoilState,
-} from 'recoil';
 import { GroupTagList } from './group-tag-control';
 import Card, { cardWidth } from './createCard';
 
@@ -269,49 +264,26 @@ const MembersListCard: React.FC<{
   );
 };
 
-// メンバー一覧のatom
-const ShowMembersState = atom<QueryDocumentSnapshot<Member>[]>({
-  key: 'shownMemberState_MembersList',
-  default: [],
-  dangerouslyAllowMutability: true,
-});
-
-const ShowMemberOnlineState = atom<boolean>({
-  key: 'showMemberOnlineState',
-  default: false,
-});
-
-const showMemberFilterState = atom<QueryDocumentSnapshot<tag> | null>({
-  key: 'showMemberFilterState',
-  default: null,
-  dangerouslyAllowMutability: true,
-});
-
-const filteredMemberFilterState = selectorFamily<
-  QueryDocumentSnapshot<Member>[],
-  { groupId: string; count: number }
->({
-  key: 'filteredMemberState',
-  get:
-    ({ groupId, count }) =>
-    async ({ get }): Promise<QueryDocumentSnapshot<Member>[]> => {
-      const filter = get(showMemberFilterState);
-      const Members = get(ShowMembersState);
-      const OnlyOnline = get(ShowMemberOnlineState);
-      const filteredResult = await listMembers(
-        groupId,
-        count,
-        undefined,
-        OnlyOnline ? 'active' : undefined,
-        Members[count],
-        filter?.ref ?? undefined
-      );
-      const newMembers: QueryDocumentSnapshot<Member>[] = [];
-      filteredResult?.forEach((e) => newMembers.push(e));
-      return newMembers;
-    },
-  dangerouslyAllowMutability: true,
-});
+const loadMembersList = async (props: {
+  groupId: string;
+  count: number;
+  sortWithOnline?: boolean;
+  startFrom?: QueryDocumentSnapshot<Member>;
+  filter?: DocumentReference<tag>;
+}): Promise<QueryDocumentSnapshot<Member>[]> => {
+  return listMembers(
+    props.groupId,
+    props.count,
+    undefined,
+    props.sortWithOnline ? 'active' : undefined,
+    props.startFrom,
+    props.filter
+  ).then((members) => {
+    const membersList: QueryDocumentSnapshot<Member>[] = [];
+    members?.forEach((_) => membersList.push(_));
+    return membersList;
+  });
+};
 
 const MembersList: React.FC<{
   onlyOnline?: boolean;
@@ -319,40 +291,51 @@ const MembersList: React.FC<{
 }> = ({ onlyOnline = false, isSimple = false }) => {
   const loadDataCount = 10;
   const { currentId } = useContext(GroupContext);
-  const setShownMembers = useSetRecoilState(ShowMembersState);
-  const shownMembers = useRecoilValue(
-    filteredMemberFilterState({
-      groupId: currentId ?? '',
-      count: loadDataCount,
-    })
-  );
-  const [sortWithOnline, setSortWithOnline] = useRecoilState(
-    ShowMemberOnlineState
-  );
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot>();
+  const [sortWithOnline, setSortWithOnline] = useState<boolean>();
+  const [shownMembers, setShownMembers] = useState<
+    QueryDocumentSnapshot<Member>[]
+  >([]);
+  const [filterState, setFilterState] =
+    useState<null | QueryDocumentSnapshot<tag>>(null);
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<Member>>();
 
-  const loadMoreData = (startFrom: QueryDocumentSnapshot) => {
+  const loadMoreData = useCallback(() => {
     if (currentId)
-      listMembers(
-        currentId,
-        loadDataCount,
-        undefined,
-        sortWithOnline ? 'active' : undefined,
-        startFrom
-      ).then((members) => {
-        const membersList: QueryDocumentSnapshot<Member>[] = [];
-        members?.forEach((_) => membersList.push(_));
+      loadMembersList({
+        groupId: currentId,
+        count: loadDataCount,
+        sortWithOnline: sortWithOnline,
+        startFrom: lastDoc ?? undefined,
+        filter: filterState?.ref ?? undefined,
+      }).then((membersList) => {
         setLastDoc(membersList[loadDataCount - 1] ?? null);
-        setShownMembers((e) => [...(e ?? []), ...membersList]);
+        setShownMembers((e) => [...e, ...membersList]);
       });
-  };
+  }, [currentId, filterState, lastDoc, sortWithOnline]);
 
   useEffect(
     () => setSortWithOnline(onlyOnline),
     [onlyOnline, setSortWithOnline]
   );
 
-  const MemoedMemberFilter = () => useMemo(() => <MemberFilter />, []);
+  useEffect(() => {
+    if (currentId)
+      loadMembersList({
+        groupId: currentId,
+        count: loadDataCount,
+        sortWithOnline: sortWithOnline,
+        filter: filterState?.ref ?? undefined,
+      }).then((e) => {
+        setShownMembers(e);
+        setLastDoc(e[loadDataCount - 1]);
+      });
+  }, [currentId, filterState, sortWithOnline]);
+
+  const MemoedMemberFilter = () =>
+    useMemo(() => <MemberFilter filter={[filterState, setFilterState]} />, []);
+
+  // eslint-disable-next-line react/display-name
+  const LoadMore = React.memo(() => <LoadMoreButton loadMore={loadMoreData} />);
   return (
     <>
       {!onlyOnline && (
@@ -407,9 +390,7 @@ const MembersList: React.FC<{
                       )}
                     </Tbody>
                   </Table>
-                  {lastDoc && (
-                    <LoadMoreButton loadMore={() => loadMoreData(lastDoc)} />
-                  )}
+                  {lastDoc && <LoadMore />}
                 </VStack>
               </TabPanel>
               <TabPanel>
@@ -423,7 +404,14 @@ const MembersList: React.FC<{
   );
 };
 
-const MemberFilter = () => {
+const MemberFilter = ({
+  filter,
+}: {
+  filter: [
+    QueryDocumentSnapshot<tag> | null,
+    Dispatch<SetStateAction<QueryDocumentSnapshot<tag> | null>>
+  ];
+}) => {
   const [groupTags, setGroupTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
   const { currentId } = useContext(GroupContext);
   useEffect(() => {
@@ -436,7 +424,8 @@ const MemberFilter = () => {
     }
   }, [currentId]);
 
-  const [currentFilter, setFilter] = useRecoilState(showMemberFilterState);
+  const [currentFilter, setFilter] = filter;
+
   return (
     <Select
       w="md"
