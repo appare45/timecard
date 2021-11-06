@@ -44,34 +44,28 @@ function UserActivity(): JSX.Element {
   const [activities, setActivities] = useState<
     QueryDocumentSnapshot<activity<work>>[] | null
   >(null);
-  const [group, setGroup] = useState<DocumentSnapshot<Group> | null>(null);
   const [dialog, setDialog] = useState(false);
   const dialogCancel = useRef(null);
-  const { currentId, currentMember, isAdmin } = useContext(GroupContext);
+  const { currentGroup, currentMember, isAdmin } = useContext(GroupContext);
   const [isOwnMember, setIsOwnMember] = useState(false);
 
-  useEffect(() => {
-    if (currentId) {
-      getGroup(currentId).then((group) => setGroup(group ?? null));
-    }
-  }, [currentId]);
   useMemo(() => {
-    if (currentId && !user) {
+    if (currentGroup && !user) {
       if (currentMember?.id == memberId) {
         setUser(currentMember.data() ?? null);
         setIsOwnMember(currentMember?.id == memberId);
       } else if (currentMember?.id) {
-        getMember(memberId, currentId).then((member) => {
+        getMember(memberId, currentGroup.id).then((member) => {
           setUser(member?.data() ?? null);
         });
       }
     }
-  }, [currentId, currentMember, memberId, user]);
+  }, [currentGroup, currentMember, memberId, user]);
 
   const loadMoreData = useCallback(() => {
-    if (currentId)
+    if (currentGroup)
       if (lastActivityDoc) {
-        getUserActivities(currentId, memberId, 5, lastActivityDoc).then(
+        getUserActivities(currentGroup.id, memberId, 5, lastActivityDoc).then(
           (gotActivities) => {
             setLastActivityDoc(gotActivities.docs[4]);
             let subscription = true;
@@ -87,11 +81,11 @@ function UserActivity(): JSX.Element {
           }
         );
       }
-  }, [activities, currentId, lastActivityDoc, memberId]);
+  }, [activities, currentGroup, lastActivityDoc, memberId]);
 
   useEffect(() => {
-    if (currentId)
-      getUserActivities(currentId, memberId, 5).then((activities) => {
+    if (currentGroup)
+      getUserActivities(currentGroup.id, memberId, 5).then((activities) => {
         setLastActivityDoc(activities.docs[4]);
         let subscription = true;
         if (subscription) {
@@ -103,7 +97,7 @@ function UserActivity(): JSX.Element {
         }
         return () => (subscription = false);
       });
-  }, [currentId, memberId]);
+  }, [currentGroup, memberId]);
   const Card = React.lazy(() => import('../components/createCard'));
   const Activities: React.FC<{
     data: QueryDocumentSnapshot<activity<work>>[];
@@ -167,11 +161,11 @@ function UserActivity(): JSX.Element {
                   <AlertDialogCloseButton />
                 </AlertDialogHeader>
                 <AlertDialogBody>
-                  {user && group && (
+                  {user && currentGroup && (
                     <Suspense fallback={<Skeleton />}>
                       <Card
                         member={{ data: user, id: memberId }}
-                        group={group}
+                        group={currentGroup}
                       />
                     </Suspense>
                   )}

@@ -23,6 +23,7 @@ import {
   DocumentData,
   SetOptions,
   startAfter,
+  DocumentReference,
 } from 'firebase/firestore';
 import { app } from './../utils/firebase';
 import { addMember, Member, setMemberStatus } from './member';
@@ -34,10 +35,7 @@ class Admin {
 
 //** 管理はメンバーベースで行う */
 export class Account {
-  constructor(readonly memberId: string, readonly isActive: boolean) {
-    this.memberId = memberId;
-    this.isActive = isActive;
-  }
+  constructor(readonly memberId: string, readonly isActive: boolean) {}
 }
 
 export class Group {
@@ -140,6 +138,7 @@ const accountDataConverter: FirestoreDataConverter<Account> = {
   toFirestore(account: WithFieldValue<Account>): DocumentData {
     return {
       memberId: account.memberId,
+      isActive: account.isActive,
     };
   },
   fromFirestore(
@@ -196,7 +195,7 @@ const createGroup = (
   group: { name: string; joinStatus: boolean },
   author: Member,
   authorId: string
-): Promise<string> => {
+): Promise<DocumentReference<Group>> => {
   try {
     const _group: Readonly<Group> = {
       name: group.name,
@@ -204,7 +203,10 @@ const createGroup = (
       authorId: authorId,
       created: serverTimestamp(),
     };
-    return addDoc(collection(Db, 'group'), _group).then((group_1) => {
+    return addDoc(
+      collection(Db, 'group').withConverter(groupDataConverter),
+      _group
+    ).then((group_1) => {
       addMember(
         {
           name: author.name,
@@ -221,7 +223,7 @@ const createGroup = (
         );
         addAdmin(memberId, memberId, group_1.id);
       });
-      return group_1.id;
+      return group_1;
     });
   } catch (error) {
     console.error(error);

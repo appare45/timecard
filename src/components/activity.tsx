@@ -47,7 +47,7 @@ const ActivityMemo: React.FC<{
   editable: boolean;
   activity: DocumentSnapshot<activity<work>>;
 }> = ({ editable, activity }) => {
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   const [draftText, setDraftText] = useState(
     activity.data()?.content.memo.replace(/\\n/g, '\n') ?? ''
   );
@@ -117,8 +117,8 @@ const ActivityMemo: React.FC<{
                   draftText.length < 10000
                 }
                 onClick={() => {
-                  if (currentId)
-                    saveMemo(currentId, activity.id)
+                  if (currentGroup)
+                    saveMemo(currentGroup.id, activity.id)
                       ?.then(() => {
                         toast({
                           title: '保存しました',

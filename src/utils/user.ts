@@ -3,6 +3,7 @@ import { FieldValue } from '@firebase/firestore-types';
 import {
   doc,
   DocumentData,
+  DocumentReference,
   getDoc,
   getFirestore,
   QueryDocumentSnapshot,
@@ -11,12 +12,13 @@ import {
   SetOptions,
   SnapshotOptions,
 } from 'firebase/firestore';
+import { Group } from './group';
 
 const Db = getFirestore(app);
 
 export type User = {
   name: string;
-  groupId?: string[];
+  group?: DocumentReference<Group>[];
   updated: FieldValue;
 };
 
@@ -34,7 +36,7 @@ const userDataConverter = {
     return {
       name: data.name,
       updated: data.updated,
-      groupId: data.groupId ?? [],
+      group: data.group ?? [],
     };
   },
 };

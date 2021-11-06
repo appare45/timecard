@@ -16,7 +16,7 @@ import { Group } from './group';
 export type Invite = {
   authorId: string;
   group: DocumentReference<Group>[];
-  used: Timestamp | null;
+  used: Timestamp | false;
 };
 
 const inviteDataConverter: FirestoreDataConverter<Invite> = {
@@ -49,11 +49,11 @@ export const createInvite = async (
 };
 
 export const getInvite = async (
-  code: string
+  email: string
 ): Promise<DocumentSnapshot<Invite>> => {
   try {
     return await getDoc(
-      doc(Db(), `invite/${code}`).withConverter(inviteDataConverter)
+      doc(Db(), `invite/${email}`).withConverter(inviteDataConverter)
     );
   } catch (error) {
     console.error(error);

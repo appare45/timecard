@@ -17,17 +17,17 @@ export const GroupTagList: React.FC<{
   // グループのタグ
   const [groupTags, setGroupTags] = useState<DocumentSnapshot<tag>[]>([]);
 
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   useEffect(() => {
-    if (currentId) {
+    if (currentGroup) {
       // タグ一覧を取得
-      listTag(currentId).then((e) => {
+      listTag(currentGroup.id).then((e) => {
         const newTags: QueryDocumentSnapshot<tag>[] = [];
         e.forEach((f) => newTags.push(f));
         setGroupTags(newTags);
       });
     }
-  }, [currentId]);
+  }, [currentGroup]);
 
   return useMemo(() => {
     // 各タグ

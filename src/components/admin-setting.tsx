@@ -39,16 +39,17 @@ import { createTag, listTag, tag, tagColors } from './../utils/group-tag';
 import { FormButtons, GroupTag } from './assets';
 
 const OrganizationName = () => {
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   useMemo(() => {
-    if (currentId)
-      getGroup(currentId).then((e) => {
-        if (e) setCurrentGroup(e);
+    if (currentGroup)
+      getGroup(currentGroup.id).then((e) => {
+        if (e) setCurrentGroupData(e);
         setOrganizationName(e?.data()?.name);
       });
-  }, [currentId]);
+  }, [currentGroup]);
   const [editMode, setEditMode] = useState(false);
-  const [currentGroup, setCurrentGroup] = useState<DocumentSnapshot<Group>>();
+  const [currentGroupData, setCurrentGroupData] =
+    useState<DocumentSnapshot<Group>>();
   const [organizationName, setOrganizationName] = useState<string>();
   const toast = useToast();
   return (
@@ -62,15 +63,15 @@ const OrganizationName = () => {
       <FormButtons
         onCancel={() => {
           setEditMode(false);
-          setOrganizationName(currentGroup?.data()?.name);
+          setOrganizationName(currentGroupData?.data()?.name);
         }}
         editMode={editMode}
         onSave={() => {
-          const _group = currentGroup?.data();
+          const _group = currentGroupData?.data();
 
-          if (_group && organizationName && currentId) {
+          if (_group && organizationName && currentGroup) {
             _group.name = organizationName;
-            setGroup(_group, currentId)
+            setGroup(_group, currentGroup.id)
               .then(() =>
                 toast({
                   status: 'success',
@@ -78,7 +79,7 @@ const OrganizationName = () => {
                 })
               )
               .catch(() => {
-                setOrganizationName(currentGroup?.data()?.name);
+                setOrganizationName(currentGroupData?.data()?.name);
                 toast({
                   status: 'error',
                   title: '保存に失敗しました',
@@ -89,7 +90,8 @@ const OrganizationName = () => {
         }}
         setEditable={() => setEditMode(true)}
         saveAvailable={
-          organizationName != currentGroup?.data()?.name && !!organizationName
+          organizationName != currentGroupData?.data()?.name &&
+          !!organizationName
         }
       />
     </HStack>
@@ -100,7 +102,7 @@ const CreateTag = () => {
   const [createMode, setCreateMode] = useBoolean(false);
   const [tagName, setTagName] = useState('');
   const [tagColor, setTagColor] = useState<tagColors>('red');
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   const toast = useToast();
   const tagColors: tagColors[] = [
     'gray',
@@ -155,8 +157,8 @@ const CreateTag = () => {
               colorScheme="green"
               disabled={tagName.length == 0 && tagName.length < 20}
               onClick={() => {
-                if (currentId && tagName.length > 0)
-                  createTag(new tag(tagName, tagColor), currentId)
+                if (currentGroup && tagName.length > 0)
+                  createTag(new tag(tagName, tagColor), currentGroup.id)
                     .then(() => {
                       toast({
                         title: 'タグを作成しました',
@@ -202,18 +204,18 @@ const TagSetting = () => {
 };
 
 const TagList = () => {
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   const [tags, setTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
   // ToDo: 無限スクロールを実装
   useEffect(() => {
-    if (currentId)
-      listTag(currentId).then((e) => {
+    if (currentGroup)
+      listTag(currentGroup.id).then((e) => {
         const tags: QueryDocumentSnapshot<tag>[] = [];
         e.forEach((j) => tags.push(j));
 
         setTags(tags);
       });
-  }, [currentId]);
+  }, [currentGroup]);
   return tags.length > 0 ? (
     <>
       {tags?.map((e) => (
@@ -246,24 +248,23 @@ const CreateInvite = ({
   const clipBoard = useClipboard(code);
 
   const { account } = useContext(AuthContext);
-  const { currentId, currentGroup } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
 
   useEffect(() => {
-    if (account?.email && currentId && currentGroup)
-      createInvite(account?.email, {
+    if (account?.email && currentGroup && currentGroup)
+      createInvite(email, {
         group: [currentGroup.ref],
         authorId: account.uid,
-        used: null,
+        used: false,
       }).then(() => {
-        addAccount(email, new Account(memberId, false), currentId);
-        if (isAdmin) addAdmin(email, memberId, currentId);
+        addAccount(email, new Account(memberId, false), currentGroup.id);
+        if (isAdmin) addAdmin(email, memberId, currentGroup.id);
       });
   }, [
     account?.email,
     account?.uid,
     code,
     currentGroup,
-    currentId,
     email,
     isAdmin,
     memberId,
@@ -296,15 +297,15 @@ const InviteElement = () => {
   const [member, setMember] = useState('');
   const [members, setMembers] = useState<QueryDocumentSnapshot<Member>[]>();
 
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   useEffect(() => {
-    if (currentId)
-      listMembers(currentId).then((e) => {
+    if (currentGroup)
+      listMembers(currentGroup.id).then((e) => {
         const _members: QueryDocumentSnapshot<Member>[] = [];
         e?.forEach((f) => _members.push(f));
         setMembers(_members);
       });
-  }, [currentId]);
+  }, [currentGroup]);
   return (
     <Box>
       <Heading>招待を作成</Heading>

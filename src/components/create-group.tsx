@@ -33,9 +33,9 @@ const CreateGroup: React.FC = () => {
               tag: [],
             },
             userContext.account.uid
-          ).then((groupId) => {
+          ).then((group) => {
             if (userContext.account?.uid) {
-              setUser({ groupId: [groupId] }, userContext.account.uid, {
+              setUser({ group: [group] }, userContext.account.uid, {
                 merge: true,
               });
             }

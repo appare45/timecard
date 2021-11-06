@@ -55,7 +55,7 @@ export const DisplayActivities: React.FC<{
 export const AllActivity: React.FC<{ loadMore?: boolean }> = ({
   loadMore = true,
 }) => {
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   const [activities, setActivities] = useState<
     QueryDocumentSnapshot<activity<work>>[] | null
   >(null);
@@ -63,24 +63,24 @@ export const AllActivity: React.FC<{ loadMore?: boolean }> = ({
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot>();
 
   const loadMoreData = useCallback(() => {
-    if (currentId && activities)
-      getAllActivities(currentId, 5, lastDoc).then((_activities) => {
+    if (currentGroup && activities)
+      getAllActivities(currentGroup.id, 5, lastDoc).then((_activities) => {
         setActivities((e): QueryDocumentSnapshot<activity<work>>[] => [
           ...(e ?? []),
           ..._activities,
         ]);
         setLastDoc(_activities[4]);
       });
-  }, [activities, currentId, lastDoc]);
+  }, [activities, currentGroup, lastDoc]);
 
   useMemo(() => {
-    if (currentId) {
-      getAllActivities(currentId, 5).then((activities) => {
+    if (currentGroup) {
+      getAllActivities(currentGroup.id, 5).then((activities) => {
         setActivities(activities);
         setLastDoc(activities[4]);
       });
     }
-  }, [currentId]);
+  }, [currentGroup]);
 
   const LoadMore: React.FC = () => useLoadMore(loadMoreData);
 

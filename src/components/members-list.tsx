@@ -62,7 +62,7 @@ import Card, { cardWidth } from './createCard';
 const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
   data,
 }) => {
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   const toast = useToast();
   return (
     <Editable
@@ -70,12 +70,13 @@ const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
       onSubmit={(e) => {
         const _member = data.data();
         _member.name = e;
-        if (currentId)
-          setMember(_member, data.id, currentId, { merge: true }).catch(() =>
-            toast({
-              title: '保存に失敗しました',
-              status: 'error',
-            })
+        if (currentGroup)
+          setMember(_member, data.id, currentGroup.id, { merge: true }).catch(
+            () =>
+              toast({
+                title: '保存に失敗しました',
+                status: 'error',
+              })
           );
       }}>
       <EditablePreview />
@@ -90,7 +91,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
 }) => {
   // ユーザーが持つタグ
   const [userTags, setUserTags] = useState<DocumentSnapshot<tag>[]>([]);
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
 
   const addTag = useCallback(
     (tag: DocumentSnapshot<tag>) => {
@@ -99,13 +100,13 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
         const newMemberTagRef: DocumentReference<tag>[] = newMemberTag.map(
           (e) => e.ref
         );
-        if (currentId) {
-          setMemberTag(newMemberTagRef, memberId, currentId);
+        if (currentGroup) {
+          setMemberTag(newMemberTagRef, memberId, currentGroup.id);
         }
         return newMemberTag;
       });
     },
-    [currentId, memberId]
+    [currentGroup, memberId]
   );
 
   useEffect(() => {
@@ -127,8 +128,8 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
       ...userTags.slice(removeTagIndex + 1),
     ];
     const newTagsRef = newTags.map((e) => e.ref);
-    if (currentId) {
-      setMemberTag(newTagsRef, memberId, currentId);
+    if (currentGroup) {
+      setMemberTag(newTagsRef, memberId, currentGroup.id);
     }
     setUserTags(newTags);
   };
@@ -286,7 +287,7 @@ const MembersList: React.FC<{
   isSimple?: boolean;
 }> = ({ onlyOnline = false, isSimple = false }) => {
   const loadDataCount = 10;
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   const [sortWithOnline, setSortWithOnline] = useState<boolean>();
   const [shownMembers, setShownMembers] = useState<
     QueryDocumentSnapshot<Member>[]
@@ -296,9 +297,9 @@ const MembersList: React.FC<{
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<Member>>();
 
   const loadMoreData = useCallback(() => {
-    if (currentId)
+    if (currentGroup)
       loadMembersList({
-        groupId: currentId,
+        groupId: currentGroup.id,
         count: loadDataCount,
         sortWithOnline: sortWithOnline,
         startFrom: lastDoc ?? undefined,
@@ -307,7 +308,7 @@ const MembersList: React.FC<{
         setLastDoc(membersList[loadDataCount - 1] ?? null);
         setShownMembers((e) => [...e, ...membersList]);
       });
-  }, [currentId, filterState, lastDoc, sortWithOnline]);
+  }, [currentGroup, filterState, lastDoc, sortWithOnline]);
 
   useEffect(
     () => setSortWithOnline(onlyOnline),
@@ -315,9 +316,9 @@ const MembersList: React.FC<{
   );
 
   useEffect(() => {
-    if (currentId)
+    if (currentGroup)
       loadMembersList({
-        groupId: currentId,
+        groupId: currentGroup.id,
         count: loadDataCount,
         sortWithOnline: sortWithOnline,
         filter: filterState?.ref ?? undefined,
@@ -325,7 +326,7 @@ const MembersList: React.FC<{
         setShownMembers(e);
         setLastDoc(e[loadDataCount - 1]);
       });
-  }, [currentId, filterState, sortWithOnline]);
+  }, [currentGroup, filterState, sortWithOnline]);
 
   const MemoedMemberFilter = () =>
     useMemo(() => <MemberFilter filter={[filterState, setFilterState]} />, []);
@@ -416,16 +417,16 @@ const MemberFilter = ({
   ];
 }) => {
   const [groupTags, setGroupTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   useEffect(() => {
-    if (currentId) {
-      listTag(currentId).then((e) =>
+    if (currentGroup) {
+      listTag(currentGroup.id).then((e) =>
         e.forEach((f) => {
           setGroupTags((oldTags) => [...oldTags, f]);
         })
       );
     }
-  }, [currentId]);
+  }, [currentGroup]);
 
   const [currentFilter, setFilter] = filter;
 
