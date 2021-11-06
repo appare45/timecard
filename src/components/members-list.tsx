@@ -287,7 +287,7 @@ const MembersList: React.FC<{
   isSimple?: boolean;
 }> = ({ onlyOnline = false, isSimple = false }) => {
   const loadDataCount = 10;
-  const { currentGroup } = useContext(GroupContext);
+  const { currentGroup, isAdmin } = useContext(GroupContext);
   const [sortWithOnline, setSortWithOnline] = useState<boolean>();
   const [shownMembers, setShownMembers] = useState<
     QueryDocumentSnapshot<Member>[]
@@ -363,7 +363,7 @@ const MembersList: React.FC<{
             colorScheme="gray"
             isLazy
             lazyBehavior="keepMounted">
-            {!isSimple && (
+            {!isSimple && isAdmin && (
               <TabList>
                 <Tab>表</Tab>
                 <Tab>カード</Tab>
@@ -394,7 +394,6 @@ const MembersList: React.FC<{
                       )}
                     </Tbody>
                   </Table>
-                  {lastDoc && <LoadMore />}
                 </VStack>
               </TabPanel>
               <TabPanel>
@@ -402,6 +401,7 @@ const MembersList: React.FC<{
               </TabPanel>
             </TabPanels>
           </Tabs>
+          {lastDoc && <LoadMore />}
         </Skeleton>
       )}
     </>
