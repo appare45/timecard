@@ -18,7 +18,7 @@ import { FormButtons, MemberAvatar } from '../components/assets';
 import { GroupTemplate } from '../templates/group';
 
 const PersonalSetting: React.FC = () => {
-  const { currentId, currentMember, updateCurrentMember } =
+  const { currentGroup, currentMember, updateCurrentMember } =
     useContext(GroupContext);
   const { account } = useContext(AuthContext);
   const [Member, setCurrentMember] = useState<DocumentSnapshot<Member>>();
@@ -28,17 +28,17 @@ const PersonalSetting: React.FC = () => {
 
   useMemo(() => {
     console.info(update);
-    if (currentId && currentMember)
-      getMember(currentMember?.id, currentId).then((_member) => {
+    if (currentGroup && currentMember)
+      getMember(currentMember?.id, currentGroup.id).then((_member) => {
         if (_member) setCurrentMember(_member);
         setUserName(_member?.data()?.name);
         setSyncProfile(!!_member?.data()?.photoUrl);
       });
-  }, [currentId, currentMember, update]);
+  }, [currentGroup, currentMember, update]);
 
   const updateMemberContext = () => {
-    if (currentMember && currentId)
-      getMember(currentMember.id, currentId).then((e) => {
+    if (currentMember && currentGroup)
+      getMember(currentMember.id, currentGroup.id).then((e) => {
         if (e && updateCurrentMember) updateCurrentMember(e);
       });
   };
@@ -61,9 +61,9 @@ const PersonalSetting: React.FC = () => {
             isChecked={syncProfile}
             onChange={() => {
               const _member = Member?.data();
-              if (_member && Member && currentId) {
+              if (_member && Member && currentGroup) {
                 _member.photoUrl = !syncProfile ? account?.photoURL ?? '' : '';
-                setMember(_member, Member?.id, currentId)
+                setMember(_member, Member?.id, currentGroup.id)
                   .then(() => {
                     setUpdate(!update);
                     updateMemberContext();
@@ -111,9 +111,9 @@ const PersonalSetting: React.FC = () => {
             onSave={() => {
               setEditMode.off();
               const _member = Member?.data();
-              if (_member && userName && Member && currentId) {
+              if (_member && userName && Member && currentGroup) {
                 _member.name = userName;
-                setMember(_member, Member.id, currentId, {
+                setMember(_member, Member.id, currentGroup.id, {
                   merge: true,
                 })
                   .then(() => {

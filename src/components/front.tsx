@@ -41,7 +41,7 @@ const Front: React.FC = () => {
     activity<work>
   > | null>(null);
   const userContext = useContext(AuthContext);
-  const { currentId, setFrontMode } = useContext(GroupContext);
+  const { currentGroup, setFrontMode } = useContext(GroupContext);
   const toast = useToast();
   const { currentMember } = useContext(GroupContext);
 
@@ -61,14 +61,14 @@ const Front: React.FC = () => {
   const audio = useRef<HTMLAudioElement>(null);
   // メンバーの最終活動を表示する
   useEffect(() => {
-    if (currentId && detectedMember) {
-      getLatestActivity(currentId, detectedMember.id).then((activity) =>
+    if (currentGroup && detectedMember) {
+      getLatestActivity(currentGroup.id, detectedMember.id).then((activity) =>
         setLatestActivity(activity)
       );
       if (audio.current) audio.current.play();
       console.info(audio);
     }
-  }, [currentId, detectedMember]);
+  }, [currentGroup, detectedMember]);
 
   return (
     <Box p="10" bg="white">
@@ -131,14 +131,19 @@ const Front: React.FC = () => {
                     : 'green'
                 }
                 onClick={() => {
-                  if (currentId && detectedMember) {
+                  if (currentGroup && detectedMember) {
                     if (latestActivity?.data().content.status === 'running') {
                       const _latestActivity = latestActivity.data();
                       _latestActivity.content.endTime = Timestamp.now();
                       _latestActivity.content.status = 'done';
-                      setWork(currentId, latestActivity?.id, _latestActivity, {
-                        merge: true,
-                      }).then(() => {
+                      setWork(
+                        currentGroup.id,
+                        latestActivity?.id,
+                        _latestActivity,
+                        {
+                          merge: true,
+                        }
+                      ).then(() => {
                         setDetectedMember(null);
                         toast({
                           title: '終了しました',
@@ -148,7 +153,7 @@ const Front: React.FC = () => {
                         });
                       });
                     } else {
-                      addWork(currentId, {
+                      addWork(currentGroup.id, {
                         type: 'work',
                         content: {
                           startTime: Timestamp.now(),

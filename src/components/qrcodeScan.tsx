@@ -74,7 +74,7 @@ function Canvas(props: {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tracks = props.stream.getTracks();
   const [currentTrackIndex, updateCurrentTrackIndex] = useState<number>(0);
-  const groupContext = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   const notificationAudio = useRef<HTMLAudioElement>(null);
   const errorAudio = useRef<HTMLAudioElement>(null);
   const detectCode = useCallback(
@@ -116,10 +116,10 @@ function Canvas(props: {
             canvasRef.current?.height
           );
           detectCode(canvasRef.current, async (e): Promise<boolean> => {
-            if (groupContext.currentId && !unknownMemberIds.includes(e)) {
-              return getMember(e, groupContext.currentId).then((member) => {
+            if (currentGroup && !unknownMemberIds.includes(e)) {
+              return getMember(e, currentGroup.id).then((member) => {
                 const memberData = member?.data();
-                if (memberData && groupContext.currentId) {
+                if (memberData) {
                   props.onDetect({ id: e, data: memberData });
                   return false;
                 } else {
@@ -140,7 +140,7 @@ function Canvas(props: {
         clearInterval(interval);
       };
     }
-  }, [currentTrackIndex, detectCode, groupContext.currentId, props, tracks]);
+  }, [currentGroup, currentTrackIndex, detectCode, props, tracks]);
 
   return (
     <>
@@ -186,7 +186,7 @@ export const MemberAction: React.FC<{
   const [latestActivity, setLatestActivity] = useState<QueryDocumentSnapshot<
     activity<work>
   > | null>(null);
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   const toast = useToast();
   const [memo, setMemo] = useState('');
   const ActivityCard = React.lazy(() => import('./activity-card'));
@@ -199,15 +199,15 @@ export const MemberAction: React.FC<{
   }, [ActivityCard, latestActivity, member.data]);
 
   useMemo(() => {
-    if (currentId) {
-      getLatestActivity(currentId, member.id).then((activity) => {
+    if (currentGroup) {
+      getLatestActivity(currentGroup.id, member.id).then((activity) => {
         setLatestActivity(activity);
         if (activity.data().content.status == 'running') {
           setMemo(activity.data().content.memo);
         }
       });
     }
-  }, [currentId, member.id]);
+  }, [currentGroup, member.id]);
   return (
     <>
       <Box mb="5">
@@ -239,9 +239,9 @@ export const MemberAction: React.FC<{
               : 'green'
           }
           onClick={() => {
-            if (currentId && member) {
+            if (currentGroup && member) {
               if (latestActivity?.data().content.status === 'done') {
-                addWork(currentId, {
+                addWork(currentGroup.id, {
                   type: 'work',
                   content: {
                     startTime: Timestamp.now(),
@@ -264,7 +264,7 @@ export const MemberAction: React.FC<{
                 _latestActivity.content.endTime = Timestamp.now();
                 _latestActivity.content.status = 'done';
                 _latestActivity.content.memo = memo;
-                setWork(currentId, latestActivity?.id, _latestActivity, {
+                setWork(currentGroup.id, latestActivity?.id, _latestActivity, {
                   merge: true,
                 }).then(() => {
                   onClose();

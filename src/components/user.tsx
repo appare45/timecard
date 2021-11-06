@@ -16,6 +16,8 @@ import { AuthContext } from '../contexts/user';
 import { app } from '../utils/firebase';
 import { getUser, setUser } from '../utils/user';
 import Logout from './logout';
+import { DocumentReference } from '@firebase/firestore';
+import { Group } from '../utils/group';
 
 const UserDataDisplay: React.FC<{ authData: User }> = ({ authData }) => {
   const [openInfo, setOpenInfo] = useState(false);
@@ -71,7 +73,9 @@ export default function UserUI(): JSX.Element {
     null
   );
   const Auth = getAuth(app);
-  const [joinedGroups, updateJoinedGroups] = useState<string[]>([]);
+  const [joinedGroups, updateJoinedGroups] = useState<
+    DocumentReference<Group>[]
+  >([]);
   const [authData, setAuthData] = useState<User>();
   const [defaultName, setDefaultName] = useState<string | null>(null);
   const [accountStatus, updateAccountStatus] = useState<User>();
@@ -87,7 +91,7 @@ export default function UserUI(): JSX.Element {
           .then((user) => {
             if (user) {
               updateAccountEnablement(true);
-              updateJoinedGroups(user.groupId ?? []);
+              updateJoinedGroups(user.group ?? []);
               updateAccountStatus(account);
               setUser({ name: user.name }, account.uid, { merge: true });
             } else {
@@ -133,7 +137,7 @@ export default function UserUI(): JSX.Element {
         {/* ログイン・アカウント登録済 */}
         {loginStatus === true && authData && accountEnabled && (
           <>
-            <GroupUI groupIds={joinedGroups} />
+            <GroupUI groups={joinedGroups} />
             <UserDataDisplay authData={authData} />
           </>
         )}

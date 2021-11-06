@@ -93,8 +93,9 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
 const MemberInfo: React.FC<{
   memberInfo: Member;
   activityData: activity<work>;
-}> = ({ memberInfo, activityData }) =>
-  useMemo(() => {
+}> =
+  // eslint-disable-next-line react/display-name
+  React.memo(({ memberInfo, activityData }) => {
     if (memberInfo && activityData) {
       return (
         <HStack>
@@ -120,7 +121,7 @@ const MemberInfo: React.FC<{
         </>
       );
     }
-  }, [activityData, memberInfo]);
+  });
 
 const ActivityStatusFull: React.FC<{
   activitySnapShot:
@@ -133,7 +134,7 @@ const ActivityStatusFull: React.FC<{
   const [status, setStatus] = useState<workStatus>(
     activitySnapShot.data()?.content.status ?? 'done'
   );
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   const activityData = activitySnapShot.data();
   return useMemo(() => {
     return (
@@ -168,10 +169,15 @@ const ActivityStatusFull: React.FC<{
                   const _activityData = activityData;
                   _activityData.content.endTime = Timestamp.now();
                   _activityData.content.status = 'done';
-                  if (currentId)
-                    setWork(currentId, activitySnapShot.id, _activityData, {
-                      merge: true,
-                    })
+                  if (currentGroup)
+                    setWork(
+                      currentGroup.id,
+                      activitySnapShot.id,
+                      _activityData,
+                      {
+                        merge: true,
+                      }
+                    )
                       .then(() => {
                         setStatus('done');
 
@@ -209,7 +215,7 @@ const ActivityStatusFull: React.FC<{
     activityData,
     activitySnapShot.id,
     closeButton,
-    currentId,
+    currentGroup,
     height,
     status,
     toast,
@@ -230,19 +236,19 @@ const ActivityCard: React.FC<{
   showMemberData = true,
 }) => {
   const [memberInfo, setMemberInfo] = useState<Member | null>(null);
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   const activityData: activity<work> | null = activitySnapshot.data() ?? null;
   const { currentMember } = useContext(GroupContext);
   useEffect(() => {
     let subscription = true;
     if (member) {
       setMemberInfo(member);
-    } else if (currentId && showMemberData) {
+    } else if (currentGroup && showMemberData) {
       const memberId = activitySnapshot.data()?.memberId;
       if (memberId === currentMember?.id) {
         setMemberInfo(currentMember?.data() ?? null);
-      } else if (currentMember?.id && memberId && currentId) {
-        getMember(memberId ?? '', currentId).then((e) => {
+      } else if (currentMember?.id && memberId && currentGroup) {
+        getMember(memberId ?? '', currentGroup.id).then((e) => {
           if (subscription) setMemberInfo(e?.data() ?? null);
         });
       }
@@ -250,7 +256,7 @@ const ActivityCard: React.FC<{
     return () => {
       subscription = false;
     };
-  }, [member, currentId, showMemberData, activitySnapshot, currentMember]);
+  }, [member, showMemberData, activitySnapshot, currentMember, currentGroup]);
 
   const ActivityMemo = (props: { content: string; height?: string }) => {
     if (props.content) {

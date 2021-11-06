@@ -11,7 +11,7 @@ const Members: React.FC = () => {
   const { path } = useRouteMatch();
   const UserActivity = React.lazy(() => import('./user-activity'));
   const MembersList = React.lazy(() => import('../components/members-list'));
-  const groupContext = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   const [update, setUpdate] = useState(false);
   return (
     <>
@@ -21,11 +21,11 @@ const Members: React.FC = () => {
             title="メンバー"
             titleLeftButtons={
               <>
-                {groupContext.currentId && (
+                {currentGroup && (
                   <>
                     <RecoilRoot>
                       <AddMember
-                        groupId={groupContext.currentId}
+                        groupId={currentGroup.id}
                         onUpdate={() => {
                           console.info('updated');
                           setUpdate(!update);

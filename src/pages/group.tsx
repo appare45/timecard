@@ -12,9 +12,12 @@ import {
   Stack,
   Text,
   useToast,
-  VStack,
 } from '@chakra-ui/react';
-import { DocumentSnapshot } from 'firebase/firestore';
+import {
+  DocumentReference,
+  DocumentSnapshot,
+  getDoc,
+} from 'firebase/firestore';
 import React, {
   Suspense,
   useContext,
@@ -32,33 +35,33 @@ import {
 } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
-import JoinGroup from '../components/join-group';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { useIsPrint } from '../hooks/media-query';
 import { GroupTemplate } from '../templates/group';
-import { getAccount, getAdmin, getGroup, Group } from '../utils/group';
+import { getAccount, getAdmin, Group } from '../utils/group';
 import { Member, getMember } from '../utils/member';
 
 type groupProps = {
-  groupIds: string[];
+  groups: DocumentReference<Group>[];
 };
 
 const GroupSelector: React.FC<{
-  ids: string[];
-  groups: Group[];
-  update: (e: string) => void;
-}> = ({ ids, groups, update }) => {
+  groups: DocumentSnapshot<Group>[];
+  update: (e: DocumentSnapshot<Group> | undefined) => void;
+}> = ({ groups, update }) => {
   return (
     <>
       <Select
-        onChange={(e) => update(e.target.value)}
+        onChange={(e) =>
+          update(groups.find((group) => group.id === e.target.value))
+        }
         colorScheme="gray"
         isFullWidth={false}
         width="50">
-        {groups.map((group, key) => (
-          <option key={ids[key]} value={ids[key]}>
-            {group.name}
+        {groups.map((group) => (
+          <option key={group.id} value={group.id}>
+            {group?.data()?.name ?? ''}
           </option>
         ))}
       </Select>
@@ -108,10 +111,12 @@ const MenuLink: React.FC<{
   );
 };
 
-const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
-  const [groups, updateGroups] = useState<Group[]>([]);
-  const [currentId, updateCurrentId] = useState<string>();
-  const [currentGroup, updateCurrentGroup] = useState<Group>();
+const GroupUI: React.FC<groupProps> = ({ groups }) => {
+  const [groupDataList, setGroupDataList] = useState<DocumentSnapshot<Group>[]>(
+    []
+  );
+  const [currentGroup, updateCurrentGroup] =
+    useState<DocumentSnapshot<Group>>();
   const [frontMode, setFrontMode] = useState<boolean>();
   const { account } = useContext(AuthContext);
   const [currentMemberData, setCurrentMemberData] =
@@ -157,33 +162,31 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
 
   // グループデータの取得
   useMemo(() => {
-    const _groups: Group[] = [];
-    groupIds.forEach((groupId) => {
-      getGroup(groupId).then((group) => {
+    groups.forEach((group) => {
+      getDoc(group).then((group) => {
         if (group) {
-          updateGroups([..._groups, group]);
-          updateCurrentId(groupIds[0]);
+          setGroupDataList((_group) => [..._group, group]);
           updateCurrentGroup(group);
         }
       });
     });
-  }, [groupIds]);
+  }, [groups]);
 
   // アカウント情報の取得
   useMemo(() => {
-    if (account?.email && currentId)
-      getAccount(account.email, currentId).then((e) => {
+    if (account?.email && currentGroup)
+      getAccount(account.email, currentGroup.id).then((e) => {
         const memberId = e.data()?.memberId;
         if (memberId) {
-          getMember(memberId, currentId).then((e) =>
+          getMember(memberId, currentGroup.id).then((e) =>
             setCurrentMemberData(e ?? null)
           );
-          getAdmin(memberId, currentId).then((e) => {
+          getAdmin(memberId, currentGroup.id).then((e) => {
             if (e.data()) setIsAdmin(true);
           });
         }
       });
-  }, [account, currentId]);
+  }, [account?.email, currentGroup]);
 
   const offlineToastId = 'is-offline';
   const offlineToastRef = useRef<string | number>('');
@@ -215,11 +218,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
   const Nav: React.FC = () => {
     return (
       <Box pos="sticky" top="10" h="full">
-        <GroupSelector
-          ids={groupIds}
-          groups={groups}
-          update={updateCurrentId}
-        />
+        <GroupSelector groups={groupDataList} update={updateCurrentGroup} />
         <Stack spacing="1" my="5" align="flex-start">
           <MenuLink leftIcon={IoHome} to="/">
             トップ
@@ -240,17 +239,15 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
 
   const Members = React.lazy(() => import('./members'));
   const Front = React.lazy(() => import('../components/front'));
-  const CreateGroup = React.lazy(() => import('../components/create-group'));
+  const NewGroup = React.lazy(() => import('../components/new-group'));
   const Setting = React.lazy(() => import('./setting'));
   const MembersList = React.lazy(() => import('../components/members-list'));
   const Activities = React.lazy(() => import('./timeline'));
   return (
     <>
-      {!!groupIds.length && currentId && (
+      {!!groups.length && currentGroup && (
         <GroupContext.Provider
           value={{
-            currentId: currentId,
-            ids: groupIds,
             setFrontMode: setFrontMode,
             isAdmin: isAdmin,
             currentMember: currentMemberData,
@@ -308,20 +305,12 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
           )}
         </GroupContext.Provider>
       )}
-      {!currentId && <Circle />}
-      {!groupIds.length && (
+      {!currentGroup && <Circle />}
+      {!groups.length && (
         <Center h="100vh">
-          <VStack p="10" rounded="2xl" shadow="lg" spacing="10">
-            <Box>
-              <Heading>グループに参加</Heading>
-              <Text>招待コードを入力してください</Text>
-              <JoinGroup />
-            </Box>
-            <Box>
-              <Heading>グループの作成</Heading>
-              <CreateGroup />
-            </Box>
-          </VStack>
+          <Box p="10" rounded="2xl" shadow="lg">
+            <NewGroup />
+          </Box>
         </Center>
       )}
     </>

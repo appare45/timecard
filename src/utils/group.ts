@@ -23,6 +23,7 @@ import {
   DocumentData,
   SetOptions,
   startAfter,
+  DocumentReference,
 } from 'firebase/firestore';
 import { app } from './../utils/firebase';
 import { addMember, Member, setMemberStatus } from './member';
@@ -34,9 +35,11 @@ class Admin {
 
 //** 管理はメンバーベースで行う */
 export class Account {
-  constructor(readonly memberId: string) {
-    this.memberId = memberId;
-  }
+  constructor(
+    readonly memberId: string,
+    readonly isActive: boolean,
+    readonly lastActivity: Timestamp
+  ) {}
 }
 
 export class Group {
@@ -139,6 +142,8 @@ const accountDataConverter: FirestoreDataConverter<Account> = {
   toFirestore(account: WithFieldValue<Account>): DocumentData {
     return {
       memberId: account.memberId,
+      isActive: account.isActive,
+      lastActivity: account.lastActivity,
     };
   },
   fromFirestore(
@@ -146,7 +151,11 @@ const accountDataConverter: FirestoreDataConverter<Account> = {
     option?: SnapshotOptions
   ): Account {
     const data = snapshot.data(option);
-    return new Account(data.memberId);
+    return new Account(
+      data.memberId,
+      data?.isActive ?? true,
+      data.lastActivity ?? Timestamp.now()
+    );
   },
 };
 
@@ -195,7 +204,7 @@ const createGroup = (
   group: { name: string; joinStatus: boolean },
   author: Member,
   authorId: string
-): Promise<string> => {
+): Promise<DocumentReference<Group>> => {
   try {
     const _group: Readonly<Group> = {
       name: group.name,
@@ -203,7 +212,10 @@ const createGroup = (
       authorId: authorId,
       created: serverTimestamp(),
     };
-    return addDoc(collection(Db, 'group'), _group).then((group_1) => {
+    return addDoc(
+      collection(Db, 'group').withConverter(groupDataConverter),
+      _group
+    ).then((group_1) => {
       addMember(
         {
           name: author.name,
@@ -213,10 +225,14 @@ const createGroup = (
         },
         group_1.id
       ).then((memberId) => {
-        addAccount(authorId, { memberId: memberId }, group_1.id);
+        addAccount(
+          authorId,
+          { memberId: memberId, isActive: true, lastActivity: Timestamp.now() },
+          group_1.id
+        );
         addAdmin(memberId, memberId, group_1.id);
       });
-      return group_1.id;
+      return group_1;
     });
   } catch (error) {
     console.error(error);
@@ -243,6 +259,26 @@ async function addAccount(
   }
 }
 
+async function setAccount(
+  accountId: string,
+  account: Partial<Account>,
+  groupId: string
+): Promise<void> {
+  try {
+    await setDoc(
+      doc(Db, `group/${groupId}/account/`, accountId).withConverter<Account>(
+        accountDataConverter
+      ),
+      account,
+      { merge: true }
+    );
+    return;
+  } catch (e) {
+    console.error(e);
+    throw new Error();
+  }
+}
+
 async function getAccount(
   email: string,
   groupId: string
@@ -250,6 +286,19 @@ async function getAccount(
   try {
     return await getDoc<Account>(
       doc(Db, `group/${groupId}/account/`, email).withConverter<Account>(
+        accountDataConverter
+      )
+    );
+  } catch (error) {
+    console.error(error);
+    throw new Error();
+  }
+}
+
+async function listAccount(groupId: string): Promise<QuerySnapshot<Account>> {
+  try {
+    return await getDocs<Account>(
+      collection(Db, `group/${groupId}/account/`).withConverter<Account>(
         accountDataConverter
       )
     );
@@ -330,12 +379,14 @@ async function setGroup(
   }
 }
 
-const getGroup = async (id: string): Promise<Readonly<Group> | null> => {
+const getGroup = async (
+  id: string
+): Promise<Readonly<DocumentSnapshot<Group>> | null> => {
   try {
     const group = await getDoc(
       doc(Db, `group/${id}`).withConverter(groupDataConverter)
     );
-    return group.data() ?? null;
+    return group ?? null;
   } catch (error) {
     throw new Error(`Invalid data: ${error}`);
   }
@@ -530,4 +581,6 @@ export {
   getAllActivities,
   getLatestActivity,
   getAccount,
+  setAccount,
+  listAccount,
 };

@@ -12,22 +12,22 @@ export const SingleActivity = (): ReactElement => {
   const [activitySnapshot, setActivitySnapshot] = useState<DocumentSnapshot<
     activity<work>
   > | null>(null);
-  const { currentId } = useContext(GroupContext);
+  const { currentGroup } = useContext(GroupContext);
   useEffect(() => {
-    if (activityId && currentId) {
-      getActivitySnapshot(activityId, currentId).then((e) =>
+    if (activityId && currentGroup) {
+      getActivitySnapshot(activityId, currentGroup.id).then((e) =>
         setActivitySnapshot(e)
       );
     }
-  }, [activityId, currentId]);
+  }, [activityId, currentGroup]);
   const [member, setMember] = useState<DocumentSnapshot<Member> | null>();
   useMemo(() => {
     const activityData = activitySnapshot?.data() ?? null;
-    if (activitySnapshot && activityData && currentId)
-      getMember(activityData.memberId, currentId).then((e) =>
+    if (activitySnapshot && activityData && currentGroup)
+      getMember(activityData.memberId, currentGroup.id).then((e) =>
         setMember(e ?? null)
       );
-  }, [activitySnapshot, currentId]);
+  }, [activitySnapshot, currentGroup]);
   return (
     <>
       {member && (
