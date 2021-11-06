@@ -251,10 +251,11 @@ const CreateInvite = ({
   useEffect(() => {
     if (account?.email && currentId && currentGroup)
       createInvite(account?.email, {
-        group: [currentGroup],
+        group: [currentGroup.ref],
         authorId: account.uid,
+        used: null,
       }).then(() => {
-        addAccount(email, new Account(memberId), currentId);
+        addAccount(email, new Account(memberId, false), currentId);
         if (isAdmin) addAdmin(email, memberId, currentId);
       });
   }, [

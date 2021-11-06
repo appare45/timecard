@@ -1,4 +1,5 @@
 import { AspectRatio, Box, IconButton, Link, Skeleton } from '@chakra-ui/react';
+import { DocumentSnapshot } from '@firebase/firestore';
 import React, { useEffect, useRef, useState } from 'react';
 import { IoDownloadOutline } from 'react-icons/io5';
 import { useIsPrint } from '../hooks/media-query';
@@ -8,19 +9,19 @@ import { Member } from '../utils/member';
 
 export const cardWidth = 91;
 export const cardHeight = 55;
-const Card: React.FC<{ member: dataWithId<Member>; group: Group }> = ({
-  member,
-  group,
-}) => {
+const Card: React.FC<{
+  member: dataWithId<Member>;
+  group: DocumentSnapshot<Group>;
+}> = ({ member, group }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const qrRef = useRef<HTMLImageElement>(null);
   const name = member.data.name.toUpperCase().replace('　', ' ');
-  const groupName = group.name.toUpperCase().replace('　', ' ');
+  const groupName = group.data()?.name.toUpperCase().replace('　', ' ');
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const isPrint = useIsPrint();
   useEffect(() => {
-    if (canvasRef.current) {
+    if (canvasRef.current && groupName) {
       const ctx = canvasRef.current.getContext('2d');
       const canvasWidth = canvasRef.current.width;
       const canvasHeight = canvasRef.current.height;

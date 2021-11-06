@@ -9,7 +9,7 @@ import {
   AlertDialogBody,
 } from '@chakra-ui/modal';
 import { Skeleton } from '@chakra-ui/react';
-import { QueryDocumentSnapshot } from '@firebase/firestore';
+import { DocumentSnapshot, QueryDocumentSnapshot } from '@firebase/firestore';
 import React, {
   useState,
   useRef,
@@ -44,7 +44,7 @@ function UserActivity(): JSX.Element {
   const [activities, setActivities] = useState<
     QueryDocumentSnapshot<activity<work>>[] | null
   >(null);
-  const [group, setGroup] = useState<Group | null>(null);
+  const [group, setGroup] = useState<DocumentSnapshot<Group> | null>(null);
   const [dialog, setDialog] = useState(false);
   const dialogCancel = useRef(null);
   const { currentId, currentMember, isAdmin } = useContext(GroupContext);
@@ -52,7 +52,7 @@ function UserActivity(): JSX.Element {
 
   useEffect(() => {
     if (currentId) {
-      getGroup(currentId).then((group) => setGroup(group));
+      getGroup(currentId).then((group) => setGroup(group ?? null));
     }
   }, [currentId]);
   useMemo(() => {

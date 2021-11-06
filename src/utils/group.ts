@@ -34,8 +34,9 @@ class Admin {
 
 //** 管理はメンバーベースで行う */
 export class Account {
-  constructor(readonly memberId: string) {
+  constructor(readonly memberId: string, readonly isActive: boolean) {
     this.memberId = memberId;
+    this.isActive = isActive;
   }
 }
 
@@ -146,7 +147,7 @@ const accountDataConverter: FirestoreDataConverter<Account> = {
     option?: SnapshotOptions
   ): Account {
     const data = snapshot.data(option);
-    return new Account(data.memberId);
+    return new Account(data.memberId, data?.isActive ?? true);
   },
 };
 
@@ -213,7 +214,11 @@ const createGroup = (
         },
         group_1.id
       ).then((memberId) => {
-        addAccount(authorId, { memberId: memberId }, group_1.id);
+        addAccount(
+          authorId,
+          { memberId: memberId, isActive: true },
+          group_1.id
+        );
         addAdmin(memberId, memberId, group_1.id);
       });
       return group_1.id;

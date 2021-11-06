@@ -8,6 +8,7 @@ import {
   QueryDocumentSnapshot,
   setDoc,
   SnapshotOptions,
+  Timestamp,
 } from '@firebase/firestore';
 import { Db } from './firebase';
 import { Group } from './group';
@@ -15,6 +16,7 @@ import { Group } from './group';
 export type Invite = {
   authorId: string;
   group: DocumentReference<Group>[];
+  used: Timestamp | null;
 };
 
 const inviteDataConverter: FirestoreDataConverter<Invite> = {
@@ -29,6 +31,7 @@ const inviteDataConverter: FirestoreDataConverter<Invite> = {
     return {
       authorId: data.authorId,
       group: data.group,
+      used: data.used,
     };
   },
 };

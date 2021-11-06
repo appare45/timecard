@@ -256,7 +256,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
             isAdmin: isAdmin,
             currentMember: currentMemberData,
             updateCurrentMember: setCurrentMemberData,
-            currentGroup: currentGroup?.ref,
+            currentGroup: currentGroup,
           }}>
           {frontMode ? (
             <Suspense fallback={<Spinner />}>
