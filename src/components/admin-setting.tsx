@@ -9,6 +9,8 @@ import {
   Stack,
   Divider,
   Circle,
+  Code,
+  Link,
 } from '@chakra-ui/layout';
 import {
   Alert,
@@ -21,6 +23,7 @@ import {
   FormControl,
   FormHelperText,
   FormLabel,
+  Icon,
   PinInput,
   PinInputField,
   Spacer,
@@ -37,13 +40,15 @@ import {
   Timestamp,
 } from '@firebase/firestore';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { IoAdd, IoCheckmark, IoClipboard, IoKeyOutline } from 'react-icons/io5';
+import { IoAdd, IoKeyOutline, IoKeySharp } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
+import { Link as routerLink } from 'react-router-dom';
 import {
   Account,
   addAccount,
   addAdmin,
+  getAdmin,
   getGroup,
   Group,
   listAccount,
@@ -52,7 +57,7 @@ import {
 import { createInvite } from '../utils/invite';
 import { getMember, listMembers, Member } from '../utils/member';
 import { createTag, listTag, tag, tagColors } from './../utils/group-tag';
-import { FormButtons, GroupTag } from './assets';
+import { CopyButton, FormButtons, GroupTag } from './assets';
 
 const OrganizationName = () => {
   const { currentGroup } = useContext(GroupContext);
@@ -261,8 +266,6 @@ const CreateInvite = ({
   memberId: string;
 }) => {
   const [code] = useState(Math.random().toString(32).substring(2).slice(0, 6));
-  const clipBoard = useClipboard(code);
-
   const { account } = useContext(AuthContext);
   const { currentGroup } = useContext(GroupContext);
 
@@ -299,13 +302,6 @@ const CreateInvite = ({
         <PinInputField />
         <PinInputField />
       </PinInput>
-      <Button
-        leftIcon={clipBoard.hasCopied ? <IoCheckmark /> : <IoClipboard />}
-        colorScheme={clipBoard.hasCopied ? 'green' : undefined}
-        variant={clipBoard.hasCopied ? 'outline' : undefined}
-        onClick={clipBoard.onCopy}>
-        コードをコピー
-      </Button>
     </HStack>
   );
 };
@@ -391,11 +387,11 @@ const AccountList = () => {
         const __accounts: QueryDocumentSnapshot<Account>[] = [];
         _accounts.forEach((account) => __accounts.push(account));
         setAccounts(__accounts);
-        console.info(__accounts);
       });
   }, [currentGroup]);
   return (
-    <Box mt="2">
+    <Box>
+      <Heading>連携済みアカウント</Heading>
       <Table divider={<Divider />} alignItems="flex-start">
         {accounts.map((account) => (
           <AccountItem account={account} key={account.id} />
@@ -411,15 +407,38 @@ const AccountItem = ({
   account: QueryDocumentSnapshot<Account>;
 }) => {
   const [member, setMember] = useState<DocumentSnapshot<Member> | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const { currentGroup } = useContext(GroupContext);
   useEffect(() => {
-    if (currentGroup)
+    if (currentGroup) {
       getMember(account.data().memberId, currentGroup.id).then(setMember);
+      try {
+        getAdmin(account.data().memberId, currentGroup.id).then((e) => {
+          if (e.data()) {
+            setIsAdmin(true);
+          }
+        });
+      } catch {
+        setIsAdmin(false);
+      }
+    }
   }, [account, currentGroup]);
   return (
     <Tr>
-      <Td>{member?.data()?.name}</Td>
-      <Td>{account.id}</Td>
+      <Td>
+        <HStack spacing="1">
+          {isAdmin && <Icon as={IoKeySharp} />}
+          <Link as={routerLink} to={`/member/${member?.id}`}>
+            {member?.data()?.name}
+          </Link>
+        </HStack>
+      </Td>
+      <Td>
+        <HStack>
+          <Code>{account.id.replace(/.+@/g, '******@')}</Code>
+          <CopyButton copyTarget={account.id} size="sm"></CopyButton>
+        </HStack>
+      </Td>
       <Td>
         <HStack alignItems="center">
           <Circle
