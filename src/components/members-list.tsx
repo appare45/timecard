@@ -188,11 +188,7 @@ const MemberRow: React.FC<{
       <Tr>
         <Td>
           <HStack>
-            <MemberAvatar
-              member={data.data()}
-              size={isSimple ? 'xs' : undefined}
-              status={true}
-            />
+            <MemberAvatar member={data.data()} status={true} />
             <MemberName data={data} />
           </HStack>
         </Td>
@@ -366,10 +362,12 @@ const MembersList: React.FC<{
             colorScheme="gray"
             isLazy
             lazyBehavior="keepMounted">
-            <TabList>
-              <Tab>表</Tab>
-              <Tab>カード</Tab>
-            </TabList>
+            {!isSimple && (
+              <TabList>
+                <Tab>表</Tab>
+                <Tab>カード</Tab>
+              </TabList>
+            )}
             <TabPanels>
               <TabPanel>
                 <VStack spacing="4">
@@ -377,16 +375,21 @@ const MembersList: React.FC<{
                     colorScheme="blackAlpha"
                     size={isSimple ? 'sm' : 'md'}
                     w="full">
-                    <Thead>
-                      <Tr>
-                        <Th>名前</Th>
-                        <Th></Th>
-                        <Th>タグ</Th>
-                      </Tr>
-                    </Thead>
+                    {!isSimple && (
+                      <Thead>
+                        <Tr>
+                          <Th>名前</Th>
+                          <Th></Th>
+                          <Th>タグ</Th>
+                        </Tr>
+                      </Thead>
+                    )}
                     <Tbody>
                       {shownMembers && (
-                        <MembersListTable membersData={shownMembers} />
+                        <MembersListTable
+                          membersData={shownMembers}
+                          isSimple={isSimple}
+                        />
                       )}
                     </Tbody>
                   </Table>
