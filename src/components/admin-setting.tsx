@@ -20,7 +20,7 @@ import {
 import { Select } from '@chakra-ui/select';
 import { Tag as TagElement, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
 import { useToast } from '@chakra-ui/toast';
-import { QueryDocumentSnapshot } from '@firebase/firestore';
+import { DocumentSnapshot, QueryDocumentSnapshot } from '@firebase/firestore';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { IoAdd, IoCheckmark, IoClipboard, IoKeyOutline } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
@@ -44,12 +44,12 @@ const OrganizationName = () => {
     if (currentId)
       getGroup(currentId).then((e) => {
         if (e) setCurrentGroup(e);
-        setOrganizationName(e?.name);
+        setOrganizationName(e?.data()?.name);
       });
   }, [currentId]);
   const [editMode, setEditMode] = useState(false);
-  const [currentGroup, setCurrentGroup] = useState<Group>();
-  const [organizationName, setOrganizationName] = useState(currentGroup?.name);
+  const [currentGroup, setCurrentGroup] = useState<DocumentSnapshot<Group>>();
+  const [organizationName, setOrganizationName] = useState<string>();
   const toast = useToast();
   return (
     <HStack spacing="5">
@@ -62,11 +62,11 @@ const OrganizationName = () => {
       <FormButtons
         onCancel={() => {
           setEditMode(false);
-          setOrganizationName(currentGroup?.name);
+          setOrganizationName(currentGroup?.data()?.name);
         }}
         editMode={editMode}
         onSave={() => {
-          const _group = currentGroup;
+          const _group = currentGroup?.data();
 
           if (_group && organizationName && currentId) {
             _group.name = organizationName;
@@ -78,7 +78,7 @@ const OrganizationName = () => {
                 })
               )
               .catch(() => {
-                setOrganizationName(currentGroup?.name);
+                setOrganizationName(currentGroup?.data()?.name);
                 toast({
                   status: 'error',
                   title: '保存に失敗しました',
@@ -89,7 +89,7 @@ const OrganizationName = () => {
         }}
         setEditable={() => setEditMode(true)}
         saveAvailable={
-          organizationName != currentGroup?.name && !!organizationName
+          organizationName != currentGroup?.data()?.name && !!organizationName
         }
       />
     </HStack>
@@ -246,15 +246,27 @@ const CreateInvite = ({
   const clipBoard = useClipboard(code);
 
   const { account } = useContext(AuthContext);
-  const { currentId } = useContext(GroupContext);
+  const { currentId, currentGroup } = useContext(GroupContext);
 
   useEffect(() => {
-    if (account?.email && currentId)
-      createInvite(account?.email, currentId, code).then(() => {
+    if (account?.email && currentId && currentGroup)
+      createInvite(account?.email, {
+        group: [currentGroup],
+        authorId: account.uid,
+      }).then(() => {
         addAccount(email, new Account(memberId), currentId);
         if (isAdmin) addAdmin(email, memberId, currentId);
       });
-  }, [account?.email, code, currentId, email, isAdmin, memberId]);
+  }, [
+    account?.email,
+    account?.uid,
+    code,
+    currentGroup,
+    currentId,
+    email,
+    isAdmin,
+    memberId,
+  ]);
   return (
     <HStack>
       <PinInput type="alphanumeric" value={code} isDisabled>
@@ -276,7 +288,7 @@ const CreateInvite = ({
   );
 };
 
-const Invite = () => {
+const InviteElement = () => {
   const [createState, setCreateState] = useBoolean(false);
   const [email, setEmail] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
@@ -359,7 +371,7 @@ const AdminSetting: React.FC = () => {
       <Stack py="4">
         <OrganizationName />
         <TagSetting />
-        <Invite />
+        <InviteElement />
       </Stack>
     </Box>
   );
