@@ -12,7 +12,6 @@ import {
   Stack,
   Text,
   useToast,
-  VStack,
 } from '@chakra-ui/react';
 import {
   DocumentReference,
