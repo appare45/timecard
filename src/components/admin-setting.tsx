@@ -1,7 +1,15 @@
 import { Button, ButtonGroup } from '@chakra-ui/button';
 import { useBoolean, useClipboard } from '@chakra-ui/hooks';
 import { Input } from '@chakra-ui/input';
-import { Box, Heading, Text, HStack, Stack } from '@chakra-ui/layout';
+import {
+  Box,
+  Heading,
+  Text,
+  HStack,
+  Stack,
+  Divider,
+  Circle,
+} from '@chakra-ui/layout';
 import {
   Alert,
   AlertIcon,
@@ -16,6 +24,9 @@ import {
   PinInput,
   PinInputField,
   Spacer,
+  Table,
+  Td,
+  Tr,
 } from '@chakra-ui/react';
 import { Select } from '@chakra-ui/select';
 import { Tag as TagElement, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
@@ -39,7 +50,7 @@ import {
   setGroup,
 } from '../utils/group';
 import { createInvite } from '../utils/invite';
-import { listMembers, Member } from '../utils/member';
+import { getMember, listMembers, Member } from '../utils/member';
 import { createTag, listTag, tag, tagColors } from './../utils/group-tag';
 import { FormButtons, GroupTag } from './assets';
 
@@ -384,13 +395,41 @@ const AccountList = () => {
       });
   }, [currentGroup]);
   return (
-    <Box>
-      <HStack>
+    <Box mt="2">
+      <Table divider={<Divider />} alignItems="flex-start">
         {accounts.map((account) => (
-          <Text key={account.id}>{account.id}</Text>
+          <AccountItem account={account} key={account.id} />
         ))}
-      </HStack>
+      </Table>
     </Box>
+  );
+};
+
+const AccountItem = ({
+  account,
+}: {
+  account: QueryDocumentSnapshot<Account>;
+}) => {
+  const [member, setMember] = useState<DocumentSnapshot<Member> | null>(null);
+  const { currentGroup } = useContext(GroupContext);
+  useEffect(() => {
+    if (currentGroup)
+      getMember(account.data().memberId, currentGroup.id).then(setMember);
+  }, [account, currentGroup]);
+  return (
+    <Tr>
+      <Td>{member?.data()?.name}</Td>
+      <Td>{account.id}</Td>
+      <Td>
+        <HStack alignItems="center">
+          <Circle
+            bgColor={account.data().isActive ? 'green.400' : 'yellow.400'}
+            size="3"
+          />
+          <Text>{account.data().isActive ? 'アクティブ' : '承諾待ち'}</Text>
+        </HStack>
+      </Td>
+    </Tr>
   );
 };
 
