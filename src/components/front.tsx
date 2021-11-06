@@ -70,9 +70,15 @@ const Front: React.FC = () => {
     }
   }, [currentGroup, detectedMember]);
 
+  const audioPath = new URL(
+    '/public/audio/notification_high-intensity.wav',
+    import.meta.url
+  ).href;
+  console.info(audioPath);
+
   return (
     <Box p="10" bg="white">
-      <audio src="/audio/notification_high-intensity.wav" ref={audio} />
+      <audio src={audioPath} ref={audio} />
       {!detectedMember ? (
         <>
           <HStack>
