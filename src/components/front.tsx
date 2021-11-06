@@ -71,7 +71,7 @@ const Front: React.FC = () => {
   }, [currentGroup, detectedMember]);
 
   const audioPath = new URL(
-    '/public/audio/notification_high-intensity.wav',
+    '../../public/audio/notification_simple-01.wav',
     import.meta.url
   ).href;
   console.info(audioPath);
