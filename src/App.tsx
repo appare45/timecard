@@ -19,8 +19,7 @@ function App(): JSX.Element {
       });
   }, []);
   useEffect(() => {
-    if (window.location.hostname !== process.env.REACT_APP_URL) observeFps();
-    console.info(window.location.origin, process.env.REACT_APP_URL);
+    observeFps();
   });
   return (
     <ChakraProvider>
