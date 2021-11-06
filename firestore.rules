@@ -45,8 +45,9 @@ service cloud.firestore {
         allow get, list: if isGroupMember(groupId, request.auth.token.email)
         allow create: if isAdmin(groupId, request.auth.token.email)
       }
-      match /invite/{inviteId} {
-        allow get, create: if isAuthenticated()
+      match /invite/{email} {
+        allow create, list: if isAuthenticated()
+        allow get: if request.auth.token.email == email
       }
     }
   }

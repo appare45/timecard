@@ -1,6 +1,7 @@
 import {
   doc,
   DocumentData,
+  DocumentReference,
   DocumentSnapshot,
   FirestoreDataConverter,
   getDoc,
@@ -9,10 +10,11 @@ import {
   SnapshotOptions,
 } from '@firebase/firestore';
 import { Db } from './firebase';
+import { Group } from './group';
 
 export type Invite = {
   authorId: string;
-  groupId: string;
+  group: DocumentReference<Group>[];
 };
 
 const inviteDataConverter: FirestoreDataConverter<Invite> = {
@@ -26,21 +28,17 @@ const inviteDataConverter: FirestoreDataConverter<Invite> = {
     const data = snapshot.data(option);
     return {
       authorId: data.authorId,
-      groupId: data.groupId,
+      group: data.group,
     };
   },
 };
 
 export const createInvite = async (
   email: string,
-  groupId: string,
-  code: string
+  invite: Invite
 ): Promise<void> => {
   try {
-    return setDoc(doc(Db(), `invite/${code}`), {
-      email: email,
-      groupId: groupId,
-    });
+    return setDoc(doc(Db(), `invite/${email}`), invite);
   } catch (error) {
     console.error(error);
     throw new Error();

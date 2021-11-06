@@ -46,7 +46,7 @@ type groupProps = {
 
 const GroupSelector: React.FC<{
   ids: string[];
-  groups: Group[];
+  groups: DocumentSnapshot<Group>[];
   update: (e: string) => void;
 }> = ({ ids, groups, update }) => {
   return (
@@ -58,7 +58,7 @@ const GroupSelector: React.FC<{
         width="50">
         {groups.map((group, key) => (
           <option key={ids[key]} value={ids[key]}>
-            {group.name}
+            {group?.data()?.name ?? ''}
           </option>
         ))}
       </Select>
@@ -109,9 +109,10 @@ const MenuLink: React.FC<{
 };
 
 const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
-  const [groups, updateGroups] = useState<Group[]>([]);
+  const [groups, updateGroups] = useState<DocumentSnapshot<Group>[]>([]);
   const [currentId, updateCurrentId] = useState<string>();
-  const [currentGroup, updateCurrentGroup] = useState<Group>();
+  const [currentGroup, updateCurrentGroup] =
+    useState<DocumentSnapshot<Group>>();
   const [frontMode, setFrontMode] = useState<boolean>();
   const { account } = useContext(AuthContext);
   const [currentMemberData, setCurrentMemberData] =
@@ -157,7 +158,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
 
   // グループデータの取得
   useMemo(() => {
-    const _groups: Group[] = [];
+    const _groups: DocumentSnapshot<Group>[] = [];
     groupIds.forEach((groupId) => {
       getGroup(groupId).then((group) => {
         if (group) {
@@ -255,7 +256,7 @@ const GroupUI: React.FC<groupProps> = ({ groupIds }) => {
             isAdmin: isAdmin,
             currentMember: currentMemberData,
             updateCurrentMember: setCurrentMemberData,
-            currentGroup: currentGroup,
+            currentGroup: currentGroup?.ref,
           }}>
           {frontMode ? (
             <Suspense fallback={<Spinner />}>

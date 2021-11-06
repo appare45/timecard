@@ -330,12 +330,14 @@ async function setGroup(
   }
 }
 
-const getGroup = async (id: string): Promise<Readonly<Group> | null> => {
+const getGroup = async (
+  id: string
+): Promise<Readonly<DocumentSnapshot<Group>> | null> => {
   try {
     const group = await getDoc(
       doc(Db, `group/${id}`).withConverter(groupDataConverter)
     );
-    return group.data() ?? null;
+    return group ?? null;
   } catch (error) {
     throw new Error(`Invalid data: ${error}`);
   }

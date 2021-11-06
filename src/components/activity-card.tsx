@@ -93,8 +93,9 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
 const MemberInfo: React.FC<{
   memberInfo: Member;
   activityData: activity<work>;
-}> = ({ memberInfo, activityData }) =>
-  useMemo(() => {
+}> =
+  // eslint-disable-next-line react/display-name
+  React.memo(({ memberInfo, activityData }) => {
     if (memberInfo && activityData) {
       return (
         <HStack>
@@ -120,7 +121,7 @@ const MemberInfo: React.FC<{
         </>
       );
     }
-  }, [activityData, memberInfo]);
+  });
 
 const ActivityStatusFull: React.FC<{
   activitySnapShot:

@@ -17,10 +17,12 @@ const JoinGroup: React.FC = () => {
       setIsVerifying(true);
       getInvite(code)
         .then((invite) => {
-          const groupId = invite.data()?.groupId;
+          const groupId = invite.ref;
           console.info(groupId);
           if (groupId && Auth.account?.uid)
-            setUser({ groupId: [groupId] }, Auth.account.uid, { merge: true })
+            setUser({ groupId: [groupId.id] }, Auth.account.uid, {
+              merge: true,
+            })
               .then(() => {
                 setIsVerifying(false);
                 history.go(0);
