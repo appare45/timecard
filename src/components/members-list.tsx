@@ -91,7 +91,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
 }) => {
   // ユーザーが持つタグ
   const [userTags, setUserTags] = useState<DocumentSnapshot<tag>[]>([]);
-  const { currentGroup } = useContext(GroupContext);
+  const { currentGroup, isAdmin } = useContext(GroupContext);
 
   const addTag = useCallback(
     (tag: DocumentSnapshot<tag>) => {
@@ -170,11 +170,11 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
           label={tag.data()?.name ?? ''}
           color={tag.data()?.color ?? 'gray'}
           key={tag.id}
-          onRemove={() => removeTag(tag)}
+          onRemove={isAdmin ? () => removeTag(tag) : undefined}
           size="sm"
         />
       ))}
-      <AddTagButton />
+      {isAdmin && <AddTagButton />}
     </HStack>
   );
 };

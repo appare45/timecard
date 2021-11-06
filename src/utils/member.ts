@@ -92,6 +92,24 @@ export async function addMember(
   }
 }
 
+export async function updateMember(
+  member: Partial<Member>,
+  memberId: string,
+  groupId: string
+): Promise<void> {
+  try {
+    return await setDoc<Member>(
+      doc(Db(), `group/${groupId}/member/${memberId}`).withConverter(
+        memberDataConverter
+      ),
+      member,
+      { merge: true }
+    );
+  } catch (error) {
+    console.error(error);
+    throw new Error();
+  }
+}
 export async function setMember(
   member: Member,
   memberId: string,

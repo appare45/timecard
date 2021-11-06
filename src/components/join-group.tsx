@@ -8,12 +8,13 @@ import {
   Text,
   VStack,
 } from '@chakra-ui/react';
-import { DocumentSnapshot, getDoc } from '@firebase/firestore';
+import { DocumentSnapshot, getDoc, Timestamp } from '@firebase/firestore';
 import React, { useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import { AuthContext } from '../contexts/user';
-import { Group } from '../utils/group';
+import { getAccount, Group, setAccount } from '../utils/group';
 import { getInvite } from '../utils/invite';
+import { Member, setMember, updateMember } from '../utils/member';
 import { setUser } from '../utils/user';
 
 const JoinGroup: React.FC = () => {
@@ -59,10 +60,18 @@ const InvitedGroup = ({ group }: { group: DocumentSnapshot<Group> }) => {
   const Auth = useContext(AuthContext);
 
   const joinGroup = () => {
-    if (Auth.account?.uid)
+    if (Auth.account)
       setUser({ group: [group.ref] }, Auth.account.uid, {
         merge: true,
       }).then(() => {
+        if (Auth.account?.email)
+          setAccount(
+            Auth.account.email,
+            {
+              isActive: true,
+            },
+            group.id
+          ).then((account) => {});
         history.go(0);
       });
   };

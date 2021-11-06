@@ -20,7 +20,11 @@ import {
 import { Select } from '@chakra-ui/select';
 import { Tag as TagElement, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
 import { useToast } from '@chakra-ui/toast';
-import { DocumentSnapshot, QueryDocumentSnapshot } from '@firebase/firestore';
+import {
+  DocumentSnapshot,
+  QueryDocumentSnapshot,
+  Timestamp,
+} from '@firebase/firestore';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { IoAdd, IoCheckmark, IoClipboard, IoKeyOutline } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
@@ -31,6 +35,7 @@ import {
   addAdmin,
   getGroup,
   Group,
+  listAccount,
   setGroup,
 } from '../utils/group';
 import { createInvite } from '../utils/invite';
@@ -257,7 +262,11 @@ const CreateInvite = ({
         authorId: account.uid,
         used: false,
       }).then(() => {
-        addAccount(email, new Account(memberId, false), currentGroup.id);
+        addAccount(
+          email,
+          new Account(memberId, false, Timestamp.now()),
+          currentGroup.id
+        );
         if (isAdmin) addAdmin(email, memberId, currentGroup.id);
       });
   }, [
@@ -360,6 +369,31 @@ const InviteElement = () => {
   );
 };
 
+const AccountList = () => {
+  const [accounts, setAccounts] = useState<QueryDocumentSnapshot<Account>[]>(
+    []
+  );
+  const { currentGroup } = useContext(GroupContext);
+  useEffect(() => {
+    if (currentGroup)
+      listAccount(currentGroup.id).then((_accounts) => {
+        const __accounts: QueryDocumentSnapshot<Account>[] = [];
+        _accounts.forEach((account) => __accounts.push(account));
+        setAccounts(__accounts);
+        console.info(__accounts);
+      });
+  }, [currentGroup]);
+  return (
+    <Box>
+      <HStack>
+        {accounts.map((account) => (
+          <Text key={account.id}>{account.id}</Text>
+        ))}
+      </HStack>
+    </Box>
+  );
+};
+
 const AdminSetting: React.FC = () => {
   return (
     <Box>
@@ -374,6 +408,7 @@ const AdminSetting: React.FC = () => {
         <OrganizationName />
         <TagSetting />
         <InviteElement />
+        <AccountList />
       </Stack>
     </Box>
   );

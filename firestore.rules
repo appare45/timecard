@@ -30,7 +30,7 @@ service cloud.firestore {
         allow get, update: if isGroupMember(groupId, request.auth.token.email)
       }
       match /group/{groupId}/account/{email} {
-        allow get, create, update: if request.auth.token.email == email || isAdmin(groupId, request.auth.token.email)
+        allow get, create, update, list: if request.auth.token.email == email || isAdmin(groupId, request.auth.token.email)
       }
       match /group/{groupId}/tag/{activity} {
         allow get, list, create, update: if isGroupMember(groupId, request.auth.token.email)

@@ -35,7 +35,11 @@ class Admin {
 
 //** 管理はメンバーベースで行う */
 export class Account {
-  constructor(readonly memberId: string, readonly isActive: boolean) {}
+  constructor(
+    readonly memberId: string,
+    readonly isActive: boolean,
+    readonly lastActivity: Timestamp
+  ) {}
 }
 
 export class Group {
@@ -139,6 +143,7 @@ const accountDataConverter: FirestoreDataConverter<Account> = {
     return {
       memberId: account.memberId,
       isActive: account.isActive,
+      lastActivity: account.lastActivity,
     };
   },
   fromFirestore(
@@ -146,7 +151,11 @@ const accountDataConverter: FirestoreDataConverter<Account> = {
     option?: SnapshotOptions
   ): Account {
     const data = snapshot.data(option);
-    return new Account(data.memberId, data?.isActive ?? true);
+    return new Account(
+      data.memberId,
+      data?.isActive ?? true,
+      data.lastActivity ?? Timestamp.now()
+    );
   },
 };
 
@@ -218,7 +227,7 @@ const createGroup = (
       ).then((memberId) => {
         addAccount(
           authorId,
-          { memberId: memberId, isActive: true },
+          { memberId: memberId, isActive: true, lastActivity: Timestamp.now() },
           group_1.id
         );
         addAdmin(memberId, memberId, group_1.id);
@@ -250,6 +259,26 @@ async function addAccount(
   }
 }
 
+async function setAccount(
+  accountId: string,
+  account: Partial<Account>,
+  groupId: string
+): Promise<void> {
+  try {
+    await setDoc(
+      doc(Db, `group/${groupId}/account/`, accountId).withConverter<Account>(
+        accountDataConverter
+      ),
+      account,
+      { merge: true }
+    );
+    return;
+  } catch (e) {
+    console.error(e);
+    throw new Error();
+  }
+}
+
 async function getAccount(
   email: string,
   groupId: string
@@ -257,6 +286,19 @@ async function getAccount(
   try {
     return await getDoc<Account>(
       doc(Db, `group/${groupId}/account/`, email).withConverter<Account>(
+        accountDataConverter
+      )
+    );
+  } catch (error) {
+    console.error(error);
+    throw new Error();
+  }
+}
+
+async function listAccount(groupId: string): Promise<QuerySnapshot<Account>> {
+  try {
+    return await getDocs<Account>(
+      collection(Db, `group/${groupId}/account/`).withConverter<Account>(
         accountDataConverter
       )
     );
@@ -539,4 +581,6 @@ export {
   getAllActivities,
   getLatestActivity,
   getAccount,
+  setAccount,
+  listAccount,
 };
