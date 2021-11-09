@@ -28,6 +28,7 @@ service cloud.firestore {
       }
       match /group/{groupId} {
         allow get, update: if isGroupMember(groupId, request.auth.token.email)
+        allow create: if isAuthenticated()
       }
       match /group/{groupId}/account/{email} {
         allow get, create, update, list: if request.auth.token.email == email || isAdmin(groupId, request.auth.token.email)

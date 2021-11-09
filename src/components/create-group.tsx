@@ -9,6 +9,7 @@ import {
 import React, { useContext, useState } from 'react';
 import { AuthContext } from '../contexts/user';
 import { createGroup } from '../utils/group';
+import { Member, setMember } from '../utils/member';
 import { setUser } from '../utils/user';
 
 const CreateGroup: React.FC = () => {
@@ -34,10 +35,24 @@ const CreateGroup: React.FC = () => {
             },
             userContext.account.uid
           ).then((group) => {
-            if (userContext.account?.uid) {
+            if (
+              userContext.account?.uid &&
+              userContext.account.email &&
+              userContext.account.displayName
+            ) {
               setUser({ group: [group] }, userContext.account.uid, {
                 merge: true,
               });
+              setMember(
+                new Member(
+                  userContext.account.displayName,
+                  userContext.account.photoURL,
+                  'inactive',
+                  []
+                ),
+                userContext.account.email,
+                group.id
+              );
             }
           });
         } else {
@@ -57,7 +72,8 @@ const CreateGroup: React.FC = () => {
         onSubmit={(e) => {
           e.preventDefault();
           submit(groupName);
-        }}>
+        }}
+      >
         <FormLabel>グループ名</FormLabel>
         <Input
           minLength={1}

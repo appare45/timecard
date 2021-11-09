@@ -17,10 +17,8 @@ function App(): JSX.Element {
       .catch((error) => {
         console.error(error);
       });
-  }, []);
-  useEffect(() => {
     observeFps();
-  });
+  }, []);
   return (
     <ChakraProvider>
       <BrowserRouter>

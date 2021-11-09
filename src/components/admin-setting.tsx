@@ -11,6 +11,7 @@ import {
   Circle,
   Code,
   Link,
+  VStack,
 } from '@chakra-ui/layout';
 import {
   Alert,
@@ -23,16 +24,13 @@ import {
   FormControl,
   FormHelperText,
   FormLabel,
-  Icon,
-  PinInput,
-  PinInputField,
   Spacer,
   Table,
   Td,
   Tr,
 } from '@chakra-ui/react';
 import { Select } from '@chakra-ui/select';
-import { Tag as TagElement, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
+import { Tag, Tag as TagElement, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
 import { useToast } from '@chakra-ui/toast';
 import {
   DocumentSnapshot,
@@ -40,7 +38,13 @@ import {
   Timestamp,
 } from '@firebase/firestore';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { IoAdd, IoKeyOutline, IoKeySharp } from 'react-icons/io5';
+import {
+  IoAdd,
+  IoKeyOutline,
+  IoKeySharp,
+  IoPeople,
+  IoPerson,
+} from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { Link as routerLink } from 'react-router-dom';
@@ -137,35 +141,42 @@ const CreateTag = () => {
     'pink',
   ];
   return (
-    <HStack my="3">
+    <HStack my="3" position="relative">
       {createMode ? (
-        <>
-          <GroupTag
-            label={
-              <Editable
-                placeholder="タグの名前を入力"
-                onSubmit={(e) => setTagName(e)}
-                startWithEditView>
-                <EditableInput />
-                <EditablePreview />
-              </Editable>
-            }
-            color={tagColor}
-            size="lg"
-          />
-          <Select
-            variant="filled"
-            size="sm"
-            w="auto"
-            iconColor={tagColor}
-            value={tagColor}
-            onChange={(e) => setTagColor(e.target.value as tagColors)}>
-            {tagColors.map((color) => (
-              <option key={color} id={color}>
-                {color}
-              </option>
-            ))}
-          </Select>
+        <VStack
+          position="absolute"
+          bgColor="white"
+          p="4"
+          rounded="md"
+          shadow="md">
+          <HStack w="max-content">
+            <GroupTag
+              label={
+                <Editable
+                  placeholder="タグの名前を入力"
+                  onSubmit={(e) => setTagName(e)}
+                  startWithEditView>
+                  <EditableInput />
+                  <EditablePreview />
+                </Editable>
+              }
+              color={tagColor}
+              size="lg"
+            />
+            <Select
+              variant="filled"
+              size="sm"
+              w="max-content"
+              iconColor={tagColor}
+              value={tagColor}
+              onChange={(e) => setTagColor(e.target.value as tagColors)}>
+              {tagColors.map((color) => (
+                <option key={color} id={color}>
+                  {color}
+                </option>
+              ))}
+            </Select>
+          </HStack>
           <Spacer />
           {tagName.length == 0 && (
             <Alert status="warning" w="auto" variant="subtle">
@@ -200,12 +211,13 @@ const CreateTag = () => {
               キャンセル
             </Button>
           </ButtonGroup>
-        </>
+        </VStack>
       ) : (
         <Button
           leftIcon={<IoAdd />}
           variant="outline"
           colorScheme="green"
+          size="sm"
           onClick={setCreateMode.on}>
           タグを作成
         </Button>
@@ -217,9 +229,11 @@ const CreateTag = () => {
 const TagSetting = () => {
   return (
     <Box>
-      <Heading>タグ</Heading>
-      <CreateTag />
-      <TagList />
+      <Heading size="lg">タグ</Heading>
+      <HStack>
+        <CreateTag />
+        <TagList />
+      </HStack>
     </Box>
   );
 };
@@ -238,7 +252,7 @@ const TagList = () => {
       });
   }, [currentGroup]);
   return tags.length > 0 ? (
-    <>
+    <Stack shouldWrapChildren direction="row">
       {tags?.map((e) => (
         <GroupTag
           label={e.data().name ?? '読込中'}
@@ -247,7 +261,7 @@ const TagList = () => {
           size="lg"
         />
       ))}
-    </>
+    </Stack>
   ) : (
     <Alert status="info">
       <AlertIcon />
@@ -292,18 +306,7 @@ const CreateInvite = ({
     isAdmin,
     memberId,
   ]);
-  return (
-    <HStack>
-      <PinInput type="alphanumeric" value={code} isDisabled>
-        <PinInputField />
-        <PinInputField />
-        <PinInputField />
-        <PinInputField />
-        <PinInputField />
-        <PinInputField />
-      </PinInput>
-    </HStack>
-  );
+  return <Text>作成しました</Text>;
 };
 
 const InviteElement = () => {
@@ -324,7 +327,9 @@ const InviteElement = () => {
   }, [currentGroup]);
   return (
     <Box>
-      <Heading>招待を作成</Heading>
+      <Heading size="lg" mb="5">
+        招待を作成
+      </Heading>
       {createState ? (
         <CreateInvite email={email} isAdmin={isAdmin} memberId={member} />
       ) : (
@@ -367,7 +372,12 @@ const InviteElement = () => {
               管理者として招待
             </Checkbox>
           </Box>
-          <Button colorScheme="green" type="submit">
+          <Button
+            colorScheme="green"
+            variant="outline"
+            type="submit"
+            mt="2"
+            size="sm">
             作成
           </Button>
         </form>
@@ -391,7 +401,9 @@ const AccountList = () => {
   }, [currentGroup]);
   return (
     <Box>
-      <Heading>連携済みアカウント</Heading>
+      <Heading size="lg" pb="2">
+        連携済みアカウント
+      </Heading>
       <Table divider={<Divider />} alignItems="flex-start">
         {accounts.map((account) => (
           <AccountItem account={account} key={account.id} />
@@ -427,22 +439,27 @@ const AccountItem = ({
     <Tr>
       <Td>
         <HStack spacing="1">
-          {isAdmin && <Icon as={IoKeySharp} />}
           <Link as={routerLink} to={`/member/${member?.id}`}>
             {member?.data()?.name}
           </Link>
         </HStack>
       </Td>
       <Td>
+        <Tag colorScheme={isAdmin ? 'green' : 'gray'}>
+          <TagLeftIcon as={isAdmin ? IoKeySharp : IoPerson} />
+          <TagLabel>{isAdmin ? '管理者' : '通常'}</TagLabel>
+        </Tag>
+      </Td>
+      <Td>
         <HStack>
           <Code>{account.id.replace(/.+@/g, '******@')}</Code>
-          <CopyButton copyTarget={account.id} size="sm"></CopyButton>
+          <CopyButton copyTarget={account.id} size="xs"></CopyButton>
         </HStack>
       </Td>
       <Td>
         <HStack alignItems="center">
           <Circle
-            bgColor={account.data().isActive ? 'green.400' : 'yellow.400'}
+            bgColor={account.data().isActive ? 'green.400' : 'gray.400'}
             size="3"
           />
           <Text>{account.data().isActive ? 'アクティブ' : '承諾待ち'}</Text>
@@ -455,14 +472,14 @@ const AccountItem = ({
 const AdminSetting: React.FC = () => {
   return (
     <Box>
-      <HStack spacing="4">
-        <Heading size="lg">組織設定</Heading>
-        <TagElement>
-          <TagLeftIcon as={IoKeyOutline} />
-          <TagLabel>管理者のみが設定できます</TagLabel>
-        </TagElement>
-      </HStack>
-      <Stack py="4">
+      <Stack py="4" spacing="8">
+        <HStack spacing="4">
+          <Heading size="lg">組織設定</Heading>
+          <TagElement>
+            <TagLeftIcon as={IoKeyOutline} />
+            <TagLabel>管理者のみが設定できます</TagLabel>
+          </TagElement>
+        </HStack>
         <OrganizationName />
         <TagSetting />
         <InviteElement />

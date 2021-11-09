@@ -20,8 +20,13 @@ const NewGroup = (): JSX.Element => {
           <JoinGroup />
         </Box>
       )}
-      <Button w="full" onClick={setCreateGroupMode.toggle}>
-        {createGroupMode ? 'グループに参加' : 'グループを作成'}
+      <Button
+        w="full"
+        onClick={setCreateGroupMode.toggle}
+        variant="outline"
+        colorScheme="green"
+      >
+        {createGroupMode ? '参加' : '新規作成'}
       </Button>
     </VStack>
   );
