@@ -1,11 +1,11 @@
 import { Avatar, AvatarBadge } from '@chakra-ui/avatar';
-import { Button, ButtonGroup } from '@chakra-ui/button';
+import { Button, ButtonGroup, IconButton } from '@chakra-ui/button';
 import { HStack, Text, VStack } from '@chakra-ui/layout';
-import { TagCloseButton, TagLeftIcon } from '@chakra-ui/react';
+import { TagCloseButton, TagLeftIcon, useClipboard } from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
 import { Tag, TagLabel } from '@chakra-ui/tag';
 import React, { useEffect, useRef } from 'react';
-import { IoPricetag } from 'react-icons/io5';
+import { IoCheckmark, IoClipboardOutline, IoPricetag } from 'react-icons/io5';
 import { tagColors } from '../utils/group-tag';
 import { Member } from '../utils/member';
 
@@ -101,4 +101,41 @@ export const GroupTag: React.FC<{
       {onRemove && <TagCloseButton onClick={onRemove} />}
     </Tag>
   );
+};
+
+export const CopyButton = ({
+  copyTarget,
+  children,
+  size,
+}: {
+  copyTarget: string;
+  children?: string;
+  size?: string;
+}): JSX.Element => {
+  const clipBoard = useClipboard(copyTarget);
+  if (children) {
+    return (
+      <Button
+        leftIcon={
+          clipBoard.hasCopied ? <IoCheckmark /> : <IoClipboardOutline />
+        }
+        colorScheme={clipBoard.hasCopied ? 'green' : undefined}
+        variant={'outline'}
+        size={size}
+        onClick={clipBoard.onCopy}>
+        {children}
+      </Button>
+    );
+  } else {
+    return (
+      <IconButton
+        size={size}
+        colorScheme={clipBoard.hasCopied ? 'green' : undefined}
+        variant={'outline'}
+        onClick={clipBoard.onCopy}
+        aria-label="コピー"
+        icon={clipBoard.hasCopied ? <IoCheckmark /> : <IoClipboardOutline />}
+      />
+    );
+  }
 };

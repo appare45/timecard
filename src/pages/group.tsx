@@ -12,12 +12,12 @@ import {
   Stack,
   Text,
   useToast,
-  VStack,
 } from '@chakra-ui/react';
 import {
   DocumentReference,
   DocumentSnapshot,
   getDoc,
+  Timestamp,
 } from 'firebase/firestore';
 import React, {
   Suspense,
@@ -40,7 +40,13 @@ import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { useIsPrint } from '../hooks/media-query';
 import { GroupTemplate } from '../templates/group';
-import { getAccount, getAdmin, Group } from '../utils/group';
+import {
+  Account,
+  getAccount,
+  getAdmin,
+  Group,
+  setAccount,
+} from '../utils/group';
 import { Member, getMember } from '../utils/member';
 
 type groupProps = {
@@ -179,12 +185,20 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
       getAccount(account.email, currentGroup.id).then((e) => {
         const memberId = e.data()?.memberId;
         if (memberId) {
-          getMember(memberId, currentGroup.id).then((e) =>
-            setCurrentMemberData(e ?? null)
-          );
+          getMember(memberId, currentGroup.id).then((e) => {
+            setCurrentMemberData(e ?? null);
+          });
           getAdmin(memberId, currentGroup.id).then((e) => {
             if (e.data()) setIsAdmin(true);
           });
+        }
+        const _account: Partial<Account> = {
+          isActive: true,
+          lastActivity: Timestamp.now(),
+        };
+        Object.assign(_account, e.data());
+        if (account.email) {
+          setAccount(account.email, _account, currentGroup.id);
         }
       });
   }, [account?.email, currentGroup]);

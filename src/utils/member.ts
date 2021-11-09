@@ -52,6 +52,7 @@ const memberDataConverter = {
       name: member.name,
       photoUrl: member.photoUrl ?? '',
       tag: member.tag ?? [],
+      status: member.status ?? false,
     };
   },
   fromFirestore(

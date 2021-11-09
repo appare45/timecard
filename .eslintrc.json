@@ -30,5 +30,13 @@
   ],
   "rules": {
     "react/prop-types": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/*.js", "src/*.ts", "src/*.tsx"],
+      "rules": {
+        "quotes": [2, "single"]
+      }
+    }
+  ]
 }

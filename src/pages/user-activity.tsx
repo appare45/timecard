@@ -9,7 +9,7 @@ import {
   AlertDialogBody,
 } from '@chakra-ui/modal';
 import { Skeleton } from '@chakra-ui/react';
-import { DocumentSnapshot, QueryDocumentSnapshot } from '@firebase/firestore';
+import { QueryDocumentSnapshot } from '@firebase/firestore';
 import React, {
   useState,
   useRef,
@@ -24,13 +24,7 @@ import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
 import { GroupTemplate } from '../templates/group';
-import {
-  activity,
-  work,
-  Group,
-  getGroup,
-  getUserActivities,
-} from '../utils/group';
+import { activity, work, getUserActivities } from '../utils/group';
 import { Member, getMember } from '../utils/member';
 import { LoadMoreButton } from '../components/assets';
 import { DisplayActivities } from '../components/display-activities';
