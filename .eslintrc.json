@@ -20,7 +20,6 @@
     }
   },
   "plugins": ["react-hooks", "react", "@typescript-eslint"],
-
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
