@@ -43,7 +43,8 @@ export const SideWidget: React.FC = ({ children }) => (
     borderColor="gray.200"
     p="5"
     rounded="base"
-    align="flex-start">
+    align="flex-start"
+  >
     {children}
   </VStack>
 );
@@ -122,7 +123,8 @@ export const CopyButton = ({
         colorScheme={clipBoard.hasCopied ? 'green' : undefined}
         variant={'outline'}
         size={size}
-        onClick={clipBoard.onCopy}>
+        onClick={clipBoard.onCopy}
+      >
         {children}
       </Button>
     );

@@ -131,12 +131,14 @@ function UserActivity(): JSX.Element {
                 <Button
                   leftIcon={<IoPersonCircleOutline />}
                   as={Link}
-                  to={`/setting`}>
+                  to={`/setting`}
+                >
                   プロフィールを編集
                 </Button>
               )}
             </>
-          }>
+          }
+        >
           <>
             <VStack w="full" spacing="4" pb="2">
               {activities && <Activities data={activities} />}
@@ -147,7 +149,8 @@ function UserActivity(): JSX.Element {
               closeOnEsc
               closeOnOverlayClick
               onClose={() => setDialog(false)}
-              leastDestructiveRef={dialogCancel}>
+              leastDestructiveRef={dialogCancel}
+            >
               <AlertDialogOverlay />
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -166,7 +169,8 @@ function UserActivity(): JSX.Element {
                   <Button
                     ref={dialogCancel}
                     onClick={() => setDialog(false)}
-                    mx="5">
+                    mx="5"
+                  >
                     閉じる
                   </Button>
                 </AlertDialogBody>

@@ -53,7 +53,8 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
       variant="outline"
       size="sm"
       isAttached={true}
-      colorScheme="gray">
+      colorScheme="gray"
+    >
       {isEditable && (
         <Tooltip label="編集">
           <Button onClick={() => history.push(`/activity/${activityId}`)}>
@@ -71,7 +72,8 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
             });
           }}
           colorScheme={hasCopied ? 'green' : 'gray'}
-          disabled={hasCopied}>
+          disabled={hasCopied}
+        >
           <IoShareOutline />
         </Button>
       ) : (
@@ -80,7 +82,8 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
             onClick={onCopy}
             colorScheme={hasCopied ? 'green' : 'gray'}
             disabled={hasCopied}
-            leftIcon={hasCopied ? <IoCheckmarkOutline /> : undefined}>
+            leftIcon={hasCopied ? <IoCheckmarkOutline /> : undefined}
+          >
             {hasCopied && <Text>コピーしました</Text>}
             {!hasCopied && <IoClipboardOutline />}
           </Button>
@@ -104,7 +107,8 @@ const MemberInfo: React.FC<{
             p={0}
             as={RouterLink}
             to={`/member/${activityData.memberId}`}
-            variant="link">
+            variant="link"
+          >
             <Text>{memberInfo?.name}</Text>
           </Button>
         </HStack>
@@ -143,7 +147,8 @@ const ActivityStatusFull: React.FC<{
         overflow="hidden"
         alignItems="flex-start"
         justifyContent="center"
-        spacing="0.5">
+        spacing="0.5"
+      >
         {status == 'done' ? (
           <HStack>
             <Text color="gray.500">
@@ -189,7 +194,8 @@ const ActivityStatusFull: React.FC<{
                           status: 'error',
                         })
                       );
-                }}>
+                }}
+              >
                 終了する
               </Button>
             )}
@@ -267,7 +273,8 @@ const ActivityCard: React.FC<{
           py="1"
           wordBreak="break-all"
           fontSize="sm"
-          overflow="hidden">
+          overflow="hidden"
+        >
           <pre>{memoText}</pre>
         </Box>
       );
@@ -281,7 +288,8 @@ const ActivityCard: React.FC<{
         minW="lg"
         border="1px"
         borderColor="gray.200"
-        rounded="base">
+        rounded="base"
+      >
         {activityData && (
           <>
             <HStack px="3" py="1" justify="flex-start" bg="gray.100">
@@ -303,14 +311,16 @@ const ActivityCard: React.FC<{
                 isLazy
                 lazyBehavior="keepMounted"
                 variant="soft-rounded"
-                colorScheme="gray">
+                colorScheme="gray"
+              >
                 {/* ヘッダー部分 */}
                 <Box>
                   <TabList>
                     <Tab>ログ</Tab>
                     <Tab
                       isDisabled={!activityData.content?.memo}
-                      _disabled={{ opacity: 0.3, cursor: 'not-allowed' }}>
+                      _disabled={{ opacity: 0.3, cursor: 'not-allowed' }}
+                    >
                       メモ
                     </Tab>
                   </TabList>
@@ -338,7 +348,8 @@ const ActivityCard: React.FC<{
               py="1.5"
               fontSize="xs"
               color="gray.600"
-              spacing="2">
+              spacing="2"
+            >
               <ActivityStatus
                 workStatus={activityData.content.status ?? 'running'}
                 size="2"

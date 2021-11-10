@@ -78,7 +78,8 @@ const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
                 status: 'error',
               })
           );
-      }}>
+      }}
+    >
       <EditablePreview />
       <EditableInput />
     </Editable>
@@ -247,7 +248,8 @@ const MembersListCard: React.FC<{
   return (
     <Grid
       templateColumns={`repeat( auto-fit, minmax(${cardWidth}mm, 1fr))`}
-      gap="4">
+      gap="4"
+    >
       {currentGroup &&
         membersData.map((member) => (
           <Box key={member.id}>
@@ -362,7 +364,8 @@ const MembersList: React.FC<{
             variant="soft-rounded"
             colorScheme="gray"
             isLazy
-            lazyBehavior="keepMounted">
+            lazyBehavior="keepMounted"
+          >
             {!isSimple && isAdmin && (
               <TabList>
                 <Tab>表</Tab>
@@ -375,7 +378,8 @@ const MembersList: React.FC<{
                   <Table
                     colorScheme="blackAlpha"
                     size={isSimple ? 'sm' : 'md'}
-                    w="full">
+                    w="full"
+                  >
                     {!isSimple && (
                       <Thead>
                         <Tr>
@@ -436,7 +440,8 @@ const MemberFilter = ({
       onChange={(e) => {
         setFilter(groupTags.find((tag) => tag.id == e.target.value) ?? null);
       }}
-      value={currentFilter?.id ?? 'default'}>
+      value={currentFilter?.id ?? 'default'}
+    >
       <option value="default">フィルターを選択</option>
       {groupTags.map((e) => (
         <option key={e.id} value={e.id}>

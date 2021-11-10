@@ -154,7 +154,8 @@ function Canvas(props: {
               w="max-content"
               onChange={(e) => {
                 updateCurrentTrackIndex(Number(e.target.value));
-              }}>
+              }}
+            >
               {tracks.map((track, index) => (
                 <option key={track.id} id={index.toString()}>
                   {track.label}
@@ -277,7 +278,8 @@ export const MemberAction: React.FC<{
                 });
               }
             }
-          }}>
+          }}
+        >
           {latestActivity?.data().content.status === 'running'
             ? '終了'
             : '開始'}
@@ -286,7 +288,8 @@ export const MemberAction: React.FC<{
           variant="ghost"
           colorScheme="red"
           onClick={() => onClose()}
-          ref={cancelRef}>
+          ref={cancelRef}
+        >
           キャンセル
         </Button>
       </ButtonGroup>
@@ -344,7 +347,8 @@ export const QRCodeScan = React.memo(
           ratio={cardWidth / cardHeight}
           borderRadius="lg"
           bg="gray.400"
-          overflow="hidden">
+          overflow="hidden"
+        >
           <video
             playsInline
             muted
@@ -373,7 +377,8 @@ export const QRCodeScan = React.memo(
               element.stop();
             });
             setFacingMode(facingMode == 'user' ? 'environment' : 'user');
-          }}>
+          }}
+        >
           カメラ切り替え
         </Button>
       </Box>

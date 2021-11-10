@@ -110,7 +110,8 @@ const Card: React.FC<{
         h={`${cardHeight}mm`}
         ratio={cardWidth / cardHeight}
         display={isLoading ? 'none' : 'block'}
-        pos="relative">
+        pos="relative"
+      >
         <canvas
           ref={canvasRef}
           width={cardWidth * 16}

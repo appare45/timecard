@@ -43,7 +43,8 @@ export const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
         size="sm"
         onClick={() => setModalIsOpen(true)}
         leftIcon={<IoPersonAdd />}
-        variant="outline">
+        variant="outline"
+      >
         メンバーを追加
       </Button>
       <Modal onClose={() => setModalIsOpen(false)} isOpen={modalIsOpen}>
@@ -65,7 +66,8 @@ export const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
                   });
               }
               setIsSubmitting.off();
-            }}>
+            }}
+          >
             <ModalHeader>メンバーを追加</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
@@ -125,7 +127,8 @@ export const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
                 colorScheme="blackAlpha"
                 bg="black"
                 type="submit"
-                isLoading={isSubmitting}>
+                isLoading={isSubmitting}
+              >
                 作成
               </Button>
             </ModalFooter>

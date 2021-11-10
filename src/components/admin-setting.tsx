@@ -148,14 +148,16 @@ const CreateTag = () => {
           bgColor="white"
           p="4"
           rounded="md"
-          shadow="md">
+          shadow="md"
+        >
           <HStack w="max-content">
             <GroupTag
               label={
                 <Editable
                   placeholder="タグの名前を入力"
                   onSubmit={(e) => setTagName(e)}
-                  startWithEditView>
+                  startWithEditView
+                >
                   <EditableInput />
                   <EditablePreview />
                 </Editable>
@@ -169,7 +171,8 @@ const CreateTag = () => {
               w="max-content"
               iconColor={tagColor}
               value={tagColor}
-              onChange={(e) => setTagColor(e.target.value as tagColors)}>
+              onChange={(e) => setTagColor(e.target.value as tagColors)}
+            >
               {tagColors.map((color) => (
                 <option key={color} id={color}>
                   {color}
@@ -201,13 +204,15 @@ const CreateTag = () => {
                     .catch(() => {
                       toast({ title: '作成に失敗しました', status: 'error' });
                     });
-              }}>
+              }}
+            >
               作成
             </Button>
             <Button
               variant="ghost"
               colorScheme="red"
-              onClick={setCreateMode.off}>
+              onClick={setCreateMode.off}
+            >
               キャンセル
             </Button>
           </ButtonGroup>
@@ -218,7 +223,8 @@ const CreateTag = () => {
           variant="outline"
           colorScheme="green"
           size="sm"
-          onClick={setCreateMode.on}>
+          onClick={setCreateMode.on}
+        >
           タグを作成
         </Button>
       )}
@@ -337,7 +343,8 @@ const InviteElement = () => {
           onSubmit={(e) => {
             e.preventDefault();
             if (email.length) setCreateState.on();
-          }}>
+          }}
+        >
           <Box>
             <FormControl isRequired>
               <FormLabel>メールアドレス</FormLabel>
@@ -356,7 +363,8 @@ const InviteElement = () => {
                 <Select
                   onChange={(e) => {
                     setMember(members[e.target.selectedIndex].id);
-                  }}>
+                  }}
+                >
                   {members.map((_member) => (
                     <option id={_member.id} key={_member.id}>
                       {_member.data().name}
@@ -368,7 +376,8 @@ const InviteElement = () => {
             </FormControl>
             <Checkbox
               checked={isAdmin}
-              onChange={(e) => setIsAdmin(e.target.checked)}>
+              onChange={(e) => setIsAdmin(e.target.checked)}
+            >
               管理者として招待
             </Checkbox>
           </Box>
@@ -377,7 +386,8 @@ const InviteElement = () => {
             variant="outline"
             type="submit"
             mt="2"
-            size="sm">
+            size="sm"
+          >
             作成
           </Button>
         </form>

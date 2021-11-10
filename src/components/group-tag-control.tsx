@@ -48,7 +48,8 @@ export const GroupTagList: React.FC<{
                 } else {
                   userTags.removeTag(tag);
                 }
-              }}>
+              }}
+            >
               <GroupTag label={tagData.name} color={tagData.color} />
             </Checkbox>
           );

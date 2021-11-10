@@ -106,7 +106,8 @@ const ActivityMemo: React.FC<{
               variant={!draftText.length ? 'solid' : 'outline'}
               leftIcon={
                 !draftText.length ? <IoCreateOutline /> : <IoPencilOutline />
-              }>
+              }
+            >
               {draftText.length ? '編集' : '作成'}
             </Button>
           ) : (
@@ -132,13 +133,15 @@ const ActivityMemo: React.FC<{
                           status: 'error',
                         });
                       });
-                }}>
+                }}
+              >
                 保存
               </Button>
               <Button
                 variant="ghost"
                 colorScheme="red"
-                onClick={() => setEditMode(false)}>
+                onClick={() => setEditMode(false)}
+              >
                 キャンセル
               </Button>
             </>

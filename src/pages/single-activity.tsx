@@ -33,7 +33,8 @@ export const SingleActivity = (): ReactElement => {
       {member && (
         <GroupTemplate
           displayGoBackButton
-          title={`${member.data()?.name}のアクティビティー`}>
+          title={`${member.data()?.name}のアクティビティー`}
+        >
           <>
             {activitySnapshot && member && (
               <ActivityDetail activity={activitySnapshot} member={member} />

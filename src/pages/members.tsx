@@ -37,13 +37,15 @@ const Members: React.FC = () => {
                       colorScheme="blackAlpha"
                       bg="black"
                       onClick={window.print}
-                      size="sm">
+                      size="sm"
+                    >
                       印刷
                     </Button>
                   </>
                 )}
               </>
-            }>
+            }
+          >
             <RecoilRoot>
               <MembersList />
             </RecoilRoot>

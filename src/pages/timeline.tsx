@@ -39,12 +39,14 @@ const Timeline: React.FC = () => {
                   <Button
                     leftIcon={<IoScan />}
                     as={RouterLink}
-                    to="/activity/scan">
+                    to="/activity/scan"
+                  >
                     スキャン
                   </Button>
                 )}
               </>
-            }>
+            }
+          >
             <Text>全てのアクティビティーが時間順で並びます</Text>
             <Suspense fallback={<Skeleton />}>
               <Activities />

@@ -25,7 +25,8 @@ export const GroupTemplate: React.FC<{
         <Button
           leftIcon={<IoArrowBack />}
           onClick={() => history.goBack()}
-          variant="link">
+          variant="link"
+        >
           戻る
         </Button>
       )}

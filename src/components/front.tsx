@@ -101,7 +101,8 @@ const Front: React.FC = () => {
                   ratio={cardWidth / cardHeight}
                   borderRadius="lg"
                   bg="gray.400"
-                  overflow="hidden">
+                  overflow="hidden"
+                >
                   <Box />
                 </AspectRatio>
               </Skeleton>
@@ -180,7 +181,8 @@ const Front: React.FC = () => {
                     }
                   }
                   setDetectedMember(null);
-                }}>
+                }}
+              >
                 {latestActivity?.data().content.status === 'running'
                   ? '終了'
                   : '開始'}
@@ -190,7 +192,8 @@ const Front: React.FC = () => {
                   onClick={() => {
                     if (setFrontMode) setFrontMode(false);
                     if (document.fullscreenElement) document.exitFullscreen();
-                  }}>
+                  }}
+                >
                   管理モードに切り替え
                 </Button>
               )}
@@ -199,7 +202,8 @@ const Front: React.FC = () => {
               variant="ghost"
               colorScheme="red"
               ref={cancelRef}
-              onClick={() => setDetectedMember(null)}>
+              onClick={() => setDetectedMember(null)}
+            >
               キャンセル
             </Button>
           </VStack>
