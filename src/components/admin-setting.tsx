@@ -1,5 +1,5 @@
 import { Button, ButtonGroup } from '@chakra-ui/button';
-import { useBoolean, useClipboard } from '@chakra-ui/hooks';
+import { useBoolean } from '@chakra-ui/hooks';
 import { Input } from '@chakra-ui/input';
 import {
   Box,
@@ -38,13 +38,7 @@ import {
   Timestamp,
 } from '@firebase/firestore';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import {
-  IoAdd,
-  IoKeyOutline,
-  IoKeySharp,
-  IoPeople,
-  IoPerson,
-} from 'react-icons/io5';
+import { IoAdd, IoKeyOutline, IoKeySharp, IoPerson } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { Link as routerLink } from 'react-router-dom';
