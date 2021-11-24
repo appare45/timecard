@@ -8,7 +8,7 @@ import {
   AlertDialogCloseButton,
   AlertDialogBody,
 } from '@chakra-ui/modal';
-import { Skeleton } from '@chakra-ui/react';
+import { Spinner } from '@chakra-ui/react';
 import { QueryDocumentSnapshot } from '@firebase/firestore';
 import React, {
   useState,
@@ -159,7 +159,7 @@ function UserActivity(): JSX.Element {
                 </AlertDialogHeader>
                 <AlertDialogBody>
                   {user && currentGroup && (
-                    <Suspense fallback={<Skeleton />}>
+                    <Suspense fallback={<Spinner />}>
                       <Card
                         member={{ data: user, id: memberId }}
                         group={currentGroup}

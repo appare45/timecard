@@ -3,6 +3,7 @@ import { enableIndexedDbPersistence } from 'firebase/firestore';
 import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import Offline from './pages/offline';
+import theme from './theme';
 import { Db } from './utils/firebase';
 import { observeFps } from './utils/fps-observe';
 
@@ -17,10 +18,10 @@ function App(): JSX.Element {
       .catch((error) => {
         console.error(error);
       });
-    observeFps();
+    if (import.meta.env.DEV) observeFps();
   }, []);
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <BrowserRouter>
         <div className="App">
           <Suspense fallback={<Spinner />}>
