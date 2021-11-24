@@ -56,7 +56,8 @@ const NewAccount: React.FC<Props> = ({ name, id }) => {
           onSubmit={(e) => {
             e.preventDefault();
             applyUserName(input, id);
-          }}>
+          }}
+        >
           <FormLabel>名前</FormLabel>
           <Input
             defaultValue={name ?? ''}

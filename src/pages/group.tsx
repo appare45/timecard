@@ -65,7 +65,8 @@ const GroupSelector: React.FC<{
         }
         colorScheme="gray"
         isFullWidth={false}
-        width="50">
+        width="50"
+      >
         {groups.map((group) => (
           <option key={group.id} value={group.id}>
             {group?.data()?.name ?? ''}
@@ -86,7 +87,8 @@ const ScanButton: React.FC<{ setFrontMode: () => void }> = ({
         mb="3"
         colorScheme="cyan"
         leftIcon={<IoEaselOutline />}
-        onClick={() => setFrontMode()}>
+        onClick={() => setFrontMode()}
+      >
         フロントモードに切り替える
       </Button>
     </>
@@ -109,7 +111,8 @@ const MenuLink: React.FC<{
       as={routerLink}
       to={to}
       fontWeight="bold"
-      wordBreak="keep-all">
+      wordBreak="keep-all"
+    >
       <Stack direction="row" align="center" spacing="2">
         <Icon as={leftIcon} />
         <Text>{children}</Text>
@@ -268,7 +271,8 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
             currentMember: currentMemberData,
             updateCurrentMember: setCurrentMemberData,
             currentGroup: currentGroup,
-          }}>
+          }}
+        >
           {frontMode ? (
             <Suspense fallback={<Spinner />}>
               <Front />
@@ -299,7 +303,8 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
                                 <MembersList onlyOnline isSimple />
                               </RecoilRoot>
                             </>
-                          }>
+                          }
+                        >
                           <AllActivity loadMore={false} />
                         </GroupTemplate>
                       </Route>

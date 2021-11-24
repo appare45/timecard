@@ -7,7 +7,7 @@ import { GroupContext } from '../contexts/group';
 import { GroupTemplate } from '../templates/group';
 import { activity, work, getActivitySnapshot } from '../utils/group';
 import { Member, getMember } from '../utils/member';
-export const SingleActivity = (): ReactElement => {
+const SingleActivity = (): ReactElement => {
   const { activityId } = useParams<{ activityId: string }>();
   const [activitySnapshot, setActivitySnapshot] = useState<DocumentSnapshot<
     activity<work>
@@ -33,7 +33,8 @@ export const SingleActivity = (): ReactElement => {
       {member && (
         <GroupTemplate
           displayGoBackButton
-          title={`${member.data()?.name}のアクティビティー`}>
+          title={`${member.data()?.name}のアクティビティー`}
+        >
           <>
             {activitySnapshot && member && (
               <ActivityDetail activity={activitySnapshot} member={member} />
@@ -44,3 +45,5 @@ export const SingleActivity = (): ReactElement => {
     </>
   );
 };
+
+export default SingleActivity;

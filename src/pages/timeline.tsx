@@ -10,12 +10,10 @@ import {
   Route,
   Link as RouterLink,
 } from 'react-router-dom';
-import { MemberAction } from '../components/qrcodeScan';
 import { GroupContext } from '../contexts/group';
 import { GroupTemplate } from '../templates/group';
 import { dataWithId } from '../utils/firebase';
 import { Member } from '../utils/member';
-import { SingleActivity } from './single-activity';
 
 const Timeline: React.FC = () => {
   const { path } = useRouteMatch();
@@ -24,6 +22,8 @@ const Timeline: React.FC = () => {
   const [detectedMember, setDetectedMember] =
     useState<dataWithId<Member> | null>(null);
   const QRCodeScan = React.lazy(() => import('./../components/qrcodeScan'));
+  const MemberAction = React.lazy(() => import('./../components/MemberAction'));
+  const SingleActivity = React.lazy(() => import('./../pages/single-activity'));
   const Activities = React.lazy(
     () => import('./../components/display-activities')
   );
@@ -39,12 +39,14 @@ const Timeline: React.FC = () => {
                   <Button
                     leftIcon={<IoScan />}
                     as={RouterLink}
-                    to="/activity/scan">
+                    to="/activity/scan"
+                  >
                     スキャン
                   </Button>
                 )}
               </>
-            }>
+            }
+          >
             <Text>全てのアクティビティーが時間順で並びます</Text>
             <Suspense fallback={<Skeleton />}>
               <Activities />

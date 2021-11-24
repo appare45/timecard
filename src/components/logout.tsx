@@ -32,7 +32,8 @@ export default function Logout(props: {
               props.onError(e);
             }
           });
-      }}>
+      }}
+    >
       ログアウト
     </Button>
   );

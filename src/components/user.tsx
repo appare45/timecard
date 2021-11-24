@@ -32,7 +32,8 @@ const UserDataDisplay: React.FC<{ authData: User }> = ({ authData }) => {
       left="0"
       pos="fixed"
       rounded="lg"
-      bg="white">
+      bg="white"
+    >
       <Avatar src={authData.photoURL ?? undefined} />
       <VStack spacing="0.5" align="start">
         {openInfo ? (
@@ -47,7 +48,8 @@ const UserDataDisplay: React.FC<{ authData: User }> = ({ authData }) => {
                   maxW="40"
                   overflow="hidden"
                   textOverflow="ellipsis"
-                  whiteSpace="nowrap">
+                  whiteSpace="nowrap"
+                >
                   {authData.email}
                 </Text>
               </Box>
@@ -121,7 +123,8 @@ export default function UserUI(): JSX.Element {
           update: updateAccountEnablement,
         },
         account: accountStatus ?? null,
-      }}>
+      }}
+    >
       <Suspense fallback={<Spinner />}>
         {/* 未ログイン時 */}
         {!loginStatus && (

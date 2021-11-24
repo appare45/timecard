@@ -8,7 +8,7 @@ import {
   AlertDialogCloseButton,
   AlertDialogBody,
 } from '@chakra-ui/modal';
-import { Skeleton } from '@chakra-ui/react';
+import { Spinner } from '@chakra-ui/react';
 import { QueryDocumentSnapshot } from '@firebase/firestore';
 import React, {
   useState,
@@ -131,12 +131,14 @@ function UserActivity(): JSX.Element {
                 <Button
                   leftIcon={<IoPersonCircleOutline />}
                   as={Link}
-                  to={`/setting`}>
+                  to={`/setting`}
+                >
                   プロフィールを編集
                 </Button>
               )}
             </>
-          }>
+          }
+        >
           <>
             <VStack w="full" spacing="4" pb="2">
               {activities && <Activities data={activities} />}
@@ -147,7 +149,8 @@ function UserActivity(): JSX.Element {
               closeOnEsc
               closeOnOverlayClick
               onClose={() => setDialog(false)}
-              leastDestructiveRef={dialogCancel}>
+              leastDestructiveRef={dialogCancel}
+            >
               <AlertDialogOverlay />
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -156,7 +159,7 @@ function UserActivity(): JSX.Element {
                 </AlertDialogHeader>
                 <AlertDialogBody>
                   {user && currentGroup && (
-                    <Suspense fallback={<Skeleton />}>
+                    <Suspense fallback={<Spinner />}>
                       <Card
                         member={{ data: user, id: memberId }}
                         group={currentGroup}
@@ -166,7 +169,8 @@ function UserActivity(): JSX.Element {
                   <Button
                     ref={dialogCancel}
                     onClick={() => setDialog(false)}
-                    mx="5">
+                    mx="5"
+                  >
                     閉じる
                   </Button>
                 </AlertDialogBody>

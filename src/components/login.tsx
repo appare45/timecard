@@ -25,7 +25,8 @@ const FirebaseAuth: React.FC<{ redirectUri: string; isLoading: boolean }> = ({
       colorScheme="blackAlpha"
       variant="outline"
       isLoading={isLoading}
-      onClick={() => signInWithRedirect(auth, provider)}>
+      onClick={() => signInWithRedirect(auth, provider)}
+    >
       Googleアカウントでログイン
     </Button>
   );

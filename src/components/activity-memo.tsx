@@ -29,7 +29,8 @@ const ActivityMemo: React.FC<{ draftText: string }> = ({ draftText }) => {
         px="2"
         py="1"
         w="full"
-        overflow="scroll">
+        overflow="scroll"
+      >
         <ReactMarkdown
           // eslint-disable-next-line react/no-children-prop
           children={draftText}

@@ -29,7 +29,8 @@ const Offline: React.FC = () => {
           templateRows="repeat(auto-fill, 100px)"
           opacity="0.1"
           m="-10"
-          gap="10">
+          gap="10"
+        >
           {[...Array(1000)].map((index) => (
             <GridItem key={index}>
               <Icon as={IoCloudOffline} boxSize="24" />
