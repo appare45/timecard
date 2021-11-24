@@ -1,12 +1,5 @@
 import React, { useMemo } from 'react';
-import {
-  Button,
-  ButtonGroup,
-  HStack,
-  Text,
-  useToast,
-  VStack,
-} from '@chakra-ui/react';
+import { Button, ButtonGroup, HStack, Text, VStack } from '@chakra-ui/react';
 import { useState } from 'react';
 import { dataWithId } from '../utils/firebase';
 import { activity, addWork, setWork, work } from '../utils/group';
@@ -29,7 +22,6 @@ const DetectedMemberAction: React.FC<props> = ({
   onClose,
 }) => {
   const cancelRef = useRef(null);
-  const toast = useToast();
   const { currentMember } = useContext(GroupContext);
   const [time, setTime] = useState('');
   const { currentGroup, setFrontMode } = useContext(GroupContext);
@@ -77,12 +69,6 @@ const DetectedMemberAction: React.FC<props> = ({
                   merge: true,
                 }).then(() => {
                   onClose();
-                  toast({
-                    title: '終了しました',
-                    status: 'success',
-                    duration: 3000,
-                    isClosable: true,
-                  });
                 });
               } else {
                 addWork(currentGroup.id, {
@@ -96,12 +82,6 @@ const DetectedMemberAction: React.FC<props> = ({
                   memberId: detectedMember.id,
                 }).then(() => {
                   onClose();
-                  toast({
-                    title: '開始しました',
-                    status: 'success',
-                    duration: 3000,
-                    isClosable: true,
-                  });
                 });
               }
             }
