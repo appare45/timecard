@@ -35,7 +35,7 @@ const Front: React.FC = () => {
   useEffect(() => {
     if (currentGroup && detectedMember) {
       getLatestActivity(currentGroup.id, detectedMember.id).then((activity) =>
-        setLatestActivity(activity)
+        setLatestActivity(activity ?? null)
       );
     }
   }, [currentGroup, detectedMember]);
@@ -44,7 +44,7 @@ const Front: React.FC = () => {
 
   return (
     <Box p="10" bg="white">
-      {!detectedMember || !latestActivity ? (
+      {!detectedMember ? (
         <>
           <HStack>
             <Box>
