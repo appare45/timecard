@@ -13,7 +13,7 @@ import { Member } from '../utils/member';
 
 interface props {
   detectedMember: dataWithId<Member>;
-  latestActivity: QueryDocumentSnapshot<activity<work>>;
+  latestActivity: QueryDocumentSnapshot<activity<work>> | null;
   onClose: () => unknown;
 }
 const DetectedMemberAction: React.FC<props> = ({
