@@ -58,5 +58,6 @@ export const millisToText = (time: number): string => {
   if (_time / 60 / 60 > 1) text += `${Math.round(_time / 60 / 60)}時間`;
   if (_time / 60 > 1) text += `${Math.round(_time / 60)}分`;
   if (_time > 1) text += `${Math.round(_time) % 60}秒`;
+  text += time % 1000;
   return text;
 };
