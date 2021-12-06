@@ -16,7 +16,7 @@
     "framer-motion": "^4",
     "jest": "26.6.0",
     "jest-circus": "26.6.0",
-    "jest-resolve": "26.6.0",
+    "jest-resolve": "27.4.2",
     "jest-watch-typeahead": "0.6.1",
     "jsqr": "^1.4.0",
     "qrcode": "^1.4.4",
