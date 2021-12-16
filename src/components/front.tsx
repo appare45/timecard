@@ -8,13 +8,11 @@ import {
   Skeleton,
   Spacer,
   Spinner,
-  Text,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { dataWithId } from '../utils/firebase';
 import { activity, getLatestActivity, work } from '../utils/group';
 import { useContext } from 'react';
-import { AuthContext } from '../contexts/user';
 import { GroupContext } from '../contexts/group';
 import { QueryDocumentSnapshot } from 'firebase/firestore';
 import { Member } from '../utils/member';
@@ -25,7 +23,6 @@ const Front: React.FC = () => {
   const [latestActivity, setLatestActivity] = useState<QueryDocumentSnapshot<
     activity<work>
   > | null>(null);
-  const userContext = useContext(AuthContext);
   const { currentGroup } = useContext(GroupContext);
   const DetectedMemberAction = React.lazy(
     () => import('./DetectedMemberAction')
@@ -49,11 +46,6 @@ const Front: React.FC = () => {
           <HStack>
             <Box>
               <Heading>QRコードをスキャンしてください</Heading>
-              <Text>
-                管理者モードに切り替えるには
-                {userContext.account?.displayName ?? '管理者'}
-                のQRコードをスキャンしてください
-              </Text>
             </Box>
             <Spacer />
           </HStack>
