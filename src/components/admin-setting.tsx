@@ -370,6 +370,7 @@ const InviteElement = () => {
             </FormControl>
             <Checkbox
               checked={isAdmin}
+              colorScheme="green"
               onChange={(e) => setIsAdmin(e.target.checked)}
             >
               管理者として招待
