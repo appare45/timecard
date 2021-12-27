@@ -4,23 +4,28 @@ import {
   Button,
   HStack,
   Icon,
+  IconButton,
   Spinner,
   Text,
+  useColorMode,
   VStack,
 } from '@chakra-ui/react';
 import React, { Suspense, useState } from 'react';
 import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 import { useMemo } from 'react';
-import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
+import { IoChevronBack, IoChevronForward, IoMoon } from 'react-icons/io5';
 import { AuthContext } from '../contexts/user';
 import { app } from '../utils/firebase';
 import { getUser, setUser } from '../utils/user';
 import Logout from './logout';
 import { DocumentReference } from '@firebase/firestore';
 import { Group } from '../utils/group';
+import { useUniversalColors } from '../hooks/color-mode';
 
 const UserDataDisplay: React.FC<{ authData: User }> = ({ authData }) => {
   const [openInfo, setOpenInfo] = useState(false);
+  const { toggleColorMode } = useColorMode();
+  const { component_background, component_foreground } = useUniversalColors();
   return (
     <HStack
       spacing="5"
@@ -32,7 +37,8 @@ const UserDataDisplay: React.FC<{ authData: User }> = ({ authData }) => {
       left="0"
       pos="fixed"
       rounded="lg"
-      bg="white"
+      bg={component_background}
+      color={component_foreground}
     >
       <Avatar src={authData.photoURL ?? undefined} />
       <VStack spacing="0.5" align="start">
@@ -54,6 +60,11 @@ const UserDataDisplay: React.FC<{ authData: User }> = ({ authData }) => {
                 </Text>
               </Box>
               <Logout />
+              <IconButton
+                icon={<IoMoon />}
+                aria-label="ダークモードの切り替え"
+                onClick={toggleColorMode}
+              />
               <Button onClick={() => setOpenInfo(!openInfo)} variant="ghost">
                 <Icon as={IoChevronBack} h="12" />
               </Button>
@@ -127,7 +138,7 @@ export default function UserUI(): JSX.Element {
     >
       <Suspense fallback={<Spinner />}>
         {/* 未ログイン時 */}
-        {!loginStatus && (
+        {loginStatus === false && (
           <Login
             redirectUri={`${location.href}`}
             isLoading={loginStatus === null}

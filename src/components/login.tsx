@@ -8,6 +8,7 @@ import {
   useDeviceLanguage,
 } from 'firebase/auth';
 import { app } from '../utils/firebase';
+import { useUniversalColors } from '../hooks/color-mode';
 
 const FirebaseAuth: React.FC<{ redirectUri: string; isLoading: boolean }> = ({
   redirectUri,
@@ -22,7 +23,6 @@ const FirebaseAuth: React.FC<{ redirectUri: string; isLoading: boolean }> = ({
   return (
     <Button
       leftIcon={<IoLogoGoogle />}
-      colorScheme="blackAlpha"
       variant="outline"
       isLoading={isLoading}
       onClick={() => signInWithRedirect(auth, provider)}
@@ -36,11 +36,12 @@ export default function Login(props: {
   redirectUri: string;
   isLoading: boolean;
 }): JSX.Element {
+  const { background } = useUniversalColors();
   return (
     <>
       <Center h="100vh" bgSize="cover" bgPos="center" pos="relative">
         <Image
-          src="https://picsum.photos/1920/1080.webp?grayscale"
+          src="/login.webp"
           loading="lazy"
           pos="absolute"
           top={0}
@@ -49,7 +50,7 @@ export default function Login(props: {
           objectFit="cover"
           left={0}
         />
-        <Box pb="10" bg="whitesmoke" p="5" rounded="base" opacity="0.95">
+        <Box pb="10" bg={background} p="5" rounded="base" opacity="0.95">
           <Heading textAlign="center" mb="3">
             ログイン
           </Heading>

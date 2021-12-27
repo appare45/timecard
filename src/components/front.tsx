@@ -16,6 +16,7 @@ import { useContext } from 'react';
 import { GroupContext } from '../contexts/group';
 import { QueryDocumentSnapshot } from 'firebase/firestore';
 import { Member } from '../utils/member';
+import { useUniversalColors } from '../hooks/color-mode';
 
 const Front: React.FC = () => {
   const [detectedMember, setDetectedMember] =
@@ -38,9 +39,9 @@ const Front: React.FC = () => {
   }, [currentGroup, detectedMember]);
 
   const QRCodeScan = React.lazy(() => import('./qrcodeScan'));
-
+  const { background } = useUniversalColors();
   return (
-    <Box p="10" bg="white">
+    <Box p="10" bg={background}>
       {!detectedMember ? (
         <>
           <HStack>
