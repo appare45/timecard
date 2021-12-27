@@ -138,7 +138,7 @@ export default function UserUI(): JSX.Element {
     >
       <Suspense fallback={<Spinner />}>
         {/* 未ログイン時 */}
-        {!loginStatus && (
+        {loginStatus === false && (
           <Login
             redirectUri={`${location.href}`}
             isLoading={loginStatus === null}
