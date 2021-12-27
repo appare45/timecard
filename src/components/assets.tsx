@@ -1,7 +1,12 @@
 import { Avatar, AvatarBadge } from '@chakra-ui/avatar';
 import { Button, ButtonGroup, IconButton } from '@chakra-ui/button';
 import { HStack, Text, VStack } from '@chakra-ui/layout';
-import { TagCloseButton, TagLeftIcon, useClipboard } from '@chakra-ui/react';
+import {
+  TagCloseButton,
+  TagLeftIcon,
+  useClipboard,
+  useColorModeValue,
+} from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
 import { Tag, TagLabel } from '@chakra-ui/tag';
 import React, { useEffect, useRef } from 'react';
@@ -35,19 +40,21 @@ export const LoadMoreButton: React.FC<{ loadMore: () => void }> = ({
   );
 };
 
-export const SideWidget: React.FC = ({ children }) => (
-  <VStack
-    mt="10"
-    border="1px"
-    bg="gray.50"
-    borderColor="gray.200"
-    p="5"
-    rounded="base"
-    align="flex-start"
-  >
-    {children}
-  </VStack>
-);
+export const SideWidget: React.FC = ({ children }) => {
+  return (
+    <VStack
+      mt="10"
+      border="1px"
+      bg={useColorModeValue('gray.50', 'gray.950')}
+      borderColor={useColorModeValue('gray.200', 'gray.800')}
+      p="5"
+      rounded="base"
+      align="flex-start"
+    >
+      {children}
+    </VStack>
+  );
+};
 
 export const MemberAvatar: React.FC<{
   member?: Member;

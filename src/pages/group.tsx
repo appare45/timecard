@@ -38,6 +38,7 @@ import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
+import { useUniversalColors } from '../hooks/color-mode';
 import { useIsPrint } from '../hooks/media-query';
 import { GroupTemplate } from '../templates/group';
 import {
@@ -100,10 +101,11 @@ const MenuLink: React.FC<{
   to: string;
   leftIcon: React.FC;
 }> = ({ children, to, leftIcon }) => {
+  const { component_foreground } = useUniversalColors();
   return (
     <Link
       variant="link"
-      color="black"
+      color={component_foreground}
       fontSize="lg"
       p="1.5"
       w="full"

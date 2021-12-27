@@ -17,6 +17,7 @@ import {
   Link,
   VStack,
   useToast,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import {
   DocumentSnapshot,
@@ -103,14 +104,14 @@ const MemberInfo: React.FC<{
       return (
         <HStack>
           <MemberAvatar member={memberInfo} size="xs" status={false} />
-          <Button
+          <Link
             p={0}
             as={RouterLink}
             to={`/member/${activityData.memberId}`}
             variant="link"
           >
-            <Text>{memberInfo?.name}</Text>
-          </Button>
+            {memberInfo?.name}
+          </Link>
         </HStack>
       );
     } else {
@@ -281,18 +282,29 @@ const ActivityCard: React.FC<{
     } else return null;
   };
 
+  const universalColors = {
+    background: useColorModeValue('gray.100', 'gray.900'),
+    border: useColorModeValue('gray.200', 'gray.800'),
+    color: useColorModeValue('gray.600', 'gray.400'),
+  };
+
   return useMemo(
     () => (
       <Box
         w="full"
         minW="lg"
         border="1px"
-        borderColor="gray.200"
+        borderColor={universalColors.border}
         rounded="base"
       >
         {activityData && (
           <>
-            <HStack px="3" py="1" justify="flex-start" bg="gray.100">
+            <HStack
+              px="3"
+              py="1"
+              justify="flex-start"
+              bg={universalColors.background}
+            >
               {showMemberData && memberInfo && (
                 <MemberInfo
                   memberInfo={memberInfo}
@@ -343,11 +355,11 @@ const ActivityCard: React.FC<{
               </Tabs>
             </Box>
             <HStack
-              bg="gray.100"
+              bg={universalColors.background}
               px="2"
               py="1.5"
               fontSize="xs"
-              color="gray.600"
+              color={universalColors.color}
               spacing="2"
             >
               <ActivityStatus
@@ -366,7 +378,14 @@ const ActivityCard: React.FC<{
         )}
       </Box>
     ),
-    [activityData, activitySnapshot, editable, memberInfo, showMemberData]
+    [
+      activityData,
+      activitySnapshot,
+      editable,
+      memberInfo,
+      showMemberData,
+      universalColors,
+    ]
   );
 };
 export default ActivityCard;
