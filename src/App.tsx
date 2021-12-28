@@ -18,7 +18,10 @@ function App(): JSX.Element {
       .catch((error) => {
         console.error(error);
       });
-    if (import.meta.env.DEV) observeFps();
+    if (import.meta.env.DEV || import.meta.env.VITE_PREVIEW)
+      observeFps({
+        description: `Build: ${import.meta.env.MODE}`,
+      });
   }, []);
   return (
     <ChakraProvider theme={theme}>
