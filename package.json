@@ -48,7 +48,7 @@
   "devDependencies": {
     "@firebase/firestore-types": "^2.5.0",
     "@firebase/rules-unit-testing": "^1",
-    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^13.5.0",
     "@types/node": "^16.11.6",
