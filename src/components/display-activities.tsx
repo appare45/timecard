@@ -12,6 +12,7 @@ import { GroupContext } from '../contexts/group';
 import ActivityCard from './activity-card';
 import { useLoadMore } from '../hooks/loadmore';
 import { Member } from '../utils/member';
+import { LoadingScreen } from './assets';
 
 export const DisplayActivities: React.FC<{
   data: QueryDocumentSnapshot<activity<work>>[] | null;
@@ -35,7 +36,7 @@ export const DisplayActivities: React.FC<{
     );
   const { currentMember } = useContext(GroupContext);
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={LoadingScreen}>
       <VStack spacing="3" w="max-content">
         {data?.map((activity, index) => (
           <Card key={activity.id + index} snapshot={activity} />
