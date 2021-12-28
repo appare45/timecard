@@ -6,7 +6,6 @@ import {
   Link,
   ListItem,
   OrderedList,
-  Skeleton,
   Text,
   UnorderedList,
 } from '@chakra-ui/react';
@@ -16,11 +15,12 @@ import rehypeKatex from 'rehype-katex';
 import remarkBreaks from 'remark-breaks';
 import remarkMath from 'remark-math';
 import 'katex/dist/katex.min.css';
+import { LoadingScreen } from './assets';
 
 const ActivityMemo: React.FC<{ draftText: string }> = ({ draftText }) => {
   const ReactMarkdown = React.lazy(() => import('react-markdown'));
   return (
-    <Suspense fallback={<Skeleton />}>
+    <Suspense fallback={<LoadingScreen />}>
       <Box
         border="2px"
         borderColor="black"

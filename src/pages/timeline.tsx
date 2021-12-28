@@ -1,6 +1,5 @@
 import { Button } from '@chakra-ui/button';
 import { Text } from '@chakra-ui/layout';
-import { Skeleton } from '@chakra-ui/skeleton';
 import React, { Suspense, useContext, useState } from 'react';
 import { IoScan } from 'react-icons/io5';
 import {
@@ -10,6 +9,7 @@ import {
   Route,
   Link as RouterLink,
 } from 'react-router-dom';
+import { LoadingScreen } from '../components/assets';
 import { GroupContext } from '../contexts/group';
 import { GroupTemplate } from '../templates/group';
 import { dataWithId } from '../utils/firebase';
@@ -48,7 +48,7 @@ const Timeline: React.FC = () => {
             }
           >
             <Text>全てのアクティビティーが時間順で並びます</Text>
-            <Suspense fallback={<Skeleton />}>
+            <Suspense fallback={<LoadingScreen />}>
               <Activities />
             </Suspense>
           </GroupTemplate>

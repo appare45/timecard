@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stack } from '@chakra-ui/layout';
-import { Checkbox } from '@chakra-ui/react';
+import { Checkbox, Skeleton } from '@chakra-ui/react';
 import { DocumentSnapshot, QueryDocumentSnapshot } from '@firebase/firestore';
 import { useState, useContext, useEffect, useMemo } from 'react';
 import { GroupContext } from '../contexts/group';
@@ -16,6 +16,7 @@ export const GroupTagList: React.FC<{
 }> = ({ userTags }) => {
   // グループのタグ
   const [groupTags, setGroupTags] = useState<DocumentSnapshot<tag>[]>([]);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   const { currentGroup } = useContext(GroupContext);
   useEffect(() => {
@@ -25,6 +26,7 @@ export const GroupTagList: React.FC<{
         const newTags: QueryDocumentSnapshot<tag>[] = [];
         e.forEach((f) => newTags.push(f));
         setGroupTags(newTags);
+        setIsLoaded(true);
       });
     }
   }, [currentGroup]);
@@ -57,11 +59,13 @@ export const GroupTagList: React.FC<{
       }, [tag]);
 
     return (
-      <Stack spacing="2">
-        {groupTags.map((tag) => (
-          <GroupTagMemo tag={tag} key={tag.id} />
-        ))}
-      </Stack>
+      <Skeleton isLoaded={isLoaded} w="min-content">
+        <Stack spacing="2">
+          {groupTags.map((tag) => (
+            <GroupTagMemo tag={tag} key={tag.id} />
+          ))}
+        </Stack>
+      </Skeleton>
     );
-  }, [groupTags, userTags]);
+  }, [groupTags, isLoaded, userTags]);
 };

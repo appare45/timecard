@@ -8,7 +8,6 @@ import {
   Icon,
   Link,
   Select,
-  Spinner,
   Stack,
   Text,
   useToast,
@@ -36,6 +35,7 @@ import {
 } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
+import { LoadingScreen } from '../components/assets';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { useUniversalColors } from '../hooks/color-mode';
@@ -276,7 +276,7 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
           }}
         >
           {frontMode ? (
-            <Suspense fallback={<Spinner />}>
+            <Suspense fallback={<LoadingScreen />}>
               <Front />
             </Suspense>
           ) : (
@@ -284,7 +284,7 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
               <HStack align="start" h="100vh" py="10" px="5" spacing="20">
                 {!isPrint && <Nav />}
                 <Box flexGrow={1}>
-                  <Suspense fallback={null}>
+                  <Suspense fallback={LoadingScreen}>
                     <Switch>
                       <Route exact path="/">
                         <GroupTemplate

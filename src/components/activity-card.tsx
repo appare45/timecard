@@ -95,37 +95,32 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
 };
 
 const MemberInfo: React.FC<{
-  memberInfo: Member;
-  activityData: activity<work>;
+  memberInfo?: Member;
+  activityData?: activity<work>;
 }> =
   // eslint-disable-next-line react/display-name
   React.memo(({ memberInfo, activityData }) => {
-    if (memberInfo && activityData) {
-      return (
-        <HStack>
-          <MemberAvatar member={memberInfo} size="xs" status={false} />
-          <Link
-            p={0}
-            as={RouterLink}
-            to={`/member/${activityData.memberId}`}
-            variant="link"
-          >
-            {memberInfo?.name}
-          </Link>
-        </HStack>
-      );
-    } else {
-      return (
-        <>
-          <SkeletonCircle />
-          <Skeleton>
-            <Button size="sm" my="1" variant="link">
-              読み込み中
-            </Button>
-          </Skeleton>
-        </>
-      );
-    }
+    return (
+      <HStack justifyContent="center">
+        <SkeletonCircle isLoaded={!!memberInfo}>
+          {memberInfo && (
+            <MemberAvatar member={memberInfo} size="sm" status={false} />
+          )}
+        </SkeletonCircle>
+        <Skeleton isLoaded={!!activityData}>
+          {activityData && (
+            <Link
+              p={0}
+              as={RouterLink}
+              to={`/member/${activityData.memberId}`}
+              variant="link"
+            >
+              {memberInfo?.name}
+            </Link>
+          )}
+        </Skeleton>
+      </HStack>
+    );
   });
 
 const ActivityStatusFull: React.FC<{
@@ -305,12 +300,10 @@ const ActivityCard: React.FC<{
               justify="flex-start"
               bg={universalColors.background}
             >
-              {showMemberData && memberInfo && (
-                <MemberInfo
-                  memberInfo={memberInfo}
-                  activityData={activityData}
-                />
-              )}
+              <MemberInfo
+                memberInfo={memberInfo ?? undefined}
+                activityData={activityData}
+              />
               <Spacer />
               <ActivityMenu
                 activityId={activitySnapshot.id}
@@ -378,14 +371,7 @@ const ActivityCard: React.FC<{
         )}
       </Box>
     ),
-    [
-      activityData,
-      activitySnapshot,
-      editable,
-      memberInfo,
-      showMemberData,
-      universalColors,
-    ]
+    [activityData, activitySnapshot, editable, memberInfo, universalColors]
   );
 };
 export default ActivityCard;

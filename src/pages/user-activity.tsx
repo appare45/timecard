@@ -8,7 +8,6 @@ import {
   AlertDialogCloseButton,
   AlertDialogBody,
 } from '@chakra-ui/modal';
-import { Spinner } from '@chakra-ui/react';
 import { QueryDocumentSnapshot } from '@firebase/firestore';
 import React, {
   useState,
@@ -26,7 +25,7 @@ import { GroupContext } from '../contexts/group';
 import { GroupTemplate } from '../templates/group';
 import { activity, work, getUserActivities } from '../utils/group';
 import { Member, getMember } from '../utils/member';
-import { LoadMoreButton } from '../components/assets';
+import { LoadingScreen, LoadMoreButton } from '../components/assets';
 import { DisplayActivities } from '../components/display-activities';
 
 function UserActivity(): JSX.Element {
@@ -159,7 +158,7 @@ function UserActivity(): JSX.Element {
                 </AlertDialogHeader>
                 <AlertDialogBody>
                   {user && currentGroup && (
-                    <Suspense fallback={<Spinner />}>
+                    <Suspense fallback={<LoadingScreen />}>
                       <Card
                         member={{ data: user, id: memberId }}
                         group={currentGroup}

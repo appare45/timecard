@@ -1,4 +1,4 @@
-import { Box, Grid, HStack, Spacer } from '@chakra-ui/layout';
+import { Box, Grid, GridItem, HStack, Spacer } from '@chakra-ui/layout';
 import {
   Skeleton,
   Table,
@@ -93,6 +93,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
   // ユーザーが持つタグ
   const [userTags, setUserTags] = useState<DocumentSnapshot<tag>[]>([]);
   const { currentGroup, isAdmin } = useContext(GroupContext);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   const addTag = useCallback(
     (tag: DocumentSnapshot<tag>) => {
@@ -119,6 +120,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
       )
     ).then(() => {
       setUserTags(tagSnapshots);
+      setIsLoaded(true);
     });
   }, [memberData]);
 
@@ -166,15 +168,20 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
 
   return (
     <HStack>
-      {userTags.map((tag) => (
-        <GroupTag
-          label={tag.data()?.name ?? ''}
-          color={tag.data()?.color ?? 'gray'}
-          key={tag.id}
-          onRemove={isAdmin ? () => removeTag(tag) : undefined}
-          size="sm"
-        />
-      ))}
+      <Skeleton isLoaded={isLoaded}>
+        <Grid gap="3" gridTemplateRows="1fr" gridAutoFlow="column">
+          {userTags.map((tag) => (
+            <GridItem key={tag.id}>
+              <GroupTag
+                label={tag.data()?.name ?? ''}
+                color={tag.data()?.color ?? 'gray'}
+                onRemove={isAdmin ? () => removeTag(tag) : undefined}
+                size="sm"
+              />
+            </GridItem>
+          ))}
+        </Grid>
+      </Skeleton>
       {isAdmin && <AddTagButton />}
     </HStack>
   );
@@ -298,6 +305,8 @@ const MembersList: React.FC<{
     useState<null | QueryDocumentSnapshot<tag>>(null);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<Member>>();
 
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
+
   const loadMoreData = useCallback(() => {
     if (currentGroup)
       loadMembersList({
@@ -327,6 +336,7 @@ const MembersList: React.FC<{
       }).then((e) => {
         setShownMembers(e);
         setLastDoc(e[loadDataCount - 1]);
+        setIsLoaded(true);
       });
   }, [currentGroup, filterState, sortWithOnline]);
 
@@ -351,7 +361,7 @@ const MembersList: React.FC<{
           <MemoedMemberFilter />
         </HStack>
       )}
-      {shownMembers?.length == 0 ? (
+      {shownMembers?.length == 0 && isLoaded ? (
         <Alert>
           <AlertIcon />
           {sortWithOnline
@@ -359,7 +369,7 @@ const MembersList: React.FC<{
             : '表示するメンバーがいません'}
         </Alert>
       ) : (
-        <Skeleton isLoaded={!!shownMembers.length} w="full">
+        <Skeleton isLoaded={isLoaded} w="full" h="4xl" minH="max-content">
           <Tabs
             variant="soft-rounded"
             colorScheme="gray"
@@ -421,34 +431,48 @@ const MemberFilter = ({
   ];
 }) => {
   const [groupTags, setGroupTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const { currentGroup } = useContext(GroupContext);
   useEffect(() => {
     if (currentGroup) {
-      listTag(currentGroup.id).then((e) =>
+      listTag(currentGroup.id).then((e) => {
         e.forEach((f) => {
           setGroupTags((oldTags) => [...oldTags, f]);
-        })
-      );
+        });
+        setIsLoaded(true);
+      });
     }
   }, [currentGroup]);
 
   const [currentFilter, setFilter] = filter;
 
   return (
-    <Select
-      w="md"
-      onChange={(e) => {
-        setFilter(groupTags.find((tag) => tag.id == e.target.value) ?? null);
-      }}
-      value={currentFilter?.id ?? 'default'}
-    >
-      <option value="default">フィルターを選択</option>
-      {groupTags.map((e) => (
-        <option key={e.id} value={e.id}>
-          {e.data().name}
-        </option>
-      ))}
-    </Select>
+    <Skeleton isLoaded={isLoaded}>
+      {groupTags.length == 0 ? (
+        <Alert status="info">
+          <AlertIcon />
+          タグがありません
+        </Alert>
+      ) : (
+        <Select
+          w="md"
+          title="フィルターを選択"
+          onChange={(e) => {
+            setFilter(
+              groupTags.find((tag) => tag.id == e.target.value) ?? null
+            );
+          }}
+          value={currentFilter?.id ?? 'default'}
+        >
+          <option value="default">フィルターを選択</option>
+          {groupTags.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.data().name}
+            </option>
+          ))}
+        </Select>
+      )}
+    </Skeleton>
   );
 };
 

@@ -4,11 +4,12 @@ import {
   Heading,
   HStack,
   Input,
+  Skeleton,
+  SkeletonCircle,
   Stack,
   Switch,
   Text,
   useBoolean,
-  useToast,
 } from '@chakra-ui/react';
 import { GroupContext } from '../contexts/group';
 import { getMember, Member, setMember } from '../utils/member';
@@ -55,59 +56,56 @@ const PersonalSetting: React.FC = () => {
               Googleアカウントのプロフィール画像がアイコンに設定されます
             </Text>
           </Stack>
-          <Switch
-            colorScheme="green"
-            defaultChecked={!!Member?.data()?.photoUrl}
-            isChecked={syncProfile}
-            onChange={() => {
-              const _member = Member?.data();
-              if (_member && Member && currentGroup) {
-                _member.photoUrl = !syncProfile ? account?.photoURL ?? '' : '';
-                setMember(_member, Member?.id, currentGroup.id)
-                  .then(() => {
+          <Skeleton isLoaded={!!Member?.data()}>
+            <Switch
+              colorScheme="green"
+              defaultChecked={!!Member?.data()?.photoUrl}
+              isChecked={syncProfile}
+              onChange={() => {
+                const _member = Member?.data();
+                if (_member && Member && currentGroup) {
+                  _member.photoUrl = !syncProfile
+                    ? account?.photoURL ?? ''
+                    : '';
+                  setMember(_member, Member?.id, currentGroup.id).then(() => {
                     setUpdate(!update);
                     updateMemberContext();
-                    toast({
-                      status: 'success',
-                      title: '保存しました',
-                    });
                     setSyncProfile(!syncProfile);
-                  })
-                  .catch(() => {
-                    toast({
-                      status: 'error',
-                      title: '保存に失敗しました',
-                    });
                   });
-              }
-            }}
-          />
+                }
+              }}
+            />
+          </Skeleton>
         </HStack>
       ),
       []
     );
 
   const [userName, setUserName] = useState<string>();
-  const toast = useToast();
   return (
     <Box my="4">
       <Heading size="lg">個人設定</Heading>
       <Stack spacing="2" py="4">
         <HStack spacing="12">
           <HStack my="4" spacing="3">
-            {Member?.data() && <MemberAvatar member={Member.data()} />}
-            <Input
-              fontSize="xl"
-              value={userName}
-              isReadOnly={!editMode}
-              variant={editMode ? 'outline' : 'flushed'}
-              onChange={(e) => setUserName(e.target.value)}
-              isRequired
-              min="1"
-            />
+            <SkeletonCircle isLoaded={!!Member?.data}>
+              {Member?.data() && <MemberAvatar member={Member.data()} />}
+            </SkeletonCircle>
+            <Skeleton isLoaded={Member?.data() != undefined} w="50">
+              <Input
+                fontSize="xl"
+                value={userName}
+                isReadOnly={!editMode}
+                variant={editMode ? 'outline' : 'flushed'}
+                onChange={(e) => setUserName(e.target.value)}
+                isRequired
+                min="1"
+              />
+            </Skeleton>
           </HStack>
           <FormButtons
             editMode={editMode}
+            isDisable={!Member?.data()}
             onSave={() => {
               setEditMode.off();
               const _member = Member?.data();
@@ -118,17 +116,9 @@ const PersonalSetting: React.FC = () => {
                 })
                   .then(() => {
                     updateMemberContext();
-                    toast({
-                      status: 'success',
-                      title: '保存しました',
-                    });
                   })
                   .catch(() => {
                     setUserName(Member.data()?.name);
-                    toast({
-                      status: 'error',
-                      title: '保存できませんでした',
-                    });
                   });
               }
             }}

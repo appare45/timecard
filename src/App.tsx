@@ -1,7 +1,8 @@
-import { ChakraProvider, Spinner } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
 import { enableIndexedDbPersistence } from 'firebase/firestore';
 import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { LoadingScreen } from './components/assets';
 import Offline from './pages/offline';
 import theme from './theme';
 import { Db } from './utils/firebase';
@@ -27,7 +28,7 @@ function App(): JSX.Element {
     <ChakraProvider theme={theme}>
       <BrowserRouter>
         <div className="App">
-          <Suspense fallback={<Spinner />}>
+          <Suspense fallback={<LoadingScreen />}>
             {navigator.onLine ? <UserUI /> : <Offline />}
           </Suspense>
         </div>
