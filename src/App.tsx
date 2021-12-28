@@ -18,7 +18,7 @@ function App(): JSX.Element {
       .catch((error) => {
         console.error(error);
       });
-    if (import.meta.env.DEV || import.meta.env.PREVIEW)
+    if (import.meta.env.DEV || import.meta.env.VITE_PREVIEW)
       observeFps({
         description: `Build: ${import.meta.env.MODE}`,
       });
