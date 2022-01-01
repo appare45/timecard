@@ -24,6 +24,7 @@ import {
   FormControl,
   FormHelperText,
   FormLabel,
+  Skeleton,
   Spacer,
   Table,
   Td,
@@ -74,12 +75,15 @@ const OrganizationName = () => {
   return (
     <HStack spacing="5">
       <Text wordBreak="keep-all">組織名</Text>
-      <Input
-        value={organizationName}
-        isReadOnly={!editMode}
-        onChange={(e) => setOrganizationName(e.target.value)}
-      />
+      <Skeleton isLoaded={!!organizationName}>
+        <Input
+          value={organizationName}
+          isReadOnly={!editMode}
+          onChange={(e) => setOrganizationName(e.target.value)}
+        />
+      </Skeleton>
       <FormButtons
+        isDisable={!organizationName}
         onCancel={() => {
           setEditMode(false);
           setOrganizationName(currentGroupData?.data()?.name);
@@ -90,20 +94,13 @@ const OrganizationName = () => {
 
           if (_group && organizationName && currentGroup) {
             _group.name = organizationName;
-            setGroup(_group, currentGroup.id)
-              .then(() =>
-                toast({
-                  status: 'success',
-                  title: '保存しました',
-                })
-              )
-              .catch(() => {
-                setOrganizationName(currentGroupData?.data()?.name);
-                toast({
-                  status: 'error',
-                  title: '保存に失敗しました',
-                });
+            setGroup(_group, currentGroup.id).catch(() => {
+              setOrganizationName(currentGroupData?.data()?.name);
+              toast({
+                status: 'error',
+                title: '保存に失敗しました',
               });
+            });
           }
           setEditMode(false);
         }}
@@ -241,6 +238,7 @@ const TagSetting = () => {
 const TagList = () => {
   const { currentGroup } = useContext(GroupContext);
   const [tags, setTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
   // ToDo: 無限スクロールを実装
   useEffect(() => {
     if (currentGroup)
@@ -249,24 +247,29 @@ const TagList = () => {
         e.forEach((j) => tags.push(j));
 
         setTags(tags);
+        setIsLoaded(true);
       });
-  }, [currentGroup]);
-  return tags.length > 0 ? (
-    <Stack shouldWrapChildren direction="row">
-      {tags?.map((e) => (
-        <GroupTag
-          label={e.data().name ?? '読込中'}
-          color={e.data().color ?? 'gray'}
-          key={e.id}
-          size="lg"
-        />
-      ))}
-    </Stack>
-  ) : (
-    <Alert status="info">
-      <AlertIcon />
-      <AlertTitle>タグがありません</AlertTitle>
-    </Alert>
+  }, [currentGroup, setIsLoaded]);
+  return (
+    <Skeleton isLoaded={isLoaded}>
+      {tags.length > 0 ? (
+        <Stack shouldWrapChildren direction="row">
+          {tags?.map((e) => (
+            <GroupTag
+              label={e.data().name ?? '読込中'}
+              color={e.data().color ?? 'gray'}
+              key={e.id}
+              size="lg"
+            />
+          ))}
+        </Stack>
+      ) : (
+        <Alert status="info">
+          <AlertIcon />
+          <AlertTitle>タグがありません</AlertTitle>
+        </Alert>
+      )}
+    </Skeleton>
   );
 };
 

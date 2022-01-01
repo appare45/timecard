@@ -1,6 +1,6 @@
 import { Avatar, AvatarBadge } from '@chakra-ui/avatar';
 import { Button, ButtonGroup, IconButton } from '@chakra-ui/button';
-import { HStack, Text, VStack } from '@chakra-ui/layout';
+import { Center, HStack, Text, VStack } from '@chakra-ui/layout';
 import {
   TagCloseButton,
   TagLeftIcon,
@@ -73,11 +73,19 @@ export const MemberAvatar: React.FC<{
 
 export const FormButtons: React.FC<{
   editMode: boolean;
+  isDisable?: boolean;
   setEditable: () => void;
   onCancel: () => void;
   onSave: () => void;
   saveAvailable?: boolean;
-}> = ({ editMode, onCancel, onSave, setEditable, saveAvailable = true }) => (
+}> = ({
+  editMode,
+  onCancel,
+  onSave,
+  setEditable,
+  saveAvailable = true,
+  isDisable = false,
+}) => (
   <ButtonGroup colorScheme="green">
     {editMode ? (
       <>
@@ -89,7 +97,12 @@ export const FormButtons: React.FC<{
         </Button>
       </>
     ) : (
-      <Button colorScheme="green" variant="outline" onClick={setEditable}>
+      <Button
+        colorScheme="green"
+        variant="outline"
+        onClick={setEditable}
+        isDisabled={isDisable}
+      >
         編集
       </Button>
     )}
@@ -147,4 +160,12 @@ export const CopyButton = ({
       />
     );
   }
+};
+
+export const LoadingScreen = (): JSX.Element => {
+  return (
+    <Center w="full" h="full">
+      <Spinner />
+    </Center>
+  );
 };

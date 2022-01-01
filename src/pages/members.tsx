@@ -6,6 +6,7 @@ import { RecoilRoot } from 'recoil';
 import { AddMember } from '../components/member-add';
 import { IoPrint } from 'react-icons/io5';
 import { GroupTemplate } from '../templates/group';
+import { LoadingScreen } from '../components/assets';
 
 const Members: React.FC = () => {
   const { path } = useRouteMatch();
@@ -52,7 +53,7 @@ const Members: React.FC = () => {
           </GroupTemplate>
         </Route>
         <Route path={`${path}:memberId`}>
-          <Suspense fallback={null}>
+          <Suspense fallback={<LoadingScreen />}>
             <UserActivity />
           </Suspense>
         </Route>

@@ -17,6 +17,7 @@ import { GroupContext } from '../contexts/group';
 import { QueryDocumentSnapshot } from 'firebase/firestore';
 import { Member } from '../utils/member';
 import { useUniversalColors } from '../hooks/color-mode';
+import { LoadingScreen } from './assets';
 
 const Front: React.FC = () => {
   const [detectedMember, setDetectedMember] =
@@ -66,7 +67,7 @@ const Front: React.FC = () => {
               </Skeleton>
             ) : (
               <Box h="90vh">
-                <Suspense fallback={<Spinner />}>
+                <Suspense fallback={<LoadingScreen />}>
                   <QRCodeScan onDetect={(e) => setDetectedMember(e)} />
                 </Suspense>
               </Box>

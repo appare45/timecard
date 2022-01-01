@@ -5,7 +5,6 @@ import {
   HStack,
   Icon,
   IconButton,
-  Spinner,
   Text,
   useColorMode,
   VStack,
@@ -21,6 +20,7 @@ import Logout from './logout';
 import { DocumentReference } from '@firebase/firestore';
 import { Group } from '../utils/group';
 import { useUniversalColors } from '../hooks/color-mode';
+import { LoadingScreen } from './assets';
 
 const UserDataDisplay: React.FC<{ authData: User }> = ({ authData }) => {
   const [openInfo, setOpenInfo] = useState(false);
@@ -136,7 +136,7 @@ export default function UserUI(): JSX.Element {
         account: accountStatus ?? null,
       }}
     >
-      <Suspense fallback={<Spinner />}>
+      <Suspense fallback={<LoadingScreen />}>
         {/* 未ログイン時 */}
         {loginStatus === false && (
           <Login

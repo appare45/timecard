@@ -6,7 +6,6 @@ import {
   FormHelperText,
   FormLabel,
   HStack,
-  Skeleton,
   Text,
   Textarea,
   useToast,
@@ -27,6 +26,7 @@ import { useMemo } from 'react';
 import { DocumentSnapshot } from 'firebase/firestore';
 import { millisToText } from '../utils/time';
 import { Member } from '../utils/member';
+import { LoadingScreen } from './assets';
 
 export const ActivityStatus: React.FC<{
   workStatus: workStatus;
@@ -65,7 +65,7 @@ const ActivityMemo: React.FC<{
   const RenderedMemo = useMemo(() => {
     const ReactMarkdown = React.lazy(() => import('./activity-memo'));
     return (
-      <Suspense fallback={<Skeleton />}>
+      <Suspense fallback={<LoadingScreen />}>
         {draftText.length ? (
           <ReactMarkdown draftText={draftText} />
         ) : (
