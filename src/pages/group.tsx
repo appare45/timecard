@@ -295,8 +295,7 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
                                 <ScanButton
                                   setFrontMode={() => {
                                     setFrontMode(true);
-                                    if (document.fullscreenEnabled)
-                                      document.body.requestFullscreen();
+                                    document.body.requestFullscreen();
                                   }}
                                 />
                               )}

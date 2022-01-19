@@ -164,7 +164,7 @@ export const CopyButton = ({
 
 export const LoadingScreen = (): JSX.Element => {
   return (
-    <Center w="full" h="full">
+    <Center w="full" h="full" p="10">
       <Spinner />
     </Center>
   );

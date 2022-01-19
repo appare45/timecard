@@ -85,12 +85,11 @@ export default function UserUI(): JSX.Element {
   const [accountEnabled, updateAccountEnablement] = useState<boolean | null>(
     null
   );
-  const Auth = getAuth(app);
+  const Auth = useMemo(() => getAuth(app), []);
   const [joinedGroups, updateJoinedGroups] = useState<
     DocumentReference<Group>[]
   >([]);
   const [authData, setAuthData] = useState<User>();
-  const [defaultName, setDefaultName] = useState<string | null>(null);
   const [accountStatus, updateAccountStatus] = useState<User>();
 
   useMemo(() => {
@@ -98,27 +97,32 @@ export default function UserUI(): JSX.Element {
       if (updateLoginStatus) {
         updateLoginStatus(account === null ? false : true);
       }
-      if (account) {
-        setAuthData(account);
-        getUser(account.uid)
+      setAuthData(account ?? undefined);
+    });
+    return unregisterAuthObserver;
+  }, [Auth]);
+
+  useMemo(() => {
+    if (authData) {
+      {
+        getUser(authData.uid)
           .then((user) => {
             if (user) {
               updateAccountEnablement(true);
               updateJoinedGroups(user.group ?? []);
-              updateAccountStatus(account);
-              setUser({ name: user.name }, account.uid, { merge: true });
+              updateAccountStatus(authData);
+              setUser({ name: user.name }, authData.uid, { merge: true });
             } else {
               updateAccountEnablement(false);
-              setDefaultName(account.displayName);
             }
           })
           .catch((e) => {
             console.error(e);
           });
       }
-    });
-    return unregisterAuthObserver;
-  }, [Auth]);
+    }
+  }, [authData]);
+
   const Login = React.lazy(() => import('./login'));
   const NewAccount = React.lazy(() => import('./new_account'));
   const GroupUI = React.lazy(() => import('../pages/group'));
@@ -146,7 +150,7 @@ export default function UserUI(): JSX.Element {
         )}
         {/* ログイン後アカウント未登録時 */}
         {accountEnabled === false && authData && (
-          <NewAccount name={defaultName} id={authData.uid} />
+          <NewAccount id={authData.uid} />
         )}
         {/* ログイン・アカウント登録済 */}
         {loginStatus === true && authData && accountEnabled && (

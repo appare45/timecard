@@ -24,6 +24,7 @@ function App(): JSX.Element {
         description: `Build: ${import.meta.env.MODE}`,
       });
   }, []);
+
   return (
     <ChakraProvider theme={theme}>
       <BrowserRouter>

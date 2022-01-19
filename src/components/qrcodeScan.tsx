@@ -6,12 +6,14 @@ import {
   AspectRatio,
   Box,
   Button,
+  ButtonGroup,
   Circle,
   Spinner,
 } from '@chakra-ui/react';
 import { dataWithId } from '../utils/firebase';
 import { IoCamera } from 'react-icons/io5';
 import { Member } from '../utils/member';
+import { FullScreenSwitch } from './fullscreen';
 
 const getUserCamera = (facingMode?: VideoFacingModeEnum) =>
   new Promise<MediaStream>((resolve, reject) => {
@@ -62,59 +64,62 @@ const QRCodeScan = React.memo(
     const Canvas = React.lazy(() => import('./qr-scan-canvas'));
 
     return (
-      <Box pos="relative">
-        {mediaStream && mediaStream?.active && videoRef.current ? (
-          <Suspense fallback={<Spinner />}>
-            <Canvas
-              stream={mediaStream}
-              videoElement={videoRef.current}
-              onDetect={(e) => props.onDetect(e)}
-            />
-          </Suspense>
-        ) : (
-          <Circle />
-        )}
-        <AspectRatio
-          maxH="100vh"
-          h="full"
-          ratio={1}
-          borderRadius="lg"
-          bg="gray.400"
-          overflow="hidden"
-        >
-          <video
-            playsInline
-            muted
-            autoPlay
-            ref={videoRef}
-            controlsList="nodownload nofullscreen noremoteplayback"
-            disablePictureInPicture
-            disableRemotePlayback
-            style={{ objectFit: 'cover' }}
-          />
-        </AspectRatio>
-
-        {error && (
+      <>
+        {error ? (
           <Alert status="error">
             <AlertIcon />
             <AlertDescription>カメラにアクセスできません</AlertDescription>
           </Alert>
+        ) : (
+          <Box pos="relative">
+            {mediaStream && mediaStream?.active && videoRef.current ? (
+              <Suspense fallback={<Spinner />}>
+                <Canvas
+                  stream={mediaStream}
+                  videoElement={videoRef.current}
+                  onDetect={(e) => props.onDetect(e)}
+                />
+              </Suspense>
+            ) : (
+              <Circle />
+            )}
+            <AspectRatio
+              maxH="100vh"
+              h="full"
+              ratio={1}
+              borderRadius="lg"
+              bg="gray.400"
+              overflow="hidden"
+            >
+              <video
+                playsInline
+                muted
+                autoPlay
+                ref={videoRef}
+                controlsList="nodownload nofullscreen noremoteplayback"
+                disablePictureInPicture
+                disableRemotePlayback
+                style={{ objectFit: 'cover' }}
+              />
+            </AspectRatio>
+
+            <ButtonGroup pos="absolute" top="5" left="5">
+              <Button
+                leftIcon={<IoCamera />}
+                onClick={() => {
+                  mediaStream?.getTracks().forEach((element) => {
+                    element.stop();
+                  });
+                  setFacingMode(facingMode == 'user' ? 'environment' : 'user');
+                }}
+              >
+                カメラ切り替え
+              </Button>
+              <FullScreenSwitch />
+            </ButtonGroup>
+          </Box>
         )}
-        <Button
-          pos="absolute"
-          top="5"
-          left="5"
-          leftIcon={<IoCamera />}
-          onClick={() => {
-            mediaStream?.getTracks().forEach((element) => {
-              element.stop();
-            });
-            setFacingMode(facingMode == 'user' ? 'environment' : 'user');
-          }}
-        >
-          カメラ切り替え
-        </Button>
-      </Box>
+      </>
     );
   }
 );

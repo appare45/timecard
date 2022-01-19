@@ -12,18 +12,16 @@ import { AuthContext } from '../contexts/user';
 import { setUser } from '../utils/user';
 
 type Props = {
-  name: string | null;
   id: string;
 };
 
-const NewAccount: React.FC<Props> = ({ name, id }) => {
+const NewAccount: React.FC<Props> = ({ id }) => {
   const localAuthContext = useContext(AuthContext);
   const [input, updateInput] = useState<string>('');
+  const { account } = useContext(AuthContext);
   useEffect(() => {
-    if (name) {
-      updateInput(name);
-    }
-  }, [name]);
+    updateInput(account?.displayName ?? '');
+  }, [account?.displayName]);
   const [isSubmitting, setIsSubmitting] = useBoolean(false);
   async function applyUserName(setName: string, id: string): Promise<void> {
     if (!(setName.length > 0)) {
@@ -60,7 +58,6 @@ const NewAccount: React.FC<Props> = ({ name, id }) => {
         >
           <FormLabel>名前</FormLabel>
           <Input
-            defaultValue={name ?? ''}
             autoFocus
             onChange={(e) => {
               updateInput(e.target.value);

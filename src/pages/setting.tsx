@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useState } from 'react';
+import React, { Suspense, useContext, useMemo, useState } from 'react';
 import {
   Box,
   Heading,
@@ -15,7 +15,7 @@ import { GroupContext } from '../contexts/group';
 import { getMember, Member, setMember } from '../utils/member';
 import { DocumentSnapshot } from '@firebase/firestore';
 import { AuthContext } from '../contexts/user';
-import { FormButtons, MemberAvatar } from '../components/assets';
+import { FormButtons, LoadingScreen, MemberAvatar } from '../components/assets';
 import { GroupTemplate } from '../templates/group';
 
 const PersonalSetting: React.FC = () => {
@@ -145,7 +145,9 @@ const Setting: React.FC = () => {
     <GroupTemplate title="設定">
       <Stack spacing="5" py="3">
         <PersonalSetting />
-        {isAdmin && <AdminSetting />}
+        <Suspense fallback={<LoadingScreen />}>
+          {isAdmin && <AdminSetting />}
+        </Suspense>
       </Stack>
     </GroupTemplate>
   );

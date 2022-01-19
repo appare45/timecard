@@ -48,7 +48,9 @@ const Members: React.FC = () => {
             }
           >
             <RecoilRoot>
-              <MembersList />
+              <Suspense fallback={<LoadingScreen />}>
+                <MembersList />
+              </Suspense>
             </RecoilRoot>
           </GroupTemplate>
         </Route>

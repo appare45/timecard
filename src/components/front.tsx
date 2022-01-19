@@ -7,7 +7,6 @@ import {
   HStack,
   Skeleton,
   Spacer,
-  Spinner,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { dataWithId } from '../utils/firebase';
