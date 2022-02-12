@@ -5,6 +5,7 @@ import {
   initializeFirestore,
 } from '@firebase/firestore';
 import { initializeApp } from 'firebase/app';
+import { connectFirestoreEmulator } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: `${import.meta.env.VITE_FIREBASE_API_KEY}`,
@@ -26,14 +27,21 @@ export type dataWithId<T> = {
 };
 
 let hasInitialized = false;
+let isConnectedToEmulator = false;
 
 export const Db = (): Firestore => {
   if (hasInitialized) return getFirestore(app);
   else {
     hasInitialized = true;
-    return initializeFirestore(app, {
+    const Db = initializeFirestore(app, {
       cacheSizeBytes: CACHE_SIZE_UNLIMITED,
     });
+    if (isEmulator() && !isConnectedToEmulator) {
+      isConnectedToEmulator = true;
+      connectFirestoreEmulator(Db, '0.0.0.0', 8080);
+      console.info('Firestore has connected to emulator');
+    }
+    return Db;
   }
 };
 

@@ -8,7 +8,6 @@ export const auth = (): Auth => {
   // Connect emulator to auth
   // https://firebase.google.com/docs/emulator-suite/connect_auth
   if (isEmulator() && !isConnectedToEmulator) {
-    console.info('connected to emulator');
     connectAuthEmulator(auth, 'http://0.0.0.0:9099');
     isConnectedToEmulator = true;
   }
