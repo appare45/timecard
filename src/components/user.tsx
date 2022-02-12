@@ -10,17 +10,17 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import React, { Suspense, useState } from 'react';
-import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
 import { useMemo } from 'react';
 import { IoChevronBack, IoChevronForward, IoMoon } from 'react-icons/io5';
 import { AuthContext } from '../contexts/user';
-import { app } from '../utils/firebase';
 import { getUser, setUser } from '../utils/user';
 import Logout from './logout';
 import { DocumentReference } from '@firebase/firestore';
 import { Group } from '../utils/group';
 import { useUniversalColors } from '../hooks/color-mode';
 import { LoadingScreen } from './assets';
+import { auth } from '../utils/auth';
 
 const UserDataDisplay: React.FC<{ authData: User }> = ({ authData }) => {
   const [openInfo, setOpenInfo] = useState(false);
@@ -85,7 +85,7 @@ export default function UserUI(): JSX.Element {
   const [accountEnabled, updateAccountEnablement] = useState<boolean | null>(
     null
   );
-  const Auth = useMemo(() => getAuth(app), []);
+  const Auth = useMemo(() => auth(), []);
   const [joinedGroups, updateJoinedGroups] = useState<
     DocumentReference<Group>[]
   >([]);

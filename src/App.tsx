@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { LoadingScreen } from './components/assets';
 import Offline from './pages/offline';
 import theme from './theme';
-import { Db } from './utils/firebase';
+import { Db, isEmulator } from './utils/firebase';
 import { observeFps } from './utils/fps-observe';
 
 function App(): JSX.Element {
@@ -19,9 +19,11 @@ function App(): JSX.Element {
       .catch((error) => {
         console.error(error);
       });
-    if (import.meta.env.DEV || import.meta.env.VITE_PREVIEW)
+    if (import.meta.env.DEV || import.meta.env.VITE_PREVIEW || isEmulator())
       observeFps({
-        description: `Build: ${import.meta.env.MODE}`,
+        description: `Build: ${import.meta.env.MODE} - ${
+          isEmulator() ? 'emulator' : 'local'
+        }`,
       });
   }, []);
 

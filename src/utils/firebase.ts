@@ -37,4 +37,6 @@ export const Db = (): Firestore => {
   }
 };
 
+export const isEmulator = (): boolean => window.location.hostname == '0.0.0.0';
+
 export { app };
