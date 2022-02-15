@@ -1597,7 +1597,7 @@
     "@firebase/util" "1.4.1"
     tslib "^2.1.0"
 
-"@firebase/rules-unit-testing@^2":
+"@firebase/rules-unit-testing@^2.0.2":
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@firebase/rules-unit-testing/-/rules-unit-testing-2.0.2.tgz#8fdd794977e67638acd39230af18ba604e4d9d77"
   integrity sha512-odW2Znq5BjWC0QdNLfUbQEI2IxwFX6mgVwFB/vpfs8MUd44ohCHLif8veASKjhrIf0uVIs9vjfOsHb5ONlC76g==
