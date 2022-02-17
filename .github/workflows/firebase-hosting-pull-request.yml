@@ -15,6 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.actor == 'dependabot[bot]' }}
     steps:
+        - name: Create comment
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          body: |
+            @dependabot merge
       - uses: actions/checkout
   build:
     runs-on: ubuntu-latest
