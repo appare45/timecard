@@ -1,12 +1,17 @@
 import {
   initializeTestEnvironment,
+  RulesTestContext,
   RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
 import { readFileSync } from 'fs';
+import { data } from './random-data';
 
 // test environment
 export let testEnv: RulesTestEnvironment;
-beforeAll(async () => {
+export let unAuthorizedEnvironment: RulesTestContext;
+export let authorizedEnvironments: RulesTestContext[];
+
+beforeEach(async () => {
   // テスト環境の初期化
   testEnv = await initializeTestEnvironment({
     projectId: 'demo-clubroom-testing',
@@ -14,6 +19,12 @@ beforeAll(async () => {
       rules: readFileSync('firestore.rules', 'utf-8'),
     },
   });
+  unAuthorizedEnvironment = testEnv.unauthenticatedContext();
+  authorizedEnvironments = data.map((e) =>
+    testEnv.authenticatedContext(e.name, {
+      email: e.email,
+    })
+  );
 });
 
 afterEach(() => {
