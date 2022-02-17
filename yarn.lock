@@ -2032,28 +2032,7 @@
     "@types/yargs" "^15.0.0"
     chalk "^4.0.0"
 
-"@jest/types@^27.0.6":
-  version "27.0.6"
-  resolved "https://registry.npmjs.org/@jest/types/-/types-27.0.6.tgz"
-  dependencies:
-    "@types/istanbul-lib-coverage" "^2.0.0"
-    "@types/istanbul-reports" "^3.0.0"
-    "@types/node" "*"
-    "@types/yargs" "^16.0.0"
-    chalk "^4.0.0"
-
-"@jest/types@^27.2.5":
-  version "27.2.5"
-  resolved "https://registry.npmjs.org/@jest/types/-/types-27.2.5.tgz"
-  integrity sha512-nmuM4VuDtCZcY+eTpw+0nvstwReMsjPoj7ZR80/BbixulhLaiX+fbv8oeLW8WZlJMcsGQsTmMKT/iTZu1Uy/lQ==
-  dependencies:
-    "@types/istanbul-lib-coverage" "^2.0.0"
-    "@types/istanbul-reports" "^3.0.0"
-    "@types/node" "*"
-    "@types/yargs" "^16.0.0"
-    chalk "^4.0.0"
-
-"@jest/types@^27.5.1":
+"@jest/types@^27.0.6", "@jest/types@^27.5.1":
   version "27.5.1"
   resolved "https://registry.yarnpkg.com/@jest/types/-/types-27.5.1.tgz#3c79ec4a8ba61c170bf937bcf9e98a9df175ec80"
   integrity sha512-Cx46iJ9QpwQTjIdq5VJu2QTMMs3QlEjI0x1QbBP5W1+nMzyc2XmimiRR/CbX9TO0cPTeUlxWMOu8mslYsJ8DEw==
@@ -4479,11 +4458,7 @@ google-p12-pem@^3.0.3:
   dependencies:
     node-forge "^0.10.0"
 
-graceful-fs@^4.1.2:
-  version "4.2.8"
-  resolved "https://registry.npmjs.org/graceful-fs/-/graceful-fs-4.2.8.tgz"
-
-graceful-fs@^4.2.4, graceful-fs@^4.2.9:
+graceful-fs@^4.1.2, graceful-fs@^4.2.4, graceful-fs@^4.2.9:
   version "4.2.9"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.9.tgz#041b05df45755e587a24942279b9d113146e1c96"
   integrity sha512-NtNxqUcXgpW2iMrfqSfR73Glt39K+BLwWsPs94yR63v45T0Wbej7eRmL5cWfwEgqXnmjQp3zaJTshdRW/qC2ZQ==
@@ -5532,17 +5507,20 @@ jest-resolve-dependencies@^27.5.1:
     jest-regex-util "^27.5.1"
     jest-snapshot "^27.5.1"
 
-jest-resolve@26.6.0:
-  version "26.6.0"
-  resolved "https://registry.npmjs.org/jest-resolve/-/jest-resolve-26.6.0.tgz"
+jest-resolve@27.5.1, jest-resolve@^27.5.1:
+  version "27.5.1"
+  resolved "https://registry.yarnpkg.com/jest-resolve/-/jest-resolve-27.5.1.tgz#a2f1c5a0796ec18fe9eb1536ac3814c23617b384"
+  integrity sha512-FFDy8/9E6CV83IMbDpcjOhumAQPDyETnU2KZ1O98DwTnz8AOBsW/Xv3GySr1mOZdItLR+zDZ7I/UdTFbgSOVCw==
   dependencies:
-    "@jest/types" "^26.6.0"
+    "@jest/types" "^27.5.1"
     chalk "^4.0.0"
-    graceful-fs "^4.2.4"
+    graceful-fs "^4.2.9"
+    jest-haste-map "^27.5.1"
     jest-pnp-resolver "^1.2.2"
-    jest-util "^26.6.0"
-    read-pkg-up "^7.0.1"
-    resolve "^1.17.0"
+    jest-util "^27.5.1"
+    jest-validate "^27.5.1"
+    resolve "^1.20.0"
+    resolve.exports "^1.1.0"
     slash "^3.0.0"
 
 jest-resolve@^26.6.2:
@@ -5557,22 +5535,6 @@ jest-resolve@^26.6.2:
     jest-util "^26.6.2"
     read-pkg-up "^7.0.1"
     resolve "^1.18.1"
-    slash "^3.0.0"
-
-jest-resolve@^27.5.1:
-  version "27.5.1"
-  resolved "https://registry.yarnpkg.com/jest-resolve/-/jest-resolve-27.5.1.tgz#a2f1c5a0796ec18fe9eb1536ac3814c23617b384"
-  integrity sha512-FFDy8/9E6CV83IMbDpcjOhumAQPDyETnU2KZ1O98DwTnz8AOBsW/Xv3GySr1mOZdItLR+zDZ7I/UdTFbgSOVCw==
-  dependencies:
-    "@jest/types" "^27.5.1"
-    chalk "^4.0.0"
-    graceful-fs "^4.2.9"
-    jest-haste-map "^27.5.1"
-    jest-pnp-resolver "^1.2.2"
-    jest-util "^27.5.1"
-    jest-validate "^27.5.1"
-    resolve "^1.20.0"
-    resolve.exports "^1.1.0"
     slash "^3.0.0"
 
 jest-runner@^26.6.0, jest-runner@^26.6.3:
@@ -5763,19 +5725,7 @@ jest-util@^26.6.0, jest-util@^26.6.2:
     is-ci "^2.0.0"
     micromatch "^4.0.2"
 
-jest-util@^27.0.0:
-  version "27.3.1"
-  resolved "https://registry.npmjs.org/jest-util/-/jest-util-27.3.1.tgz"
-  integrity sha512-8fg+ifEH3GDryLQf/eKZck1DEs2YuVPBCMOaHQxVVLmQwl/CDhWzrvChTX4efLZxGrw+AA0mSXv78cyytBt/uw==
-  dependencies:
-    "@jest/types" "^27.2.5"
-    "@types/node" "*"
-    chalk "^4.0.0"
-    ci-info "^3.2.0"
-    graceful-fs "^4.2.4"
-    picomatch "^2.2.3"
-
-jest-util@^27.5.1:
+jest-util@^27.0.0, jest-util@^27.5.1:
   version "27.5.1"
   resolved "https://registry.yarnpkg.com/jest-util/-/jest-util-27.5.1.tgz#3ba9771e8e31a0b85da48fe0b0891fb86c01c2f9"
   integrity sha512-Kv2o/8jNvX1MQ0KGtw480E/w4fBCDOnH6+6DmeKi6LZUIlKA5kwY0YNdlzaWTiVgxqAqik11QyxDOKk543aKXw==
@@ -7477,7 +7427,7 @@ resolve.exports@^1.1.0:
   resolved "https://registry.yarnpkg.com/resolve.exports/-/resolve.exports-1.1.0.tgz#5ce842b94b05146c0e03076985d1d0e7e48c90c9"
   integrity sha512-J1l+Zxxp4XK3LUDZ9m60LRJF/mAe4z6a4xyabPHk7pvK5t35dACV32iIjJDFeWZFfZlO29w6SZ67knR0tHzJtQ==
 
-resolve@^1.10.0, resolve@^1.18.1:
+resolve@^1.10.0, resolve@^1.12.0, resolve@^1.18.1, resolve@^1.20.0:
   version "1.22.0"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.22.0.tgz#5e0b8c67c15df57a89bdbabe603a002f21731198"
   integrity sha512-Hhtrw0nLeSrFQ7phPp4OOcVjLPIeMnRlr5mcnVuMe7M/7eBn98A3hmFRLoFo3DLZkivSYwhRUJTyPyWAk56WLw==
@@ -7485,13 +7435,6 @@ resolve@^1.10.0, resolve@^1.18.1:
     is-core-module "^2.8.1"
     path-parse "^1.0.7"
     supports-preserve-symlinks-flag "^1.0.0"
-
-resolve@^1.12.0, resolve@^1.17.0, resolve@^1.20.0:
-  version "1.20.0"
-  resolved "https://registry.npmjs.org/resolve/-/resolve-1.20.0.tgz"
-  dependencies:
-    is-core-module "^2.2.0"
-    path-parse "^1.0.6"
 
 resolve@^2.0.0-next.3:
   version "2.0.0-next.3"
