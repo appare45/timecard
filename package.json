@@ -24,7 +24,7 @@
     "remark-linkify-regex": "^1.0.0",
     "remark-math": "^5.1.0",
     "typescript": "4.4.4",
-    "vite": "^2.6.13"
+    "vite": "^2.8.3"
   },
   "scripts": {
     "dev": "vite",
