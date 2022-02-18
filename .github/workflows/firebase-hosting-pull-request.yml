@@ -21,7 +21,7 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             @dependabot squash and merge
-      - uses: actions/checkout
+      - uses: actions/checkout@v2
   build:
     runs-on: ubuntu-latest
     steps:
