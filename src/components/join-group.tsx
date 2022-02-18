@@ -38,7 +38,7 @@ const JoinGroup: React.FC = () => {
     <Box>
       {invitedGroup.length ? (
         <VStack spacing="4" w="full">
-          <Text>次のグループから招待が来ています</Text>
+          <Text>招待が届いています</Text>
           <Box>
             <Stack spacing="2" w="full" divider={<Divider />}>
               {invitedGroup.map((group) => (

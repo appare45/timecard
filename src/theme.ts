@@ -1,11 +1,20 @@
 import { extendTheme } from '@chakra-ui/react';
-import { ThemeConfig } from '@chakra-ui/theme';
 
-const config: ThemeConfig = {
+const theme = extendTheme({
+  components: {
+    Button: {
+      defaultProps: {
+        colorScheme: 'green',
+      },
+    },
+    Input: {
+      defaultProps: {
+        colorScheme: 'green',
+      },
+    },
+  },
   initialColorMode: 'light',
   useSystemColorMode: false,
-};
-
-const theme = extendTheme({ config });
+});
 
 export default theme;

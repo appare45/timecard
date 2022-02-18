@@ -89,7 +89,7 @@ const CreateGroup: React.FC = () => {
         <FormHelperText>
           グループ名は1文字以上20文字以内で入力してください
         </FormHelperText>
-        <Button type="submit" isLoading={isSubmitting} colorScheme="teal">
+        <Button type="submit" isLoading={isSubmitting} w="full">
           作成
         </Button>
       </form>
