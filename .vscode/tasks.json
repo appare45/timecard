@@ -6,10 +6,7 @@
       "script": "start",
       "label": "npm: start",
       "detail": "react-scripts start",
-      "group": {
-        "kind": "test",
-        "isDefault": true
-      },
+      "group": "test",
       "isBackground": true,
       "problemMatcher": {
         "owner": "custom",
@@ -35,12 +32,19 @@
       "type": "npm",
       "script": "test",
       "group": {
-        "kind": "build",
+        "kind": "test",
         "isDefault": true
       },
       "problemMatcher": [],
       "label": "npm: test",
       "detail": "jest"
+    },
+    {
+      "type": "npm",
+      "script": "dev",
+      "problemMatcher": [],
+      "label": "npm: dev",
+      "detail": "vite"
     }
   ]
 }

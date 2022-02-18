@@ -2,21 +2,19 @@ import React from 'react';
 import { Box, Button, Center, Heading, Image } from '@chakra-ui/react';
 import { IoLogoGoogle } from 'react-icons/io5';
 import {
-  getAuth,
   GoogleAuthProvider,
   signInWithRedirect,
   useDeviceLanguage,
 } from 'firebase/auth';
-import { app } from '../utils/firebase';
 import { useUniversalColors } from '../hooks/color-mode';
+import { auth } from '../utils/auth';
 
 const FirebaseAuth: React.FC<{ redirectUri: string; isLoading: boolean }> = ({
   redirectUri,
   isLoading,
 }) => {
-  const auth = getAuth(app);
   const provider = new GoogleAuthProvider();
-  useDeviceLanguage(auth);
+  useDeviceLanguage(auth());
   provider.setCustomParameters({
     redirect_uri: redirectUri,
   });
@@ -25,7 +23,7 @@ const FirebaseAuth: React.FC<{ redirectUri: string; isLoading: boolean }> = ({
       leftIcon={<IoLogoGoogle />}
       variant="outline"
       isLoading={isLoading}
-      onClick={() => signInWithRedirect(auth, provider)}
+      onClick={() => signInWithRedirect(auth(), provider)}
     >
       Googleアカウントでログイン
     </Button>

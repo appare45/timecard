@@ -38,6 +38,13 @@ import { relativeTimeText } from '../utils/time';
 import { ActivityStatus } from './activity';
 import { MemberAvatar } from './assets';
 import { Member, getMember } from '../utils/member';
+
+const universalColors = {
+  background: 'gray.100',
+  border: 'gray.200',
+  color: 'gray.600',
+};
+
 const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
   activityId,
   isEditable,
@@ -277,11 +284,9 @@ const ActivityCard: React.FC<{
     } else return null;
   };
 
-  const universalColors = {
-    background: useColorModeValue('gray.100', 'gray.900'),
-    border: useColorModeValue('gray.200', 'gray.800'),
-    color: useColorModeValue('gray.600', 'gray.400'),
-  };
+  universalColors.background = useColorModeValue('gray.100', 'gray.900');
+  universalColors.border = useColorModeValue('gray.200', 'gray.800');
+  universalColors.color = useColorModeValue('gray.600', 'gray.400');
 
   return useMemo(
     () => (
@@ -371,7 +376,7 @@ const ActivityCard: React.FC<{
         )}
       </Box>
     ),
-    [activityData, activitySnapshot, editable, memberInfo, universalColors]
+    [activityData, activitySnapshot, editable, memberInfo]
   );
 };
 export default ActivityCard;

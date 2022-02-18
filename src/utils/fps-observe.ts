@@ -6,7 +6,7 @@ export const observeFps = (props: props): void => {
   const fpsDisplay = document.createElement('div');
   fpsDisplay.setAttribute(
     'style',
-    'color: #e53e3e;z-index: 1000000000000000;position: fixed;bottom: 10px;left: 10px;padding: 5px;font-family: monospace;font-size: 0.8em;font-weight:bold'
+    'color: #e53e3e;z-index: 1000000000000000;position: fixed;bottom: 25px;left: 10px;padding: 5px;font-family: monospace;font-size: 0.8em;font-weight:bold'
   );
   window.document.body.appendChild(fpsDisplay);
   let fps = 0;

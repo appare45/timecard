@@ -1,9 +1,8 @@
-import { Button } from '@chakra-ui/react';
-import { getAuth } from '@firebase/auth';
 import React, { useContext } from 'react';
+import { Button } from '@chakra-ui/react';
 import { AuthContext } from '../contexts/user';
-import { app } from '../utils/firebase';
-const Auth = getAuth(app);
+import { auth } from '../utils/auth';
+
 export default function Logout(props: {
   onSignOut?: () => void;
   onError?: (e: unknown) => void;
@@ -14,7 +13,8 @@ export default function Logout(props: {
       colorScheme="red"
       variant="link"
       onClick={() => {
-        Auth.signOut()
+        auth()
+          .signOut()
           .then(() => {
             if (props.onSignOut) {
               props.onSignOut();
