@@ -86,7 +86,7 @@ export const FormButtons: React.FC<{
   saveAvailable = true,
   isDisable = false,
 }) => (
-  <ButtonGroup colorScheme="green">
+  <ButtonGroup>
     {editMode ? (
       <>
         <Button isDisabled={!saveAvailable} onClick={onSave}>
@@ -97,12 +97,7 @@ export const FormButtons: React.FC<{
         </Button>
       </>
     ) : (
-      <Button
-        colorScheme="green"
-        variant="outline"
-        onClick={setEditable}
-        isDisabled={isDisable}
-      >
+      <Button variant="outline" onClick={setEditable} isDisabled={isDisable}>
         編集
       </Button>
     )}

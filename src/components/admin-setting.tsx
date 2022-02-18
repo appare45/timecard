@@ -180,7 +180,6 @@ const CreateTag = () => {
           )}
           <ButtonGroup>
             <Button
-              colorScheme="green"
               disabled={tagName.length == 0 && tagName.length < 20}
               onClick={() => {
                 if (currentGroup && tagName.length > 0)
@@ -212,7 +211,6 @@ const CreateTag = () => {
         <Button
           leftIcon={<IoAdd />}
           variant="outline"
-          colorScheme="green"
           size="sm"
           onClick={setCreateMode.on}
         >
@@ -373,19 +371,12 @@ const InviteElement = () => {
             </FormControl>
             <Checkbox
               checked={isAdmin}
-              colorScheme="green"
               onChange={(e) => setIsAdmin(e.target.checked)}
             >
               管理者として招待
             </Checkbox>
           </Box>
-          <Button
-            colorScheme="green"
-            variant="outline"
-            type="submit"
-            mt="2"
-            size="sm"
-          >
+          <Button variant="outline" type="submit" mt="2" size="sm">
             作成
           </Button>
         </form>
