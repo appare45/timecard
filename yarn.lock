@@ -2346,9 +2346,10 @@
   dependencies:
     "@types/unist" "*"
 
-"@types/history@*":
-  version "4.7.9"
-  resolved "https://registry.npmjs.org/@types/history/-/history-4.7.9.tgz"
+"@types/history@*", "@types/history@^4.7.11":
+  version "4.7.11"
+  resolved "https://registry.yarnpkg.com/@types/history/-/history-4.7.11.tgz#56588b17ae8f50c53983a524fc3cc47437969d64"
+  integrity sha512-qjDJRrmvBMiTx+jyLxvLfJU7UznFuokDv4f3WRuriHKERccVpFU+8XMQUAbDzoiJCsmexxRExQeMwwCdamSKDA==
 
 "@types/istanbul-lib-coverage@*", "@types/istanbul-lib-coverage@^2.0.0", "@types/istanbul-lib-coverage@^2.0.1":
   version "2.0.4"
@@ -2468,12 +2469,12 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react-router-dom@^5.3.2":
-  version "5.3.2"
-  resolved "https://registry.npmjs.org/@types/react-router-dom/-/react-router-dom-5.3.2.tgz"
-  integrity sha512-ELEYRUie2czuJzaZ5+ziIp9Hhw+juEw8b7C11YNA4QdLCVbQ3qLi2l4aq8XnlqM7V31LZX8dxUuFUCrzHm6sqQ==
+"@types/react-router-dom@^5.3.3":
+  version "5.3.3"
+  resolved "https://registry.yarnpkg.com/@types/react-router-dom/-/react-router-dom-5.3.3.tgz#e9d6b4a66fcdbd651a5f106c2656a30088cc1e83"
+  integrity sha512-kpqnYK4wcdm5UaWI3fLcELopqLrHgLqNsdpHauzlQktfkHL3npOSwtj1Uz9oKBAzs7lFtVkV8j83voAz2D8fhw==
   dependencies:
-    "@types/history" "*"
+    "@types/history" "^4.7.11"
     "@types/react" "*"
     "@types/react-router" "*"
 
@@ -7301,10 +7302,12 @@ remark-inline-links@^6.0.1:
     unified "^10.0.0"
     unist-util-visit "^4.0.0"
 
-remark-linkify-regex@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/remark-linkify-regex/-/remark-linkify-regex-1.0.0.tgz"
+remark-linkify-regex@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/remark-linkify-regex/-/remark-linkify-regex-1.2.0.tgz#2592489fff4900c42fd9ead5f4e5f3a62aa2871f"
+  integrity sha512-2ZFNY98uk1jJvS4Us6xe2nZG3PANTVwiRvKL7bxErkxx/SMmIU27bypXOsjRTjomk67OetoYPHd03Fe9gWhLNw==
   dependencies:
+    unicode-word-regex "^1.0.1"
     unist-util-flatmap "1.0.x"
     unist-util-visit-parents "2.0.x"
 
@@ -8166,6 +8169,11 @@ unbox-primitive@^1.0.1:
     has-bigints "^1.0.1"
     has-symbols "^1.0.2"
     which-boxed-primitive "^1.0.2"
+
+unicode-word-regex@^1.0.1:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/unicode-word-regex/-/unicode-word-regex-1.1.0.tgz#cdd6910e4e413606e704e139079bcab2b91040e3"
+  integrity sha512-2HlIXyag8yi0+AsB1Rx88gSuzw4hS/PgrcTbzkqIW/RBdi2VSp1rRr55RS+HszErwlSRAoA9jhM6L/x+xtu41w==
 
 unified@^10.0.0:
   version "10.1.0"
