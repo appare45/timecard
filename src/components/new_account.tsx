@@ -1,8 +1,10 @@
 import {
+  Box,
   Button,
   FormControl,
   FormLabel,
   Heading,
+  HStack,
   Input,
   useBoolean,
 } from '@chakra-ui/react';
@@ -47,7 +49,7 @@ const NewAccount: React.FC<Props> = ({ id }) => {
     }
   }
   return (
-    <>
+    <Box p="10">
       <Heading>アカウント登録</Heading>
       <FormControl>
         <form
@@ -57,18 +59,20 @@ const NewAccount: React.FC<Props> = ({ id }) => {
           }}
         >
           <FormLabel>名前</FormLabel>
-          <Input
-            autoFocus
-            onChange={(e) => {
-              updateInput(e.target.value);
-            }}
-          />
-          <Button type="submit" isLoading={isSubmitting}>
-            登録
-          </Button>
+          <HStack>
+            <Input
+              autoFocus
+              onChange={(e) => {
+                updateInput(e.target.value);
+              }}
+            />
+            <Button type="submit" isLoading={isSubmitting}>
+              登録
+            </Button>
+          </HStack>
         </form>
       </FormControl>
-    </>
+    </Box>
   );
 };
 
