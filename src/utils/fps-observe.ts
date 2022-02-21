@@ -2,13 +2,29 @@ interface props {
   description?: string;
 }
 
+let showing = false;
+
 export const observeFps = (props: props): void => {
   const fpsDisplay = document.createElement('div');
   fpsDisplay.setAttribute(
     'style',
-    'color: #e53e3e;z-index: 1000000000000000;position: fixed;bottom: 25px;left: 10px;padding: 5px;font-family: monospace;font-size: 0.8em;font-weight:bold'
+    'color: #fff;z-index: 1000000000000000;position: fixed;top: 15px;left: 10px;padding: 5px;font-family: monospace;font-size: 0.8em;font-weight:bold; background: #0000009f; max-width: 400px'
   );
   window.document.body.appendChild(fpsDisplay);
+  showing = true;
+
+  document.addEventListener('keydown', (e) => {
+    if (e.code == 'F3') {
+      if (showing) {
+        fpsDisplay.remove();
+        showing = false;
+      } else {
+        window.document.body.appendChild(fpsDisplay);
+        showing = true;
+      }
+    }
+  });
+
   let fps = 0;
 
   const fpsFunc = (): void => {
@@ -17,20 +33,16 @@ export const observeFps = (props: props): void => {
   };
 
   if (props?.description) {
-    const descriptionText = document.createElement('span');
+    const UATxt = document.createElement('p');
+    UATxt.innerText = `UA: ${navigator.userAgent}`;
+    fpsDisplay.appendChild(UATxt);
+
+    const descriptionText = document.createElement('p');
     descriptionText.innerText = props.description;
     fpsDisplay.appendChild(descriptionText);
   }
 
-  fpsDisplay.innerText += ' / ';
-
-  const UATxt = document.createElement('span');
-  UATxt.innerText = `UA: ${navigator.userAgent}`;
-  fpsDisplay.appendChild(UATxt);
-
-  fpsDisplay.innerText += ' / ';
-
-  const fpsText = document.createElement('span');
+  const fpsText = document.createElement('p');
   fpsDisplay.appendChild(fpsText);
 
   fpsFunc();
