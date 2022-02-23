@@ -1,5 +1,5 @@
 import { Auth, connectAuthEmulator, getAuth } from 'firebase/auth';
-import { app, isEmulator } from './firebase';
+import { app, isEmulator, logEvent } from './firebase';
 
 let isConnectedToEmulator = false;
 
@@ -11,5 +11,6 @@ export const auth = (): Auth => {
     connectAuthEmulator(auth, 'http://0.0.0.0:9099');
     isConnectedToEmulator = true;
   }
+  logEvent('login');
   return auth;
 };

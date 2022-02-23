@@ -5,6 +5,10 @@ import {
   initializeFirestore,
 } from '@firebase/firestore';
 import { initializeApp } from 'firebase/app';
+import {
+  getAnalytics,
+  logEvent as analytics_log_event,
+} from 'firebase/analytics';
 import { connectFirestoreEmulator } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -45,6 +49,18 @@ export const Db = (): Firestore => {
   }
 };
 
+export const analytics = getAnalytics();
+
 export const isEmulator = (): boolean => window.location.hostname == '0.0.0.0';
+
+export const isProduction =
+  import.meta.env.PROD && !import.meta.env.VITE_PREVIEW && !isEmulator();
+
+export const logEvent = (
+  event_name: string,
+  params?: { [key: string]: string | number }
+): void => {
+  if (isProduction) analytics_log_event(analytics, event_name, params);
+};
 
 export { app };
