@@ -9,7 +9,7 @@ import { connectFirestoreEmulator } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: `${import.meta.env.VITE_FIREBASE_API_KEY}`,
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.firebaseapp.com`,
+  authDomain: `clubroom.appare45.com`,
   databaseURL: `https://${
     import.meta.env.VITE_FIREBASE_PROJECT_ID
   }.firebaseio.com`,
