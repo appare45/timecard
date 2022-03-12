@@ -16,7 +16,7 @@ const CreateGroup: React.FC = () => {
   const [groupName, setGroupName] = useState('');
   const userContext = useContext(AuthContext);
   const [isSubmitting, setIsSubmitting] = useBoolean(false);
-  const submit = async (groupName: string) => {
+  const create_group = async (groupName: string) => {
     if (
       userContext.account?.uid &&
       userContext.account.displayName &&
@@ -71,7 +71,7 @@ const CreateGroup: React.FC = () => {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          submit(groupName);
+          create_group(groupName);
         }}
       >
         <FormLabel>グループ名</FormLabel>
