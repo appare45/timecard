@@ -403,7 +403,7 @@ const AccountList = () => {
       <Heading size="lg" pb="2">
         連携済みアカウント
       </Heading>
-      <Table divider={<Divider />} alignItems="flex-start">
+      <Table alignItems="flex-start">
         {accounts.map((account) => (
           <AccountItem account={account} key={account.id} />
         ))}
