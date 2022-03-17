@@ -1,4 +1,3 @@
-import { Button } from '@chakra-ui/button';
 import { VStack } from '@chakra-ui/layout';
 import {
   AlertDialog,
@@ -27,6 +26,7 @@ import { activity, work, getUserActivities } from '../utils/group';
 import { Member, getMember } from '../utils/member';
 import { LoadingScreen, LoadMoreButton } from '../components/assets';
 import { DisplayActivities } from '../components/display-activities';
+import { BasicButton, CancelButton } from '../components/buttons';
 
 function UserActivity(): JSX.Element {
   const [lastActivityDoc, setLastActivityDoc] = useState<
@@ -91,7 +91,9 @@ function UserActivity(): JSX.Element {
         return () => (subscription = false);
       });
   }, [currentGroup, memberId]);
+
   const Card = React.lazy(() => import('../components/createCard'));
+
   const Activities: React.FC<{
     data: QueryDocumentSnapshot<activity<work>>[];
   }> = ({ data }) =>
@@ -113,6 +115,7 @@ function UserActivity(): JSX.Element {
 
   const LoadMore: React.FC = () =>
     useMemo(() => <LoadMoreButton loadMore={loadMoreData} />, []);
+
   return (
     <>
       {user && (
@@ -122,18 +125,23 @@ function UserActivity(): JSX.Element {
           sideWidget={
             <>
               {(isAdmin || isOwnMember) && (
-                <Button leftIcon={<IoQrCode />} onClick={() => setDialog(true)}>
+                <BasicButton
+                  leftIcon={<IoQrCode />}
+                  onClick={() => setDialog(true)}
+                  variant="secondary"
+                >
                   QRコード表示
-                </Button>
+                </BasicButton>
               )}
               {isOwnMember && (
-                <Button
+                <BasicButton
                   leftIcon={<IoPersonCircleOutline />}
+                  variant="secondary"
                   as={Link}
                   to={`/setting`}
                 >
                   プロフィールを編集
-                </Button>
+                </BasicButton>
               )}
             </>
           }
@@ -165,13 +173,13 @@ function UserActivity(): JSX.Element {
                       />
                     </Suspense>
                   )}
-                  <Button
-                    ref={dialogCancel}
+                  <CancelButton
+                    variant="primary"
                     onClick={() => setDialog(false)}
                     mx="5"
                   >
                     閉じる
-                  </Button>
+                  </CancelButton>
                 </AlertDialogBody>
               </AlertDialogContent>
             </AlertDialog>

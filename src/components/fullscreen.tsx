@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Button } from '@chakra-ui/react';
 import { IoEasel } from 'react-icons/io5';
+import { BasicButton } from './buttons';
 
 export const FullScreenSwitch = (): JSX.Element => {
   const [isFullscreen, setIsFullscreen] = useState(
     !!document.fullscreenElement
   );
   return (
-    <Button
+    <BasicButton
+      variant="secondary"
       leftIcon={<IoEasel />}
       onClick={() => {
         if (isFullscreen) {
@@ -19,6 +20,6 @@ export const FullScreenSwitch = (): JSX.Element => {
       }}
     >
       フルスクリーン切り替え
-    </Button>
+    </BasicButton>
   );
 };

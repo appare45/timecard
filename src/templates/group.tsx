@@ -1,9 +1,8 @@
-import { Button } from '@chakra-ui/button';
 import { HStack, Heading, Spacer, Box } from '@chakra-ui/layout';
 import React, { ReactElement } from 'react';
-import { IoArrowBack } from 'react-icons/io5';
 import { useHistory } from 'react-router';
 import { SideWidget } from '../components/assets';
+import { BackButton } from './../components/buttons';
 
 export const GroupTemplate: React.FC<{
   title: string;
@@ -21,15 +20,7 @@ export const GroupTemplate: React.FC<{
   const history = useHistory();
   return (
     <>
-      {displayGoBackButton && history.length > 0 && (
-        <Button
-          leftIcon={<IoArrowBack />}
-          onClick={() => history.goBack()}
-          variant="link"
-        >
-          戻る
-        </Button>
-      )}
+      {displayGoBackButton && history.length > 0 && <BackButton />}
       <HStack w="full">
         <Heading>{title}</Heading>
         <Spacer />

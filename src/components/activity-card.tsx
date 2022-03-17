@@ -38,6 +38,7 @@ import { relativeTimeText } from '../utils/time';
 import { ActivityStatus } from './activity';
 import { MemberAvatar } from './assets';
 import { Member, getMember } from '../utils/member';
+import { CancelButton } from './buttons';
 
 const universalColors = {
   background: 'gray.100',
@@ -168,11 +169,10 @@ const ActivityStatusFull: React.FC<{
         ) : (
           <>
             {closeButton && activityData && (
-              <Button
+              <CancelButton
                 size="sm"
                 my="2"
-                colorScheme="red"
-                variant="outline"
+                variant="secondary"
                 onClick={() => {
                   const _activityData = activityData;
                   _activityData.content.endTime = Timestamp.now();
@@ -200,7 +200,7 @@ const ActivityStatusFull: React.FC<{
                 }}
               >
                 終了する
-              </Button>
+              </CancelButton>
             )}
           </>
         )}

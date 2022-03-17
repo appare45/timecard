@@ -2,7 +2,7 @@ import React, { ReactElement } from 'react';
 import { DocumentSnapshot } from '@firebase/firestore';
 import { useContext, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
-import { ActivityDetail } from '../components/activity';
+import { ActivityDetail } from './ActivityDetail';
 import { GroupContext } from '../contexts/group';
 import { GroupTemplate } from '../templates/group';
 import { activity, work, getActivitySnapshot } from '../utils/group';

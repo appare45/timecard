@@ -1,4 +1,4 @@
-import { Button, ButtonGroup } from '@chakra-ui/button';
+import { ButtonGroup } from '@chakra-ui/button';
 import { useBoolean } from '@chakra-ui/hooks';
 import { Input } from '@chakra-ui/input';
 import {
@@ -7,7 +7,6 @@ import {
   Text,
   HStack,
   Stack,
-  Divider,
   Circle,
   Code,
   Link,
@@ -58,6 +57,7 @@ import { getMember, listMembers, Member } from '../utils/member';
 import { createTag, listTag, tag, tagColors } from './../utils/group-tag';
 import { CopyButton, FormButtons, GroupTag } from './assets';
 import { useUniversalColors } from '../hooks/color-mode';
+import { BasicButton, CancelButton } from './buttons';
 
 const OrganizationName = () => {
   const { currentGroup } = useContext(GroupContext);
@@ -181,7 +181,8 @@ const CreateTag = () => {
             </Alert>
           )}
           <ButtonGroup>
-            <Button
+            <BasicButton
+              variant="primary"
               disabled={tagName.length == 0 && tagName.length < 20}
               onClick={() => {
                 if (currentGroup && tagName.length > 0)
@@ -199,25 +200,25 @@ const CreateTag = () => {
               }}
             >
               作成
-            </Button>
-            <Button
-              variant="ghost"
+            </BasicButton>
+            <CancelButton
+              variant="secondary"
               colorScheme="red"
               onClick={setCreateMode.off}
             >
               キャンセル
-            </Button>
+            </CancelButton>
           </ButtonGroup>
         </VStack>
       ) : (
-        <Button
+        <BasicButton
           leftIcon={<IoAdd />}
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={setCreateMode.on}
         >
           タグを作成
-        </Button>
+        </BasicButton>
       )}
     </HStack>
   );
@@ -331,7 +332,7 @@ const InviteElement = () => {
   return (
     <Box>
       <Heading size="lg" mb="5">
-        招待を作成
+        招待
       </Heading>
       {createState ? (
         <CreateInvite email={email} isAdmin={isAdmin} memberId={member} />
@@ -378,9 +379,9 @@ const InviteElement = () => {
               管理者として招待
             </Checkbox>
           </Box>
-          <Button variant="outline" type="submit" mt="2" size="sm">
-            作成
-          </Button>
+          <BasicButton variant="secondary" type="submit" mt="2" size="sm">
+            招待
+          </BasicButton>
         </form>
       )}
     </Box>

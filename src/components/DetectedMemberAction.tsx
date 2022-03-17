@@ -10,6 +10,7 @@ import { Timestamp, QueryDocumentSnapshot } from 'firebase/firestore';
 import { MemberAvatar } from './assets';
 import { millisToText } from '../utils/time';
 import { Member } from '../utils/member';
+import { BasicButton } from './buttons';
 
 interface props {
   detectedMember: dataWithId<Member>;
@@ -53,7 +54,8 @@ const DetectedMemberAction: React.FC<props> = ({
         )}
       </HStack>
       <ButtonGroup size="lg">
-        <Button
+        <BasicButton
+          variant="primary"
           colorScheme={
             latestActivity?.data().content.status === 'running'
               ? 'red'
@@ -91,16 +93,17 @@ const DetectedMemberAction: React.FC<props> = ({
           {latestActivity?.data().content.status === 'running'
             ? '終了'
             : '開始'}
-        </Button>
+        </BasicButton>
         {detectedMember?.id === (currentMember?.id ?? '') && (
-          <Button
+          <BasicButton
+            variant="primary"
             onClick={() => {
               if (setFrontMode) setFrontMode(false);
               if (document.fullscreenElement) document.exitFullscreen();
             }}
           >
             管理モードに切り替え
-          </Button>
+          </BasicButton>
         )}
       </ButtonGroup>
       <Button

@@ -1,4 +1,3 @@
-import { Button } from '@chakra-ui/button';
 import { Text } from '@chakra-ui/layout';
 import React, { Suspense, useContext, useState } from 'react';
 import { IoScan } from 'react-icons/io5';
@@ -10,6 +9,7 @@ import {
   Link as RouterLink,
 } from 'react-router-dom';
 import { LoadingScreen } from '../components/assets';
+import { BasicButton } from '../components/buttons';
 import { GroupContext } from '../contexts/group';
 import { GroupTemplate } from '../templates/group';
 import { dataWithId } from '../utils/firebase';
@@ -36,13 +36,14 @@ const Timeline: React.FC = () => {
             sideWidget={
               <>
                 {isAdmin && (
-                  <Button
+                  <BasicButton
+                    variant="secondary"
                     leftIcon={<IoScan />}
                     as={RouterLink}
                     to="/activity/scan"
                   >
                     スキャン
-                  </Button>
+                  </BasicButton>
                 )}
               </>
             }

@@ -1,6 +1,5 @@
 import { useBoolean } from '@chakra-ui/hooks';
 import {
-  Button,
   FormControl,
   FormHelperText,
   FormLabel,
@@ -11,6 +10,7 @@ import { AuthContext } from '../contexts/user';
 import { createGroup } from '../utils/group';
 import { Member, setMember } from '../utils/member';
 import { setUser } from '../utils/user';
+import { BasicButton } from './buttons';
 
 const CreateGroup: React.FC = () => {
   const [groupName, setGroupName] = useState('');
@@ -89,9 +89,14 @@ const CreateGroup: React.FC = () => {
         <FormHelperText>
           グループ名は1文字以上20文字以内で入力してください
         </FormHelperText>
-        <Button type="submit" isLoading={isSubmitting} w="full">
+        <BasicButton
+          variant="primary"
+          type="submit"
+          isLoading={isSubmitting}
+          w="full"
+        >
           作成
-        </Button>
+        </BasicButton>
       </form>
     </FormControl>
   );

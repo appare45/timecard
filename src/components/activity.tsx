@@ -1,5 +1,4 @@
 import {
-  Button,
   ButtonGroup,
   Circle,
   FormControl,
@@ -24,9 +23,8 @@ import {
 import { IoCreateOutline, IoPencilOutline } from 'react-icons/io5';
 import { useMemo } from 'react';
 import { DocumentSnapshot } from 'firebase/firestore';
-import { millisToText } from '../utils/time';
-import { Member } from '../utils/member';
 import { LoadingScreen } from './assets';
+import { BasicButton, CancelButton } from './buttons';
 
 export const ActivityStatus: React.FC<{
   workStatus: workStatus;
@@ -43,7 +41,7 @@ export const ActivityStatus: React.FC<{
   );
 };
 
-const ActivityMemo: React.FC<{
+export const ActivityMemo: React.FC<{
   editable: boolean;
   activity: DocumentSnapshot<activity<work>>;
 }> = ({ editable, activity }) => {
@@ -101,18 +99,19 @@ const ActivityMemo: React.FC<{
       {editable && (
         <ButtonGroup my="2">
           {!editMode ? (
-            <Button
+            <BasicButton
               onClick={() => setEditMode(true)}
-              variant={!draftText.length ? 'solid' : 'outline'}
+              variant={!draftText.length ? 'secondary' : 'primary'}
               leftIcon={
                 !draftText.length ? <IoCreateOutline /> : <IoPencilOutline />
               }
             >
               {draftText.length ? '編集' : '作成'}
-            </Button>
+            </BasicButton>
           ) : (
             <>
-              <Button
+              <BasicButton
+                variant="primary"
                 isDisabled={
                   draftText === activity.data()?.content.memo &&
                   draftText.length < 10000
@@ -136,50 +135,18 @@ const ActivityMemo: React.FC<{
                 }}
               >
                 保存
-              </Button>
-              <Button
-                variant="ghost"
+              </BasicButton>
+              <CancelButton
+                variant="secondary"
                 colorScheme="red"
                 onClick={() => setEditMode(false)}
               >
                 キャンセル
-              </Button>
+              </CancelButton>
             </>
           )}
         </ButtonGroup>
       )}
     </FormControl>
-  );
-};
-
-export const ActivityDetail: React.FC<{
-  activity: DocumentSnapshot<activity<work>>;
-  member: DocumentSnapshot<Member>;
-}> = ({ activity, member }) => {
-  const activityData = activity.data();
-  const { currentMember } = useContext(GroupContext);
-  return (
-    <>
-      {activityData && (
-        <>
-          {activityData?.content.status === 'done' &&
-          activityData.content.endTime ? (
-            <Text>
-              {/* ToDo: m秒表示を日本語に変換する */}
-              {millisToText(
-                activityData.content.endTime.toMillis() -
-                  activityData.content.startTime.toMillis()
-              )}
-            </Text>
-          ) : (
-            <ActivityStatus workStatus={activityData.content.status} />
-          )}
-          <ActivityMemo
-            editable={currentMember?.id == member.id}
-            activity={activity}
-          />
-        </>
-      )}
-    </>
   );
 };

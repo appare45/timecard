@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   Divider,
   HStack,
   Spacer,
@@ -15,6 +14,7 @@ import { AuthContext } from '../contexts/user';
 import { Group, setAccount } from '../utils/group';
 import { getInvite } from '../utils/invite';
 import { setUser } from '../utils/user';
+import { BasicButton } from './buttons';
 
 const JoinGroup: React.FC = () => {
   const Auth = useContext(AuthContext);
@@ -81,9 +81,9 @@ const InvitedGroup = ({ group }: { group: DocumentSnapshot<Group> }) => {
         <>
           <Text>{groupData.name}</Text>
           <Spacer />
-          <Button variant="outline" onClick={joinGroup}>
+          <BasicButton variant="secondary" onClick={joinGroup}>
             参加
-          </Button>
+          </BasicButton>
         </>
       )}
     </HStack>

@@ -1,39 +1,4 @@
-import { Box, Grid, GridItem, HStack, Spacer } from '@chakra-ui/layout';
-import {
-  Skeleton,
-  Table,
-  Thead,
-  Tr,
-  Th,
-  Tbody,
-  Text,
-  Tooltip,
-  Switch,
-  Td,
-  Alert,
-  AlertIcon,
-  VStack,
-  ButtonGroup,
-  IconButton,
-  Editable,
-  EditableInput,
-  EditablePreview,
-  useToast,
-  Button,
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverArrow,
-  PopoverCloseButton,
-  PopoverHeader,
-  PopoverBody,
-  Select,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
-} from '@chakra-ui/react';
+import { Box, Grid, GridItem, HStack, Spacer, VStack } from '@chakra-ui/layout';
 import React, {
   useContext,
   useState,
@@ -58,6 +23,27 @@ import { listTag, tag } from '../utils/group-tag';
 import { listMembers, Member, setMember, setMemberTag } from '../utils/member';
 import { GroupTagList } from './group-tag-control';
 import Card, { cardWidth } from './createCard';
+import { BasicButton } from './buttons';
+import { useToast } from '@chakra-ui/toast';
+import { Editable, EditableInput, EditablePreview } from '@chakra-ui/editable';
+import {
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTrigger,
+} from '@chakra-ui/popover';
+import { Skeleton } from '@chakra-ui/skeleton';
+import { Tr, Td, Table, Thead, Th, Tbody } from '@chakra-ui/table';
+import { ButtonGroup, IconButton } from '@chakra-ui/button';
+import { Tooltip } from '@chakra-ui/tooltip';
+import { Text } from '@chakra-ui/layout';
+import { Switch } from '@chakra-ui/switch';
+import { Alert, AlertIcon } from '@chakra-ui/alert';
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/tabs';
+import { Select } from '@chakra-ui/select';
 
 const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
   data,
@@ -143,9 +129,9 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
       <Box>
         <Popover isLazy lazyBehavior="keepMounted">
           <PopoverTrigger>
-            <Button leftIcon={<IoAdd />} variant="outline" size="xs">
+            <BasicButton leftIcon={<IoAdd />} variant="secondary" size="xs">
               タグを追加
-            </Button>
+            </BasicButton>
           </PopoverTrigger>
           <PopoverContent w="auto">
             <PopoverArrow />

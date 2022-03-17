@@ -1,7 +1,6 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import {
   Box,
-  Button,
   ButtonGroup,
   FormControl,
   FormLabel,
@@ -20,16 +19,15 @@ import {
   work,
 } from '../utils/group';
 import { dataWithId } from '../utils/firebase';
-import { MutableRefObject } from 'react';
 import { useMemo } from 'react';
 import { QueryDocumentSnapshot, Timestamp } from 'firebase/firestore';
 import { Member } from '../utils/member';
+import { BasicButton, CancelButton } from './buttons';
 
 const MemberAction: React.FC<{
   member: dataWithId<Member>;
   onClose: () => void;
-  cancelRef?: MutableRefObject<null>;
-}> = ({ member, onClose, cancelRef }) => {
+}> = ({ member, onClose }) => {
   const [latestActivity, setLatestActivity] = useState<QueryDocumentSnapshot<
     activity<work>
   > | null>(null);
@@ -88,12 +86,13 @@ const MemberAction: React.FC<{
         />
       </FormControl>
       <ButtonGroup>
-        <Button
+        <BasicButton
           colorScheme={
             latestActivity?.data().content.status === 'running'
               ? 'red'
               : 'green'
           }
+          variant="primary"
           onClick={() => {
             if (currentGroup && member) {
               if (latestActivity?.data().content.status === 'done') {
@@ -138,15 +137,14 @@ const MemberAction: React.FC<{
           {latestActivity?.data().content.status === 'running'
             ? '終了'
             : '開始'}
-        </Button>
-        <Button
-          variant="ghost"
+        </BasicButton>
+        <CancelButton
+          variant="secondary"
           colorScheme="red"
           onClick={() => onClose()}
-          ref={cancelRef}
         >
           キャンセル
-        </Button>
+        </CancelButton>
       </ButtonGroup>
     </>
   );

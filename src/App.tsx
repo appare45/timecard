@@ -9,7 +9,7 @@ import { Db, isEmulator, isProduction } from './utils/firebase';
 import { observeFps } from './utils/fps-observe';
 
 function App(): JSX.Element {
-  const UserUI = React.lazy(() => import('./components/user'));
+  const UserUI = React.lazy(() => import('./pages/user'));
   // オフライン接続対応
   useEffect(() => {
     enableIndexedDbPersistence(Db())
