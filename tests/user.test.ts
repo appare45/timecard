@@ -31,17 +31,3 @@ describe('Create / Edit User', () => {
     );
   });
 });
-
-describe('Get user', () => {
-  test('Can get own user', async () => {
-    assertSucceeds(
-      getDoc(doc(authorizedEnvironments[0].firestore(), `user/${data[0].name}`))
-    );
-  });
-
-  test("Can't get other user", async () => {
-    assertFails(
-      getDoc(doc(authorizedEnvironments[0].firestore(), `user/${data[1].name}`))
-    );
-  });
-});
