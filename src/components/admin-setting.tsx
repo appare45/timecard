@@ -57,6 +57,7 @@ import { createInvite } from '../utils/invite';
 import { getMember, listMembers, Member } from '../utils/member';
 import { createTag, listTag, tag, tagColors } from './../utils/group-tag';
 import { CopyButton, FormButtons, GroupTag } from './assets';
+import { useUniversalColors } from '../hooks/color-mode';
 
 const OrganizationName = () => {
   const { currentGroup } = useContext(GroupContext);
@@ -131,13 +132,14 @@ const CreateTag = () => {
     'purple',
     'pink',
   ];
+  const bgColor = useUniversalColors().background;
   return (
     <HStack my="3" position="relative">
       {createMode ? (
         <VStack
           position="absolute"
-          bgColor="white"
           p="4"
+          bgColor={bgColor}
           rounded="md"
           shadow="md"
         >
