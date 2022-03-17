@@ -1,17 +1,16 @@
 import {
-  Box,
-  Button,
-  Center,
-  Circle,
-  Heading,
-  HStack,
-  Icon,
   Link,
-  Select,
   Stack,
   Text,
-  useToast,
-} from '@chakra-ui/react';
+  Box,
+  HStack,
+  Heading,
+  Circle,
+  Center,
+} from '@chakra-ui/layout';
+import { useToast } from '@chakra-ui/toast';
+import { Icon } from '@chakra-ui/icon';
+import { Select } from '@chakra-ui/select';
 import {
   DocumentReference,
   DocumentSnapshot,
@@ -49,6 +48,7 @@ import {
   setAccount,
 } from '../utils/group';
 import { Member, getMember } from '../utils/member';
+import { BasicButton } from '../components/buttons';
 
 type groupProps = {
   groups: DocumentReference<Group>[];
@@ -83,15 +83,15 @@ const ScanButton: React.FC<{ setFrontMode: () => void }> = ({
 }) => {
   return (
     <>
-      <Button
+      <BasicButton
         mt="5"
         mb="3"
-        colorScheme="cyan"
+        variant="primary"
         leftIcon={<IoEaselOutline />}
         onClick={() => setFrontMode()}
       >
         フロントモードに切り替える
-      </Button>
+      </BasicButton>
     </>
   );
 };

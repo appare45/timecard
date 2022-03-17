@@ -1,14 +1,7 @@
-import {
-  Avatar,
-  Box,
-  Button,
-  HStack,
-  Icon,
-  IconButton,
-  Text,
-  useColorMode,
-  VStack,
-} from '@chakra-ui/react';
+import { Box, HStack, Text, VStack } from '@chakra-ui/layout';
+import { useColorMode } from '@chakra-ui/color-mode';
+import { Avatar } from '@chakra-ui/avatar';
+import { IconButton } from '@chakra-ui/button';
 import React, { Suspense, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { useMemo } from 'react';
@@ -19,7 +12,7 @@ import Logout from './logout';
 import { DocumentReference } from '@firebase/firestore';
 import { Group } from '../utils/group';
 import { useUniversalColors } from '../hooks/color-mode';
-import { LoadingScreen } from './assets';
+import { LoadingScreen } from '../components/assets';
 import { auth } from '../utils/auth';
 
 const UserDataDisplay: React.FC<{ authData: User }> = ({ authData }) => {
@@ -64,16 +57,26 @@ const UserDataDisplay: React.FC<{ authData: User }> = ({ authData }) => {
                 icon={<IoMoon />}
                 aria-label="ダークモードの切り替え"
                 onClick={toggleColorMode}
+                variant="outline"
+                colorScheme="gray"
               />
-              <Button onClick={() => setOpenInfo(!openInfo)} variant="ghost">
-                <Icon as={IoChevronBack} h="12" />
-              </Button>
+              <IconButton
+                onClick={() => setOpenInfo(!openInfo)}
+                variant="ghost"
+                icon={<IoChevronBack />}
+                aria-label="ユーザーパネル切り替え"
+                h="12"
+              />
             </HStack>
           </>
         ) : (
-          <Button onClick={() => setOpenInfo(!openInfo)} variant="ghost">
-            <Icon as={IoChevronForward} h="12" />
-          </Button>
+          <IconButton
+            onClick={() => setOpenInfo(!openInfo)}
+            variant="ghost"
+            icon={<IoChevronForward />}
+            aria-label="ユーザーパネル切り替え"
+            h="12"
+          />
         )}
       </VStack>
     </HStack>
@@ -124,8 +127,8 @@ export default function UserUI(): JSX.Element {
   }, [authData]);
 
   const Login = React.lazy(() => import('./login'));
-  const NewAccount = React.lazy(() => import('./new_account'));
-  const GroupUI = React.lazy(() => import('../pages/group'));
+  const NewAccount = React.lazy(() => import('../components/new_account'));
+  const GroupUI = React.lazy(() => import('./group'));
   return (
     <AuthContext.Provider
       value={{

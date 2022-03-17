@@ -1,5 +1,5 @@
 import { assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import {
   authorizedEnvironments,
   unAuthorizedEnvironment,
@@ -28,20 +28,6 @@ describe('Create / Edit User', () => {
         doc(authorizedEnvironments[0].firestore(), `user/${data[1].name}`),
         {}
       )
-    );
-  });
-});
-
-describe('Get user', () => {
-  test('Can get own user', async () => {
-    assertSucceeds(
-      getDoc(doc(authorizedEnvironments[0].firestore(), `user/${data[0].name}`))
-    );
-  });
-
-  test("Can't get other user", async () => {
-    assertFails(
-      getDoc(doc(authorizedEnvironments[0].firestore(), `user/${data[1].name}`))
     );
   });
 });

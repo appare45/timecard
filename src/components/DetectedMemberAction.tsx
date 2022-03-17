@@ -1,15 +1,16 @@
 import React, { useMemo } from 'react';
-import { Button, ButtonGroup, HStack, Text, VStack } from '@chakra-ui/react';
+import { VStack, HStack, Text } from '@chakra-ui/layout';
+import { ButtonGroup } from '@chakra-ui/button';
 import { useState } from 'react';
 import { dataWithId } from '../utils/firebase';
 import { activity, addWork, setWork, work } from '../utils/group';
-import { useRef } from 'react';
 import { useContext } from 'react';
 import { GroupContext } from '../contexts/group';
 import { Timestamp, QueryDocumentSnapshot } from 'firebase/firestore';
 import { MemberAvatar } from './assets';
 import { millisToText } from '../utils/time';
 import { Member } from '../utils/member';
+import { BasicButton, CancelButton } from './buttons';
 
 interface props {
   detectedMember: dataWithId<Member>;
@@ -21,7 +22,6 @@ const DetectedMemberAction: React.FC<props> = ({
   latestActivity,
   onClose,
 }) => {
-  const cancelRef = useRef(null);
   const { currentMember } = useContext(GroupContext);
   const [time, setTime] = useState('');
   const { currentGroup, setFrontMode } = useContext(GroupContext);
@@ -53,7 +53,8 @@ const DetectedMemberAction: React.FC<props> = ({
         )}
       </HStack>
       <ButtonGroup size="lg">
-        <Button
+        <BasicButton
+          variant="primary"
           colorScheme={
             latestActivity?.data().content.status === 'running'
               ? 'red'
@@ -91,26 +92,22 @@ const DetectedMemberAction: React.FC<props> = ({
           {latestActivity?.data().content.status === 'running'
             ? '終了'
             : '開始'}
-        </Button>
+        </BasicButton>
         {detectedMember?.id === (currentMember?.id ?? '') && (
-          <Button
+          <BasicButton
+            variant="primary"
             onClick={() => {
               if (setFrontMode) setFrontMode(false);
               if (document.fullscreenElement) document.exitFullscreen();
             }}
           >
             管理モードに切り替え
-          </Button>
+          </BasicButton>
         )}
       </ButtonGroup>
-      <Button
-        variant="ghost"
-        colorScheme="red"
-        ref={cancelRef}
-        onClick={onClose}
-      >
+      <CancelButton variant="secondary" onClick={onClose}>
         キャンセル
-      </Button>
+      </CancelButton>
     </VStack>
   );
 };

@@ -1,5 +1,7 @@
-import { AspectRatio, Box, IconButton, Link, Skeleton } from '@chakra-ui/react';
 import { DocumentSnapshot } from '@firebase/firestore';
+import { Box, AspectRatio, Link } from '@chakra-ui/layout';
+import { IconButton } from '@chakra-ui/button';
+import { Skeleton } from '@chakra-ui/skeleton';
 import React, { useEffect, useRef, useState } from 'react';
 import { IoDownloadOutline } from 'react-icons/io5';
 import { useIsPrint } from '../hooks/media-query';

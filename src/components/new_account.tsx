@@ -1,17 +1,12 @@
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Heading,
-  HStack,
-  Input,
-  useBoolean,
-} from '@chakra-ui/react';
 import { serverTimestamp } from 'firebase/firestore';
+import { Box, Heading, HStack } from '@chakra-ui/layout';
+import { Input } from '@chakra-ui/input';
+import { FormLabel, FormControl } from '@chakra-ui/form-control';
+import { useBoolean } from '@chakra-ui/hooks';
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../contexts/user';
 import { setUser } from '../utils/user';
+import { BasicButton } from './buttons';
 
 type Props = {
   id: string;
@@ -66,9 +61,13 @@ const NewAccount: React.FC<Props> = ({ id }) => {
                 updateInput(e.target.value);
               }}
             />
-            <Button type="submit" isLoading={isSubmitting}>
+            <BasicButton
+              variant="primary"
+              type="submit"
+              isLoading={isSubmitting}
+            >
               登録
-            </Button>
+            </BasicButton>
           </HStack>
         </form>
       </FormControl>

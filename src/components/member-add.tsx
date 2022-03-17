@@ -10,11 +10,12 @@ import {
   ModalBody,
   ModalFooter,
 } from '@chakra-ui/modal';
-import { Button, Stack } from '@chakra-ui/react';
+import { Stack } from '@chakra-ui/layout';
 import React, { useState } from 'react';
 import { IoPersonAdd } from 'react-icons/io5';
 import { atom, useRecoilState } from 'recoil';
 import { Member, addMember } from '../utils/member';
+import { BasicButton } from './buttons';
 import { GroupTagList } from './group-tag-control';
 
 const NewMemberState = atom<Member>({
@@ -37,16 +38,14 @@ export const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
   const [newMember, setNewMember] = useRecoilState(NewMemberState);
   return (
     <>
-      <Button
-        colorScheme="blackAlpha"
-        color="black"
+      <BasicButton
         size="sm"
         onClick={() => setModalIsOpen(true)}
         leftIcon={<IoPersonAdd />}
-        variant="outline"
+        variant="secondary"
       >
         メンバーを追加
-      </Button>
+      </BasicButton>
       <Modal onClose={() => setModalIsOpen(false)} isOpen={modalIsOpen}>
         <ModalOverlay />
         <ModalContent>
@@ -123,14 +122,13 @@ export const AddMember: React.FC<{ groupId: string; onUpdate: () => void }> = ({
               </Stack>
             </ModalBody>
             <ModalFooter>
-              <Button
-                colorScheme="blackAlpha"
-                bg="black"
+              <BasicButton
+                variant="primary"
                 type="submit"
                 isLoading={isSubmitting}
               >
                 作成
-              </Button>
+              </BasicButton>
             </ModalFooter>
           </form>
         </ModalContent>

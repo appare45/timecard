@@ -1,15 +1,15 @@
+import React from 'react';
 import {
   Box,
-  Code,
-  Heading,
-  Image,
-  Link,
-  ListItem,
-  OrderedList,
   Text,
+  Link,
+  Heading,
+  Code,
+  OrderedList,
   UnorderedList,
-} from '@chakra-ui/react';
-import React from 'react';
+  ListItem,
+} from '@chakra-ui/layout';
+import { Image } from '@chakra-ui/image';
 import { Suspense } from 'react';
 import rehypeKatex from 'rehype-katex';
 import remarkBreaks from 'remark-breaks';

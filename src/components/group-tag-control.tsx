@@ -1,7 +1,8 @@
 import React from 'react';
 import { Stack } from '@chakra-ui/layout';
-import { Checkbox, Skeleton } from '@chakra-ui/react';
 import { DocumentSnapshot, QueryDocumentSnapshot } from '@firebase/firestore';
+import { Checkbox } from '@chakra-ui/checkbox';
+import { Skeleton } from '@chakra-ui/skeleton';
 import { useState, useContext, useEffect, useMemo } from 'react';
 import { GroupContext } from '../contexts/group';
 import { tag, listTag } from '../utils/group-tag';

@@ -1,14 +1,14 @@
 import React, { Suspense, useEffect } from 'react';
-import {
-  AspectRatio,
-  Box,
-  Center,
-  Heading,
-  HStack,
-  Skeleton,
-  Spacer,
-} from '@chakra-ui/react';
 import { useState } from 'react';
+import {
+  Box,
+  HStack,
+  Heading,
+  Spacer,
+  AspectRatio,
+  Center,
+} from '@chakra-ui/layout';
+import { Skeleton } from '@chakra-ui/skeleton';
 import { dataWithId } from '../utils/firebase';
 import { activity, getLatestActivity, work } from '../utils/group';
 import { useContext } from 'react';

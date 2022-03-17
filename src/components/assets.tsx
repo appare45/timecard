@@ -1,18 +1,15 @@
 import { Avatar, AvatarBadge } from '@chakra-ui/avatar';
 import { Button, ButtonGroup, IconButton } from '@chakra-ui/button';
 import { Center, HStack, Text, VStack } from '@chakra-ui/layout';
-import {
-  TagCloseButton,
-  TagLeftIcon,
-  useClipboard,
-  useColorModeValue,
-} from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
-import { Tag, TagLabel } from '@chakra-ui/tag';
+import { useColorModeValue } from '@chakra-ui/color-mode';
+import { Tag, TagLabel, TagLeftIcon, TagCloseButton } from '@chakra-ui/tag';
+import { useClipboard } from '@chakra-ui/hooks';
 import React, { useEffect, useRef } from 'react';
 import { IoCheckmark, IoClipboardOutline, IoPricetag } from 'react-icons/io5';
 import { tagColors } from '../utils/group-tag';
 import { Member } from '../utils/member';
+import { BasicButton, CancelButton } from './buttons';
 
 export const LoadMoreButton: React.FC<{ loadMore: () => void }> = ({
   loadMore,
@@ -89,17 +86,25 @@ export const FormButtons: React.FC<{
   <ButtonGroup>
     {editMode ? (
       <>
-        <Button isDisabled={!saveAvailable} onClick={onSave}>
+        <BasicButton
+          variant="primary"
+          isDisabled={!saveAvailable}
+          onClick={onSave}
+        >
           保存
-        </Button>
-        <Button onClick={onCancel} variant="ghost" colorScheme="red">
+        </BasicButton>
+        <CancelButton onClick={onCancel} variant="secondary" colorScheme="red">
           キャンセル
-        </Button>
+        </CancelButton>
       </>
     ) : (
-      <Button variant="outline" onClick={setEditable} isDisabled={isDisable}>
+      <BasicButton
+        variant="secondary"
+        onClick={setEditable}
+        isDisabled={isDisable}
+      >
         編集
-      </Button>
+      </BasicButton>
     )}
   </ButtonGroup>
 );

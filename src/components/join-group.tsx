@@ -1,20 +1,20 @@
+import { DocumentSnapshot, getDoc } from '@firebase/firestore';
 import {
   Box,
-  Button,
+  VStack,
+  Text,
+  Stack,
   Divider,
   HStack,
   Spacer,
-  Stack,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
-import { DocumentSnapshot, getDoc } from '@firebase/firestore';
+} from '@chakra-ui/layout';
 import React, { useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import { AuthContext } from '../contexts/user';
 import { Group, setAccount } from '../utils/group';
 import { getInvite } from '../utils/invite';
 import { setUser } from '../utils/user';
+import { BasicButton } from './buttons';
 
 const JoinGroup: React.FC = () => {
   const Auth = useContext(AuthContext);
@@ -81,9 +81,9 @@ const InvitedGroup = ({ group }: { group: DocumentSnapshot<Group> }) => {
         <>
           <Text>{groupData.name}</Text>
           <Spacer />
-          <Button variant="outline" onClick={joinGroup}>
+          <BasicButton variant="secondary" onClick={joinGroup}>
             参加
-          </Button>
+          </BasicButton>
         </>
       )}
     </HStack>

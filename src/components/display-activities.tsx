@@ -7,8 +7,10 @@ import React, {
 } from 'react';
 import { QueryDocumentSnapshot } from 'firebase/firestore';
 import { activity, getAllActivities, work } from '../utils/group';
-import { Alert, AlertIcon, Skeleton, VStack } from '@chakra-ui/react';
 import { GroupContext } from '../contexts/group';
+import { VStack } from '@chakra-ui/layout';
+import { Skeleton } from '@chakra-ui/skeleton';
+import { Alert, AlertIcon } from '@chakra-ui/alert';
 import ActivityCard from './activity-card';
 import { useLoadMore } from '../hooks/loadmore';
 import { Member } from '../utils/member';

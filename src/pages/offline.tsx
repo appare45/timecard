@@ -1,17 +1,16 @@
 import React, { useEffect } from 'react';
 import {
   Box,
-  Button,
   Center,
+  Heading,
+  VStack,
   Grid,
   GridItem,
-  Heading,
-  Icon,
-  VStack,
-} from '@chakra-ui/react';
+} from '@chakra-ui/layout';
+import { Icon } from '@chakra-ui/icon';
 import { IoCloudOffline } from 'react-icons/io5';
 import { useHistory } from 'react-router-dom';
-
+import { BasicButton } from '../components/buttons';
 const Offline: React.FC = () => {
   const history = useHistory();
   useEffect(() => {
@@ -42,9 +41,9 @@ const Offline: React.FC = () => {
         <Box>
           <VStack>
             <Heading>インターネット接続がありません</Heading>
-            <Button variant="outline" onClick={() => history.go(0)}>
+            <BasicButton variant="primary" onClick={() => history.go(0)}>
               再試行
-            </Button>
+            </BasicButton>
           </VStack>
         </Box>
       </Center>
