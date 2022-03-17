@@ -1,5 +1,5 @@
 import { assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import {
   authorizedEnvironments,
   unAuthorizedEnvironment,
