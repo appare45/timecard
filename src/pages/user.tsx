@@ -1,14 +1,7 @@
-import {
-  Avatar,
-  Box,
-  Button,
-  HStack,
-  Icon,
-  IconButton,
-  Text,
-  useColorMode,
-  VStack,
-} from '@chakra-ui/react';
+import { Box, HStack, Text, VStack } from '@chakra-ui/layout';
+import { useColorMode } from '@chakra-ui/color-mode';
+import { Avatar } from '@chakra-ui/avatar';
+import { IconButton } from '@chakra-ui/button';
 import React, { Suspense, useState } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { useMemo } from 'react';

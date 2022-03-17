@@ -1,13 +1,13 @@
+import { DocumentSnapshot, getDoc } from '@firebase/firestore';
 import {
   Box,
+  VStack,
+  Text,
+  Stack,
   Divider,
   HStack,
   Spacer,
-  Stack,
-  Text,
-  VStack,
-} from '@chakra-ui/react';
-import { DocumentSnapshot, getDoc } from '@firebase/firestore';
+} from '@chakra-ui/layout';
 import React, { useContext, useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import { AuthContext } from '../contexts/user';

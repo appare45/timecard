@@ -1,14 +1,10 @@
 import { Avatar, AvatarBadge } from '@chakra-ui/avatar';
 import { Button, ButtonGroup, IconButton } from '@chakra-ui/button';
 import { Center, HStack, Text, VStack } from '@chakra-ui/layout';
-import {
-  TagCloseButton,
-  TagLeftIcon,
-  useClipboard,
-  useColorModeValue,
-} from '@chakra-ui/react';
 import { Spinner } from '@chakra-ui/spinner';
-import { Tag, TagLabel } from '@chakra-ui/tag';
+import { useColorModeValue } from '@chakra-ui/color-mode';
+import { Tag, TagLabel, TagLeftIcon, TagCloseButton } from '@chakra-ui/tag';
+import { useClipboard } from '@chakra-ui/hooks';
 import React, { useEffect, useRef } from 'react';
 import { IoCheckmark, IoClipboardOutline, IoPricetag } from 'react-icons/io5';
 import { tagColors } from '../utils/group-tag';

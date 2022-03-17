@@ -1,25 +1,4 @@
 import {
-  Box,
-  Button,
-  ButtonGroup,
-  HStack,
-  Skeleton,
-  SkeletonCircle,
-  Spacer,
-  Tab,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
-  Text,
-  Tooltip,
-  useClipboard,
-  Link,
-  VStack,
-  useToast,
-  useColorModeValue,
-} from '@chakra-ui/react';
-import {
   DocumentSnapshot,
   QueryDocumentSnapshot,
   Timestamp,
@@ -39,6 +18,14 @@ import { ActivityStatus } from './activity';
 import { MemberAvatar } from './assets';
 import { Member, getMember } from '../utils/member';
 import { CancelButton } from './buttons';
+import { useClipboard } from '@chakra-ui/hooks';
+import { Button, ButtonGroup, IconButton } from '@chakra-ui/button';
+import { Tooltip } from '@chakra-ui/tooltip';
+import { Text, HStack, Link, VStack, Box, Spacer } from '@chakra-ui/layout';
+import { SkeletonCircle, Skeleton } from '@chakra-ui/skeleton';
+import { useToast } from '@chakra-ui/toast';
+import { useColorModeValue } from '@chakra-ui/color-mode';
+import { Tabs, TabList, Tab, TabPanel, TabPanels } from '@chakra-ui/tabs';
 
 const universalColors = {
   background: 'gray.100',
@@ -66,14 +53,17 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
     >
       {isEditable && (
         <Tooltip label="編集">
-          <Button onClick={() => history.push(`/activity/${activityId}`)}>
-            <IoPencilOutline />
-          </Button>
+          <IconButton
+            aria-label="編集"
+            icon={<IoPencilOutline />}
+            onClick={() => history.push(`/activity/${activityId}`)}
+          />
         </Tooltip>
       )}
       {shareAvailable ? (
-        <Button
-          aria-label="アクティビティーを共有"
+        <IconButton
+          icon={<IoShareOutline />}
+          aria-label="編集"
           onClick={() => {
             navigator.share({
               url: `${location.host}/activity/${activityId}`,
@@ -82,9 +72,7 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
           }}
           colorScheme={hasCopied ? 'green' : 'gray'}
           disabled={hasCopied}
-        >
-          <IoShareOutline />
-        </Button>
+        />
       ) : (
         <Tooltip label="リンクをコピー">
           <Button

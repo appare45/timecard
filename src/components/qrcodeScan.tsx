@@ -1,19 +1,13 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
-import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
-  AspectRatio,
-  Box,
-  Button,
-  ButtonGroup,
-  Circle,
-  Spinner,
-} from '@chakra-ui/react';
 import { dataWithId } from '../utils/firebase';
+import { Alert, AlertIcon, AlertDescription } from '@chakra-ui/alert';
+import { Box, Circle, AspectRatio } from '@chakra-ui/layout';
+import { ButtonGroup } from '@chakra-ui/button';
+import { Spinner } from '@chakra-ui/spinner';
 import { IoCamera } from 'react-icons/io5';
 import { Member } from '../utils/member';
 import { FullScreenSwitch } from './fullscreen';
+import { BasicButton } from './buttons';
 
 const getUserCamera = (facingMode?: VideoFacingModeEnum) =>
   new Promise<MediaStream>((resolve, reject) => {
@@ -104,8 +98,9 @@ const QRCodeScan = React.memo(
             </AspectRatio>
 
             <ButtonGroup pos="absolute" top="5" left="5">
-              <Button
+              <BasicButton
                 leftIcon={<IoCamera />}
+                variant="secondary"
                 onClick={() => {
                   mediaStream?.getTracks().forEach((element) => {
                     element.stop();
@@ -114,7 +109,7 @@ const QRCodeScan = React.memo(
                 }}
               >
                 カメラ切り替え
-              </Button>
+              </BasicButton>
               <FullScreenSwitch />
             </ButtonGroup>
           </Box>

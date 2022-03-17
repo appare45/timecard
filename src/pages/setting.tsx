@@ -1,16 +1,9 @@
 import React, { Suspense, useContext, useMemo, useState } from 'react';
-import {
-  Box,
-  Heading,
-  HStack,
-  Input,
-  Skeleton,
-  SkeletonCircle,
-  Stack,
-  Switch,
-  Text,
-  useBoolean,
-} from '@chakra-ui/react';
+import { Box, Heading, HStack, Stack, Text } from '@chakra-ui/layout';
+import { useBoolean } from '@chakra-ui/hooks';
+import { Skeleton, SkeletonCircle } from '@chakra-ui/skeleton';
+import { Input } from '@chakra-ui/input';
+import { Switch } from '@chakra-ui/switch';
 import { GroupContext } from '../contexts/group';
 import { getMember, Member, setMember } from '../utils/member';
 import { DocumentSnapshot } from '@firebase/firestore';

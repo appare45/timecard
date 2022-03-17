@@ -11,25 +11,19 @@ import {
   Code,
   Link,
   VStack,
-} from '@chakra-ui/layout';
-import {
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  Checkbox,
-  Editable,
-  EditableInput,
-  EditablePreview,
-  FormControl,
-  FormHelperText,
-  FormLabel,
-  Skeleton,
   Spacer,
-  Table,
-  Td,
-  Tr,
-} from '@chakra-ui/react';
+} from '@chakra-ui/layout';
+import { Skeleton } from '@chakra-ui/skeleton';
+import { Editable, EditableInput, EditablePreview } from '@chakra-ui/editable';
 import { Select } from '@chakra-ui/select';
+import { Alert, AlertIcon, AlertTitle } from '@chakra-ui/alert';
+import {
+  FormControl,
+  FormLabel,
+  FormHelperText,
+} from '@chakra-ui/form-control';
+import { Checkbox } from '@chakra-ui/checkbox';
+import { Table, Tr, Td } from '@chakra-ui/table';
 import { Tag, Tag as TagElement, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
 import { useToast } from '@chakra-ui/toast';
 import {

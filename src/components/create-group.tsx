@@ -1,11 +1,11 @@
 import { useBoolean } from '@chakra-ui/hooks';
+import React, { useContext, useState } from 'react';
 import {
   FormControl,
-  FormHelperText,
   FormLabel,
-  Input,
-} from '@chakra-ui/react';
-import React, { useContext, useState } from 'react';
+  FormHelperText,
+} from '@chakra-ui/form-control';
+import { Input } from '@chakra-ui/input';
 import { AuthContext } from '../contexts/user';
 import { createGroup } from '../utils/group';
 import { Member, setMember } from '../utils/member';

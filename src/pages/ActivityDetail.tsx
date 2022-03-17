@@ -1,5 +1,5 @@
-import { Text } from '@chakra-ui/react';
 import React from 'react';
+import { Text } from '@chakra-ui/layout';
 import { useContext } from 'react';
 import { GroupContext } from '../contexts/group';
 import { activity, work } from '../utils/group';

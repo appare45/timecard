@@ -1,15 +1,13 @@
-import {
-  ButtonGroup,
-  Circle,
-  FormControl,
-  FormHelperText,
-  FormLabel,
-  HStack,
-  Text,
-  Textarea,
-  useToast,
-} from '@chakra-ui/react';
 import React, { Suspense } from 'react';
+import { HStack, Circle, Text } from '@chakra-ui/layout';
+import { useToast } from '@chakra-ui/toast';
+import {
+  FormControl,
+  FormLabel,
+  FormHelperText,
+} from '@chakra-ui/form-control';
+import { Textarea } from '@chakra-ui/textarea';
+import { ButtonGroup } from '@chakra-ui/button';
 import { useContext } from 'react';
 import { useState } from 'react';
 import { GroupContext } from '../contexts/group';

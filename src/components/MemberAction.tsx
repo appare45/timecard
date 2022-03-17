@@ -1,15 +1,11 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
-import {
-  Box,
-  ButtonGroup,
-  FormControl,
-  FormLabel,
-  Heading,
-  Skeleton,
-  Textarea,
-  useToast,
-} from '@chakra-ui/react';
 import { useContext } from 'react';
+import { Box, Heading } from '@chakra-ui/layout';
+import { FormControl, FormLabel } from '@chakra-ui/form-control';
+import { Textarea } from '@chakra-ui/textarea';
+import { ButtonGroup } from '@chakra-ui/button';
+import { useToast } from '@chakra-ui/toast';
+import { Skeleton } from '@chakra-ui/skeleton';
 import { GroupContext } from '../contexts/group';
 import {
   activity,

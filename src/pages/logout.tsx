@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Button } from '@chakra-ui/react';
+import { Button } from '@chakra-ui/button';
 import { AuthContext } from '../contexts/user';
 import { auth } from '../utils/auth';
 
