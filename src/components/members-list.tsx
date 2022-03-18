@@ -245,12 +245,11 @@ const MembersListCard: React.FC<{
     >
       {currentGroup &&
         membersData.map((member) => (
-          <Box key={member.id}>
-            <Card
-              member={{ data: member.data(), id: member.id }}
-              group={currentGroup}
-            />
-          </Box>
+          <Card
+            key={member.id}
+            member={{ data: member.data(), id: member.id }}
+            group={currentGroup}
+          />
         ))}
     </Grid>
   );

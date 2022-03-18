@@ -128,6 +128,7 @@ const Card: React.FC<{
           aria-label="カードをダウンロード"
           icon={<IoDownloadOutline />}
           href={dataUrl}
+          variant="outline"
           as={Link}
           download
           pos="absolute"
