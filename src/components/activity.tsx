@@ -23,6 +23,7 @@ import { useMemo } from 'react';
 import { DocumentSnapshot } from 'firebase/firestore';
 import { LoadingScreen } from './assets';
 import { BasicButton, CancelButton } from './buttons';
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/tabs';
 
 export const ActivityStatus: React.FC<{
   workStatus: workStatus;
@@ -75,20 +76,31 @@ export const ActivityMemo: React.FC<{
       <FormLabel>メモ</FormLabel>
       {editMode ? (
         <>
-          <Textarea
-            autoFocus
-            variant="filled"
-            disabled={!editMode}
-            placeholder="活動の記録を残しましょう（組織内に公開されます）"
-            onChange={(e) => setDraftText(e.target.value)}
-            maxLength={10000}
-            isInvalid={draftText.length > 10000}
-            defaultValue={draftText}
-            fontSize="md"
-            fontFamily="monospace"
-            lineHeight="4"
-            h="52"
-          />
+          <Tabs isLazy variant="soft-rounded" colorScheme="green">
+            <TabList>
+              <Tab>編集</Tab>
+              <Tab>プレビュー</Tab>
+            </TabList>
+            <TabPanels h="52" overflow="scroll">
+              <TabPanel>
+                <Textarea
+                  autoFocus
+                  variant="filled"
+                  disabled={!editMode}
+                  placeholder="活動の記録を残しましょう（組織内に公開されます）"
+                  onChange={(e) => setDraftText(e.target.value)}
+                  maxLength={10000}
+                  isInvalid={draftText.length > 10000}
+                  defaultValue={draftText}
+                  fontSize="md"
+                  fontFamily="monospace"
+                  lineHeight="4"
+                  height="48"
+                />
+              </TabPanel>
+              <TabPanel>{RenderedMemo}</TabPanel>
+            </TabPanels>
+          </Tabs>
           <FormHelperText>組織内に公開されます</FormHelperText>
         </>
       ) : (
@@ -137,7 +149,12 @@ export const ActivityMemo: React.FC<{
               <CancelButton
                 variant="secondary"
                 colorScheme="red"
-                onClick={() => setEditMode(false)}
+                onClick={() => {
+                  setEditMode(false);
+                  setDraftText(
+                    activity.data()?.content.memo.replace(/\\n/g, '\n') ?? ''
+                  );
+                }}
               >
                 キャンセル
               </CancelButton>
