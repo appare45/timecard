@@ -21,11 +21,13 @@ export const ActivityDetail: React.FC<{
           {activityData?.content.status === 'done' &&
           activityData.content.endTime ? (
             <Text>
-              {/* ToDo: m秒表示を日本語に変換する */}
+              時間：{activityData.content.startTime.toDate().toLocaleString()}~
+              {activityData.content.endTime.toDate().toLocaleString()}(
               {millisToText(
                 activityData.content.endTime.toMillis() -
                   activityData.content.startTime.toMillis()
               )}
+              )
             </Text>
           ) : (
             <ActivityStatus workStatus={activityData.content.status} />
