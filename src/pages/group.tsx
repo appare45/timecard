@@ -7,6 +7,7 @@ import {
   Circle,
   Center,
 } from '@chakra-ui/layout';
+import { Link as RouterLink } from 'react-router-dom';
 import { useToast } from '@chakra-ui/toast';
 import { Icon } from '@chakra-ui/icon';
 import { Select } from '@chakra-ui/select';
@@ -29,6 +30,7 @@ import {
   IoEaselOutline,
   IoHome,
   IoPeople,
+  IoPersonCircleOutline,
   IoSettings,
 } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
@@ -296,6 +298,14 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
                                   }}
                                 />
                               )}
+                              <BasicButton
+                                as={RouterLink}
+                                leftIcon={<IoPersonCircleOutline />}
+                                to={`/member/${currentMemberData?.id}`}
+                                variant="secondary"
+                              >
+                                自分のアクティビティーを確認
+                              </BasicButton>
                             </>
                           }
                         >
