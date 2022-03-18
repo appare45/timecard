@@ -4,7 +4,6 @@ import {
   Text,
   Box,
   HStack,
-  Heading,
   Circle,
   Center,
 } from '@chakra-ui/layout';
@@ -33,7 +32,6 @@ import {
   IoSettings,
 } from 'react-icons/io5';
 import { Link as routerLink, Route, Switch } from 'react-router-dom';
-import { RecoilRoot } from 'recoil';
 import { LoadingScreen } from '../components/assets';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
@@ -261,7 +259,6 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
   const Front = React.lazy(() => import('../components/front'));
   const NewGroup = React.lazy(() => import('../components/new-group'));
   const Setting = React.lazy(() => import('./setting'));
-  const MembersList = React.lazy(() => import('../components/members-list'));
   const Activities = React.lazy(() => import('./timeline'));
   return (
     <>
@@ -299,10 +296,6 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
                                   }}
                                 />
                               )}
-                              <Heading size="sm">オンラインのメンバー</Heading>
-                              <RecoilRoot>
-                                <MembersList onlyOnline isSimple />
-                              </RecoilRoot>
                             </>
                           }
                         >
