@@ -126,29 +126,29 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
   //  タグを追加するボタン（popover）
   const AddTagButton: React.FC = () => {
     return (
-      <Box>
-        <Popover isLazy lazyBehavior="keepMounted">
-          <PopoverTrigger>
+      <Popover isLazy lazyBehavior="keepMounted">
+        <PopoverTrigger>
+          <Box>
             <BasicButton leftIcon={<IoAdd />} variant="secondary" size="xs">
               タグを追加
             </BasicButton>
-          </PopoverTrigger>
-          <PopoverContent w="auto">
-            <PopoverArrow />
-            <PopoverCloseButton />
-            <PopoverHeader>タグを選択</PopoverHeader>
-            <PopoverBody>
-              <GroupTagList
-                userTags={{
-                  ids: userTags.map((e) => e.id),
-                  addTag: addTag,
-                  removeTag: removeTag,
-                }}
-              />
-            </PopoverBody>
-          </PopoverContent>
-        </Popover>
-      </Box>
+          </Box>
+        </PopoverTrigger>
+        <PopoverContent w="auto">
+          <PopoverArrow />
+          <PopoverCloseButton />
+          <PopoverHeader>タグを選択</PopoverHeader>
+          <PopoverBody>
+            <GroupTagList
+              userTags={{
+                ids: userTags.map((e) => e.id),
+                addTag: addTag,
+                removeTag: removeTag,
+              }}
+            />
+          </PopoverBody>
+        </PopoverContent>
+      </Popover>
     );
   };
 
