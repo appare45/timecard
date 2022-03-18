@@ -9,7 +9,7 @@ import React, {
   SetStateAction,
   Dispatch,
 } from 'react';
-import { IoAdd, IoAnalytics } from 'react-icons/io5';
+import { IoAdd, IoAnalytics, IoPricetag } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { Link as RouterLink } from 'react-router-dom';
 import {
@@ -37,13 +37,13 @@ import {
 } from '@chakra-ui/popover';
 import { Skeleton } from '@chakra-ui/skeleton';
 import { Tr, Td, Table, Thead, Th, Tbody } from '@chakra-ui/table';
-import { ButtonGroup, IconButton } from '@chakra-ui/button';
+import { Button, ButtonGroup, IconButton } from '@chakra-ui/button';
 import { Tooltip } from '@chakra-ui/tooltip';
 import { Text } from '@chakra-ui/layout';
 import { Switch } from '@chakra-ui/switch';
 import { Alert, AlertIcon } from '@chakra-ui/alert';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/tabs';
-import { Select } from '@chakra-ui/select';
+import { Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/menu';
 
 const MemberName: React.FC<{ data: QueryDocumentSnapshot<Member> }> = ({
   data,
@@ -327,7 +327,21 @@ const MembersList: React.FC<{
   }, [currentGroup, filterState, sortWithOnline]);
 
   const MemoedMemberFilter = () =>
-    useMemo(() => <MemberFilter filter={[filterState, setFilterState]} />, []);
+    useMemo(
+      () => (
+        <Menu isLazy>
+          <MenuButton as={Button} leftIcon={<IoPricetag />}>
+            {filterState == null
+              ? '絞り込みなし'
+              : `${filterState.data().name}で絞り込み`}
+          </MenuButton>
+          <MenuList>
+            <MemberFilter filter={setFilterState} />
+          </MenuList>
+        </Menu>
+      ),
+      []
+    );
 
   // eslint-disable-next-line react/display-name
   const LoadMore = React.memo(() => <LoadMoreButton loadMore={loadMoreData} />);
@@ -411,10 +425,7 @@ const MembersList: React.FC<{
 const MemberFilter = ({
   filter,
 }: {
-  filter: [
-    QueryDocumentSnapshot<tag> | null,
-    Dispatch<SetStateAction<QueryDocumentSnapshot<tag> | null>>
-  ];
+  filter: Dispatch<SetStateAction<QueryDocumentSnapshot<tag> | null>>;
 }) => {
   const [groupTags, setGroupTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
@@ -430,7 +441,7 @@ const MemberFilter = ({
     }
   }, [currentGroup]);
 
-  const [currentFilter, setFilter] = filter;
+  const setFilter = filter;
 
   return (
     <Skeleton isLoaded={isLoaded}>
@@ -440,23 +451,23 @@ const MemberFilter = ({
           タグがありません
         </Alert>
       ) : (
-        <Select
-          w="md"
-          title="フィルターを選択"
-          onChange={(e) => {
-            setFilter(
-              groupTags.find((tag) => tag.id == e.target.value) ?? null
-            );
-          }}
-          value={currentFilter?.id ?? 'default'}
-        >
-          <option value="default">フィルターを選択</option>
+        <>
+          <MenuItem value="default" onClick={() => setFilter(null)}>
+            絞り込みなし
+          </MenuItem>
           {groupTags.map((e) => (
-            <option key={e.id} value={e.id}>
+            <MenuItem
+              key={e.id}
+              value={e.id}
+              onClick={() =>
+                setFilter(groupTags.find((tag) => tag.id == e.id) ?? null)
+              }
+              icon={<IoPricetag />}
+            >
               {e.data().name}
-            </option>
+            </MenuItem>
           ))}
-        </Select>
+        </>
       )}
     </Skeleton>
   );
