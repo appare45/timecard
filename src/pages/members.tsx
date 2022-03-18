@@ -7,6 +7,7 @@ import { IoPrint } from 'react-icons/io5';
 import { GroupTemplate } from '../templates/group';
 import { LoadingScreen } from '../components/assets';
 import { BasicButton } from '../components/buttons';
+import { ButtonGroup } from '@chakra-ui/button';
 
 const Members: React.FC = () => {
   const { path } = useRouteMatch();
@@ -14,6 +15,7 @@ const Members: React.FC = () => {
   const MembersList = React.lazy(() => import('../components/members-list'));
   const { currentGroup } = useContext(GroupContext);
   const [update, setUpdate] = useState(false);
+  const { isAdmin } = useContext(GroupContext);
   return (
     <>
       <RouteSwitch>
@@ -23,26 +25,26 @@ const Members: React.FC = () => {
             titleLeftButtons={
               <>
                 {currentGroup && (
-                  <>
-                    <RecoilRoot>
-                      <AddMember
-                        groupId={currentGroup.id}
-                        onUpdate={() => {
-                          console.info('updated');
-                          setUpdate(!update);
-                        }}
-                      />
-                    </RecoilRoot>
-                    <BasicButton
-                      leftIcon={<IoPrint />}
-                      bg="black"
-                      variant="secondary"
-                      onClick={window.print}
-                      size="sm"
-                    >
-                      印刷
-                    </BasicButton>
-                  </>
+                  <RecoilRoot>
+                    <ButtonGroup>
+                      {isAdmin && (
+                        <AddMember
+                          groupId={currentGroup.id}
+                          onUpdate={() => {
+                            setUpdate(!update);
+                          }}
+                        />
+                      )}
+                      <BasicButton
+                        leftIcon={<IoPrint />}
+                        variant="secondary"
+                        onClick={window.print}
+                        size="sm"
+                      >
+                        印刷
+                      </BasicButton>
+                    </ButtonGroup>
+                  </RecoilRoot>
                 )}
               </>
             }
