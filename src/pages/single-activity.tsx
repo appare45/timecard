@@ -15,8 +15,8 @@ const SingleActivity = (): ReactElement => {
   const { currentGroup } = useContext(GroupContext);
   useEffect(() => {
     if (activityId && currentGroup) {
-      getActivitySnapshot(activityId, currentGroup.id).then((e) =>
-        setActivitySnapshot(e)
+      getActivitySnapshot(activityId, currentGroup.id).then(
+        setActivitySnapshot
       );
     }
   }, [activityId, currentGroup]);

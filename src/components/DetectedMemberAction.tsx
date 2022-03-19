@@ -66,6 +66,7 @@ const DetectedMemberAction: React.FC<props> = ({
                 const _latestActivity = latestActivity.data();
                 _latestActivity.content.endTime = Timestamp.now();
                 _latestActivity.content.status = 'done';
+                _latestActivity.updated = Timestamp.now();
                 setWork(currentGroup.id, latestActivity?.id, _latestActivity, {
                   merge: true,
                 }).then(() => {
