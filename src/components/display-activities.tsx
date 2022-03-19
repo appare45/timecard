@@ -67,7 +67,11 @@ export const AllActivity: React.FC<{ loadMore?: boolean }> = ({
 
   const loadMoreData = useCallback(() => {
     if (currentGroup && activities)
-      getAllActivities(currentGroup.id, 5, lastDoc).then((_activities) => {
+      getAllActivities({
+        groupId: currentGroup.id,
+        limitCount: 5,
+        startAtDocument: lastDoc,
+      }).then((_activities) => {
         setActivities((e): QueryDocumentSnapshot<activity<work>>[] => [
           ...(e ?? []),
           ..._activities,
@@ -78,10 +82,12 @@ export const AllActivity: React.FC<{ loadMore?: boolean }> = ({
 
   useMemo(() => {
     if (currentGroup) {
-      getAllActivities(currentGroup.id, 5).then((activities) => {
-        setActivities(activities);
-        setLastDoc(activities[4]);
-      });
+      getAllActivities({ groupId: currentGroup.id, limitCount: 5 }).then(
+        (activities) => {
+          setActivities(activities);
+          setLastDoc(activities[4]);
+        }
+      );
     }
   }, [currentGroup]);
 

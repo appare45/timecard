@@ -513,18 +513,21 @@ const getUserActivities = async (
   }
 };
 
-const getAllActivities = async (
-  groupId: string,
-  limitCount?: number,
-  startAtDocument?: DocumentSnapshot
-): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
+const getAllActivities = async (props: {
+  groupId: string;
+  limitCount?: number;
+  onlyRunning?: boolean;
+  startAtDocument?: DocumentSnapshot;
+}): Promise<QueryDocumentSnapshot<activity<work>>[]> => {
   try {
     const filters = [orderBy('updated', 'desc')];
-    if (limitCount) filters.push(limit(limitCount));
-    if (startAtDocument) filters.push(startAfter(startAtDocument));
+    if (props.limitCount) filters.push(limit(props.limitCount));
+    if (props.startAtDocument) filters.push(startAfter(props.startAtDocument));
+    if (props.onlyRunning)
+      filters.push(where('content.status', '==', 'running'));
     const q = await getDocs(
       query(
-        collection(Db, `group/${groupId}/activity/`).withConverter(
+        collection(Db, `group/${props.groupId}/activity/`).withConverter(
           activityDataConverter
         ),
         ...filters
