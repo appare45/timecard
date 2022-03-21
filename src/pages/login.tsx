@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Center, Heading } from '@chakra-ui/layout';
+import { Box, Center, Heading, Text } from '@chakra-ui/layout';
 import { Image } from '@chakra-ui/image';
 import { IoLogoGoogle } from 'react-icons/io5';
 import {
@@ -9,7 +9,7 @@ import {
 } from 'firebase/auth';
 import { useUniversalColors } from '../hooks/color-mode';
 import { auth } from '../utils/auth';
-import { BasicButton } from '../components/buttons';
+import { Button } from '@chakra-ui/button';
 
 const FirebaseAuth: React.FC<{ redirectUri: string; isLoading: boolean }> = ({
   redirectUri,
@@ -21,14 +21,19 @@ const FirebaseAuth: React.FC<{ redirectUri: string; isLoading: boolean }> = ({
     redirect_uri: redirectUri,
   });
   return (
-    <BasicButton
-      leftIcon={<IoLogoGoogle />}
-      variant="primary"
-      isLoading={isLoading}
+    <Button
+      w={'full'}
+      maxW={'md'}
+      variant={'outline'}
       onClick={() => signInWithRedirect(auth(), provider)}
+      leftIcon={<IoLogoGoogle />}
+      isLoading={isLoading}
+      colorScheme="gray"
     >
-      Googleアカウントでログイン
-    </BasicButton>
+      <Center>
+        <Text>Sign in with Google</Text>
+      </Center>
+    </Button>
   );
 };
 
