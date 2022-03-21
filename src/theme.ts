@@ -12,6 +12,11 @@ const theme = extendTheme({
         colorScheme: 'green',
       },
     },
+    Checkbox: {
+      defaultProps: {
+        colorScheme: 'green',
+      },
+    },
   },
   initialColorMode: 'light',
   useSystemColorMode: true,

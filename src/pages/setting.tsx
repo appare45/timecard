@@ -76,9 +76,9 @@ const PersonalSetting: React.FC = () => {
 
   const [userName, setUserName] = useState<string>();
   return (
-    <Box my="4">
+    <Box>
       <Heading size="lg">個人設定</Heading>
-      <Stack spacing="2" py="4">
+      <Stack spacing="2">
         <HStack spacing="12">
           <HStack my="4" spacing="3">
             <SkeletonCircle isLoaded={!!Member?.data}>
@@ -136,7 +136,7 @@ const Setting: React.FC = () => {
   const { isAdmin } = useContext(GroupContext);
   return (
     <GroupTemplate title="設定">
-      <Stack spacing="5" py="3">
+      <Stack spacing="5">
         <PersonalSetting />
         <Suspense fallback={<LoadingScreen />}>
           {isAdmin && <AdminSetting />}

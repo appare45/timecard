@@ -1,4 +1,3 @@
-import { Text } from '@chakra-ui/layout';
 import React, { Suspense, useContext, useState } from 'react';
 import { IoScan } from 'react-icons/io5';
 import {
@@ -46,13 +45,13 @@ const Timeline: React.FC = () => {
                     >
                       スキャン
                     </BasicButton>
-                    <EndAllActivity />
                   </>
                 )}
               </>
             }
+            titleLeftButtons={isAdmin ? <EndAllActivity /> : undefined}
+            description="全てのアクティビティーが時間順で並びます"
           >
-            <Text>全てのアクティビティーが時間順で並びます</Text>
             <Suspense fallback={<LoadingScreen />}>
               <Activities />
             </Suspense>

@@ -43,6 +43,8 @@ export const SideWidget: React.FC = ({ children }) => {
       mt="10"
       border="1px"
       bg={useColorModeValue('gray.50', 'gray.950')}
+      position="sticky"
+      top={10}
       borderColor={useColorModeValue('gray.200', 'gray.800')}
       p="5"
       rounded="base"

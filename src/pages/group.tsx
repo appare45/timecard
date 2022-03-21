@@ -1,16 +1,6 @@
-import {
-  Link,
-  Stack,
-  Text,
-  Box,
-  HStack,
-  Circle,
-  Center,
-} from '@chakra-ui/layout';
+import { Box, HStack, Circle, Center } from '@chakra-ui/layout';
 import { Link as RouterLink } from 'react-router-dom';
 import { useToast } from '@chakra-ui/toast';
-import { Icon } from '@chakra-ui/icon';
-import { Select } from '@chakra-ui/select';
 import {
   DocumentReference,
   DocumentSnapshot,
@@ -25,19 +15,12 @@ import React, {
   useState,
 } from 'react';
 import { useMemo } from 'react';
-import {
-  IoAnalytics,
-  IoEaselOutline,
-  IoHome,
-  IoPeople,
-  IoPersonCircleOutline,
-  IoSettings,
-} from 'react-icons/io5';
-import { Link as routerLink, Route, Switch } from 'react-router-dom';
+import { IoEaselOutline, IoPersonCircleOutline } from 'react-icons/io5';
+import { Nav } from './../components/nav';
+import { Route, Switch } from 'react-router-dom';
 import { LoadingScreen } from '../components/assets';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
-import { useUniversalColors } from '../hooks/color-mode';
 import { useIsPrint } from '../hooks/media-query';
 import { GroupTemplate } from '../templates/group';
 import {
@@ -52,30 +35,6 @@ import { BasicButton } from '../components/buttons';
 
 type groupProps = {
   groups: DocumentReference<Group>[];
-};
-
-const GroupSelector: React.FC<{
-  groups: DocumentSnapshot<Group>[];
-  update: (e: DocumentSnapshot<Group> | undefined) => void;
-}> = ({ groups, update }) => {
-  return (
-    <>
-      <Select
-        onChange={(e) =>
-          update(groups.find((group) => group.id === e.target.value))
-        }
-        colorScheme="gray"
-        isFullWidth={false}
-        width="50"
-      >
-        {groups.map((group) => (
-          <option key={group.id} value={group.id}>
-            {group?.data()?.name ?? ''}
-          </option>
-        ))}
-      </Select>
-    </>
-  );
 };
 
 const ScanButton: React.FC<{ setFrontMode: () => void }> = ({
@@ -96,37 +55,7 @@ const ScanButton: React.FC<{ setFrontMode: () => void }> = ({
   );
 };
 
-const MenuLink: React.FC<{
-  children: string;
-  to: string;
-  leftIcon: React.FC;
-}> = ({ children, to, leftIcon }) => {
-  const { component_foreground } = useUniversalColors();
-  return (
-    <Link
-      variant="link"
-      color={component_foreground}
-      fontSize="lg"
-      p="1.5"
-      w="full"
-      textAlign="left"
-      as={routerLink}
-      to={to}
-      fontWeight="bold"
-      wordBreak="keep-all"
-    >
-      <Stack direction="row" align="center" spacing="2">
-        <Icon as={leftIcon} />
-        <Text>{children}</Text>
-      </Stack>
-    </Link>
-  );
-};
-
 const GroupUI: React.FC<groupProps> = ({ groups }) => {
-  const [groupDataList, setGroupDataList] = useState<DocumentSnapshot<Group>[]>(
-    []
-  );
   const [currentGroup, updateCurrentGroup] =
     useState<DocumentSnapshot<Group>>();
   const [frontMode, setFrontMode] = useState<boolean>();
@@ -137,6 +66,21 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
   const toast = useToast();
 
   const isPrint = useIsPrint();
+  const [groupDataList, setGroupDataList] = useState<DocumentSnapshot<Group>[]>(
+    []
+  );
+
+  // グループデータの取得
+  useMemo(() => {
+    groups.forEach((_group) => {
+      getDoc(_group).then((group) => {
+        if (group) {
+          setGroupDataList((_group) => [..._group, group]);
+          updateCurrentGroup(group);
+        }
+      });
+    });
+  }, [groups]);
   // フロントモードの切り替え
   useEffect(() => {
     const dbName = 'Group';
@@ -171,19 +115,6 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
       };
     }
   }, [frontMode]);
-
-  // グループデータの取得
-  useMemo(() => {
-    groups.forEach((group) => {
-      getDoc(group).then((group) => {
-        if (group) {
-          setGroupDataList((_group) => [..._group, group]);
-          updateCurrentGroup(group);
-        }
-      });
-    });
-  }, [groups]);
-
   // アカウント情報の取得
   useMemo(() => {
     if (account?.email && currentGroup)
@@ -235,28 +166,6 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
     () => import('../components/display-activities')
   );
 
-  const Nav: React.FC = () => {
-    return (
-      <Box pos="sticky" top="10" h="full">
-        <GroupSelector groups={groupDataList} update={updateCurrentGroup} />
-        <Stack spacing="1" my="5" align="flex-start">
-          <MenuLink leftIcon={IoHome} to="/">
-            トップ
-          </MenuLink>
-          <MenuLink leftIcon={IoAnalytics} to="/activity">
-            タイムライン
-          </MenuLink>
-          <MenuLink leftIcon={IoPeople} to="/member">
-            メンバー
-          </MenuLink>
-          <MenuLink leftIcon={IoSettings} to="/setting">
-            設定
-          </MenuLink>
-        </Stack>
-      </Box>
-    );
-  };
-
   const Members = React.lazy(() => import('./members'));
   const Front = React.lazy(() => import('../components/front'));
   const NewGroup = React.lazy(() => import('../components/new-group'));
@@ -280,8 +189,13 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
             </Suspense>
           ) : (
             <>
-              <HStack align="start" h="100vh" py="10" px="5" spacing="20">
-                {!isPrint && <Nav />}
+              <HStack align="start" minH="100vh" py="10" px="5" spacing="10">
+                {!isPrint && (
+                  <Nav
+                    updateCurrentGroup={(e) => updateCurrentGroup(e)}
+                    groups={groupDataList}
+                  />
+                )}
                 <Box flexGrow={1}>
                   <Suspense fallback={LoadingScreen}>
                     <Switch>

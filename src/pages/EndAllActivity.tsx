@@ -3,6 +3,7 @@ import { Alert, AlertIcon } from '@chakra-ui/alert';
 import {
   Modal,
   ModalBody,
+  ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalOverlay,
@@ -45,6 +46,7 @@ export const EndAllActivity = (): JSX.Element => {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>進行中のアクティビティーをすべて終了</ModalHeader>
+          <ModalCloseButton />
           <ModalBody>
             {!!AllRunningActivities?.length && (
               <>

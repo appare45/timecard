@@ -1,4 +1,4 @@
-import { HStack, Heading, Spacer, Box } from '@chakra-ui/layout';
+import { HStack, Heading, Spacer, Box, Text } from '@chakra-ui/layout';
 import React, { ReactElement } from 'react';
 import { useHistory } from 'react-router';
 import { SideWidget } from '../components/assets';
@@ -10,23 +10,26 @@ export const GroupTemplate: React.FC<{
   displayGoBackButton?: boolean;
   sideWidget?: ReactElement;
   children: ReactElement | ReactElement[];
+  description?: string;
 }> = ({
   title,
   titleLeftButtons,
   displayGoBackButton,
   sideWidget,
+  description,
   children,
 }) => {
   const history = useHistory();
   return (
     <>
       {displayGoBackButton && history.length > 0 && <BackButton />}
-      <HStack w="full">
+      <HStack w="full" alignItems="baseline" mb="5">
         <Heading>{title}</Heading>
+        <Text>{description}</Text>
         <Spacer />
         {titleLeftButtons}
       </HStack>
-      <HStack align="flex-start">
+      <HStack align="flex-start" position="relative">
         <Box flexGrow={1}>{children}</Box>
         {sideWidget && <SideWidget>{sideWidget}</SideWidget>}
       </HStack>
