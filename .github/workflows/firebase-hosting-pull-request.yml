@@ -10,18 +10,6 @@ env:
   VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
   VITE_PREVIEW: true
 jobs:
-  # https://github.com/dependabot/dependabot-core/issues/3253#issuecomment-852541544
-  do-stuff:
-    runs-on: ubuntu-latest
-    if: ${{ github.actor == 'dependabot[bot]' }}
-    steps:
-      - name: Create comment
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            @dependabot squash and merge
-      - uses: actions/checkout@v2
   build:
     runs-on: ubuntu-latest
     steps:
