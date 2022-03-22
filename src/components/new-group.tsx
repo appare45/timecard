@@ -1,32 +1,32 @@
 import React, { Suspense } from 'react';
-import { Button } from '@chakra-ui/button';
-import { useBoolean } from '@chakra-ui/hooks';
-import { Box, Heading, VStack } from '@chakra-ui/layout';
 import { LoadingScreen } from './assets';
-
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/tabs';
+import JoinGroup from './join-group';
 const NewGroup = (): JSX.Element => {
-  const [createGroupMode, setCreateGroupMode] = useBoolean(false);
   const CreateGroup = React.lazy(() => import('./create-group'));
-  const JoinGroup = React.lazy(() => import('./join-group'));
   return (
-    <VStack spacing="5" alignItems="center">
-      <Suspense fallback={<LoadingScreen />}>
-        {createGroupMode ? (
-          <Box>
-            <Heading>グループの作成</Heading>
-            <CreateGroup />
-          </Box>
-        ) : (
-          <Box>
-            <Heading>グループに参加</Heading>
+    <Suspense fallback={<LoadingScreen />}>
+      <Tabs
+        isFitted
+        isLazy
+        lazyBehavior="keepMounted"
+        colorScheme="green"
+        variant="soft-rounded"
+      >
+        <TabList bg="green.50">
+          <Tab>参加</Tab>
+          <Tab>作成</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel>
             <JoinGroup />
-          </Box>
-        )}
-      </Suspense>
-      <Button w="full" onClick={setCreateGroupMode.toggle} variant="outline">
-        {createGroupMode ? '参加' : '新規作成'}
-      </Button>
-    </VStack>
+          </TabPanel>
+          <TabPanel>
+            <CreateGroup />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+    </Suspense>
   );
 };
 

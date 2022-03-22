@@ -1,4 +1,4 @@
-import React, { Suspense, useContext, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
 import { IoScan } from 'react-icons/io5';
 import {
   useRouteMatch,
@@ -7,8 +7,8 @@ import {
   Route,
   Link as RouterLink,
 } from 'react-router-dom';
-import { LoadingScreen } from '../components/assets';
 import { BasicButton } from '../components/buttons';
+import AllActivity from '../components/display-activities';
 import { GroupContext } from '../contexts/group';
 import { GroupTemplate } from '../templates/group';
 import { dataWithId } from '../utils/firebase';
@@ -24,9 +24,7 @@ const Timeline: React.FC = () => {
   const QRCodeScan = React.lazy(() => import('./../components/qrcodeScan'));
   const MemberAction = React.lazy(() => import('./../components/MemberAction'));
   const SingleActivity = React.lazy(() => import('./../pages/single-activity'));
-  const Activities = React.lazy(
-    () => import('./../components/display-activities')
-  );
+  const Activities = () => useMemo(() => <AllActivity />, []);
   return (
     <>
       <Switch>
@@ -52,9 +50,7 @@ const Timeline: React.FC = () => {
             titleLeftButtons={isAdmin ? <EndAllActivity /> : undefined}
             description="全てのアクティビティーが時間順で並びます"
           >
-            <Suspense fallback={<LoadingScreen />}>
-              <Activities />
-            </Suspense>
+            <Activities />
           </GroupTemplate>
         </Route>
         <Route exact path={`${path}scan`}>

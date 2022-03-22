@@ -8,35 +8,34 @@ import {
   HStack,
   Spacer,
 } from '@chakra-ui/layout';
-import React, { useContext, useEffect, useState } from 'react';
-import { useHistory } from 'react-router';
+import React, { useContext, useMemo, useState } from 'react';
 import { AuthContext } from '../contexts/user';
 import { Group, setAccount } from '../utils/group';
 import { getInvite } from '../utils/invite';
 import { setUser } from '../utils/user';
 import { BasicButton } from './buttons';
+import { LoadingScreen } from './assets';
 
 const JoinGroup: React.FC = () => {
   const Auth = useContext(AuthContext);
-  const history = useHistory();
-  const [invitedGroup, setInvitedGroup] = useState<DocumentSnapshot<Group>[]>(
-    []
-  );
-  useEffect(() => {
+  const [invitedGroup, setInvitedGroup] = useState<
+    DocumentSnapshot<Group>[] | null
+  >(null);
+  useMemo(() => {
     if (Auth.account?.email) {
       getInvite(Auth.account.email).then((invite) => {
-        console.info(invite.data());
+        setInvitedGroup([]);
         invite.data()?.group.forEach((group) => {
           getDoc(group).then((groupData) => {
-            setInvitedGroup((e) => [...e, groupData]);
+            setInvitedGroup((e) => [...(e ?? []), groupData]);
           });
         });
       });
     }
-  }, [Auth.account, history]);
+  }, [Auth.account]);
   return (
     <Box>
-      {invitedGroup.length ? (
+      {!!invitedGroup?.length && (
         <VStack spacing="4" w="full">
           <Text>招待が届いています</Text>
           <Box>
@@ -47,9 +46,11 @@ const JoinGroup: React.FC = () => {
             </Stack>
           </Box>
         </VStack>
-      ) : (
+      )}
+      {invitedGroup?.length === 0 && (
         <Text>招待さているグループがありません</Text>
       )}
+      {invitedGroup === null && <LoadingScreen />}
     </Box>
   );
 };
@@ -81,7 +82,7 @@ const InvitedGroup = ({ group }: { group: DocumentSnapshot<Group> }) => {
         <>
           <Text>{groupData.name}</Text>
           <Spacer />
-          <BasicButton variant="secondary" onClick={joinGroup}>
+          <BasicButton variant="secondary" size="sm" onClick={joinGroup}>
             参加
           </BasicButton>
         </>
