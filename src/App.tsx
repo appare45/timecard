@@ -19,7 +19,7 @@ function App(): JSX.Element {
       .catch((error) => {
         console.error(error);
       });
-    if (isProduction)
+    if (!isProduction)
       observeFps({
         description: `Build: ${import.meta.env.MODE} - ${
           isEmulator() ? 'emulator' : 'local'
