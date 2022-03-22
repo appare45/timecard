@@ -45,9 +45,9 @@ function UserActivity(): JSX.Element {
   useMemo(() => {
     if (currentGroup && !user) {
       if (currentMember?.id == memberId) {
-        setUser(currentMember.data() ?? null);
+        setUser(currentMember?.data() ?? null);
         setIsOwnMember(currentMember?.id == memberId);
-      } else if (currentMember?.id) {
+      } else if (currentMember?.id && memberId) {
         getMember(memberId, currentGroup.id).then((member) => {
           setUser(member?.data() ?? null);
         });
@@ -57,7 +57,7 @@ function UserActivity(): JSX.Element {
 
   const loadMoreData = useCallback(() => {
     if (currentGroup)
-      if (lastActivityDoc) {
+      if (lastActivityDoc && memberId) {
         getUserActivities(currentGroup.id, memberId, 5, lastActivityDoc).then(
           (gotActivities) => {
             setLastActivityDoc(gotActivities.docs[4]);
@@ -77,7 +77,7 @@ function UserActivity(): JSX.Element {
   }, [activities, currentGroup, lastActivityDoc, memberId]);
 
   useEffect(() => {
-    if (currentGroup)
+    if (currentGroup && memberId)
       getUserActivities(currentGroup.id, memberId, 5).then((activities) => {
         setLastActivityDoc(activities.docs[4]);
         let subscription = true;
@@ -165,7 +165,7 @@ function UserActivity(): JSX.Element {
                   <AlertDialogCloseButton />
                 </AlertDialogHeader>
                 <AlertDialogBody>
-                  {user && currentGroup && (
+                  {user && currentGroup && memberId && (
                     <Suspense fallback={<LoadingScreen />}>
                       <Card
                         member={{ data: user, id: memberId }}
