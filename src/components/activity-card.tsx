@@ -6,7 +6,7 @@ import {
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { GroupContext } from '../contexts/group';
 import { activity, setWork, work, workStatus } from '../utils/group';
-import { Link as RouterLink, useHistory } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   IoCheckmarkOutline,
   IoClipboardOutline,
@@ -40,7 +40,7 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
   const { hasCopied, onCopy } = useClipboard(
     `${location.host}/activity/${activityId}`
   );
-  const history = useHistory();
+  const history = useNavigate();
   const [shareAvailable, setShareAvailable] = useState<boolean>();
   useEffect(() => setShareAvailable(!!navigator.share), []);
 
@@ -56,7 +56,7 @@ const ActivityMenu: React.FC<{ activityId: string; isEditable: boolean }> = ({
           <IconButton
             aria-label="編集"
             icon={<IoPencilOutline />}
-            onClick={() => history.push(`/activity/${activityId}`)}
+            onClick={() => history(`/activity/${activityId}`)}
           />
         </Tooltip>
       )}

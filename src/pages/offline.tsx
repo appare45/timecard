@@ -9,13 +9,13 @@ import {
 } from '@chakra-ui/layout';
 import { Icon } from '@chakra-ui/icon';
 import { IoCloudOffline } from 'react-icons/io5';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { BasicButton } from '../components/buttons';
 const Offline: React.FC = () => {
-  const history = useHistory();
+  const history = useNavigate();
   useEffect(() => {
     window.addEventListener('offline', () => {
-      history.go(0);
+      history(0);
     });
   });
   return (
@@ -41,7 +41,7 @@ const Offline: React.FC = () => {
         <Box>
           <VStack>
             <Heading>インターネット接続がありません</Heading>
-            <BasicButton variant="primary" onClick={() => history.go(0)}>
+            <BasicButton variant="primary" onClick={() => history(0)}>
               再試行
             </BasicButton>
           </VStack>

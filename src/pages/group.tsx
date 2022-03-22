@@ -1,5 +1,5 @@
 import { Box, HStack, Circle, Center } from '@chakra-ui/layout';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, Routes } from 'react-router-dom';
 import { useToast } from '@chakra-ui/toast';
 import {
   DocumentReference,
@@ -17,7 +17,7 @@ import React, {
 import { useMemo } from 'react';
 import { IoEaselOutline, IoPersonCircleOutline } from 'react-icons/io5';
 import { Nav } from './../components/nav';
-import { Route, Switch } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import { LoadingScreen } from '../components/assets';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
@@ -198,44 +198,41 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
                 )}
                 <Box flexGrow={1}>
                   <Suspense fallback={LoadingScreen}>
-                    <Switch>
-                      <Route exact path="/">
-                        <GroupTemplate
-                          title="最新のアクティビティー"
-                          sideWidget={
-                            <>
-                              {isAdmin && (
-                                <ScanButton
-                                  setFrontMode={() => {
-                                    setFrontMode(true);
-                                    document.body.requestFullscreen();
-                                  }}
-                                />
-                              )}
-                              <BasicButton
-                                as={RouterLink}
-                                leftIcon={<IoPersonCircleOutline />}
-                                to={`/member/${currentMemberData?.id}`}
-                                variant="secondary"
-                              >
-                                自分のアクティビティーを確認
-                              </BasicButton>
-                            </>
-                          }
-                        >
-                          <AllActivity loadMore={false} />
-                        </GroupTemplate>
-                      </Route>
-                      <Route path={`/activity/`}>
-                        <Activities />
-                      </Route>
-                      <Route path={`/member/`}>
-                        <Members />
-                      </Route>
-                      <Route path={`/setting/`}>
-                        <Setting />
-                      </Route>
-                    </Switch>
+                    <Routes>
+                      <Route
+                        path="/"
+                        element={
+                          <GroupTemplate
+                            title="最新のアクティビティー"
+                            sideWidget={
+                              <>
+                                {isAdmin && (
+                                  <ScanButton
+                                    setFrontMode={() => {
+                                      setFrontMode(true);
+                                      document.body.requestFullscreen();
+                                    }}
+                                  />
+                                )}
+                                <BasicButton
+                                  as={RouterLink}
+                                  leftIcon={<IoPersonCircleOutline />}
+                                  to={`/member/${currentMemberData?.id}`}
+                                  variant="secondary"
+                                >
+                                  自分のアクティビティーを確認
+                                </BasicButton>
+                              </>
+                            }
+                          >
+                            <AllActivity loadMore={false} />
+                          </GroupTemplate>
+                        }
+                      />
+                      <Route path={`activity/*`} element={<Activities />} />
+                      <Route path={`member/*`} element={<Members />} />
+                      <Route path={`setting/`} element={<Setting />} />
+                    </Routes>
                   </Suspense>
                 </Box>
               </HStack>

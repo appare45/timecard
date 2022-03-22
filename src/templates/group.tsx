@@ -1,6 +1,6 @@
 import { HStack, Heading, Spacer, Box, Text } from '@chakra-ui/layout';
 import React, { ReactElement } from 'react';
-import { useHistory } from 'react-router';
+import { useNavigate } from 'react-router';
 import { SideWidget } from '../components/assets';
 import { BackButton } from './../components/buttons';
 
@@ -19,7 +19,7 @@ export const GroupTemplate: React.FC<{
   description,
   children,
 }) => {
-  const history = useHistory();
+  const history = useNavigate();
   return (
     <>
       {displayGoBackButton && history.length > 0 && <BackButton />}

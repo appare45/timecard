@@ -1,13 +1,13 @@
 import React from 'react';
 import { Button, ButtonProps } from '@chakra-ui/button';
 import { IoArrowBack } from 'react-icons/io5';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 export const BackButton = (): JSX.Element => {
-  const history = useHistory();
+  const history = useNavigate();
   return (
     <Button
       leftIcon={<IoArrowBack />}
-      onClick={() => history.goBack()}
+      onClick={() => history(-1)}
       variant="link"
       colorScheme="gray"
     >
