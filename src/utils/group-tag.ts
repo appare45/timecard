@@ -12,6 +12,7 @@ import {
   QuerySnapshot,
   startAfter,
 } from '@firebase/firestore';
+import { deleteDoc, doc } from 'firebase/firestore';
 import { Db } from './firebase';
 
 export type tagColors =
@@ -94,6 +95,21 @@ export async function listTag(
         TagConverter
       )
     );
+  } catch (error) {
+    console.error(error);
+    throw new Error();
+  }
+}
+
+interface deletion_interface {
+  groupId: string;
+  tagId: string;
+}
+
+export async function deleteTag(params: deletion_interface): Promise<void> {
+  try {
+    const targetDoc = doc(Db(), `group/${params.groupId}/tag/`, params.tagId);
+    await deleteDoc(targetDoc);
   } catch (error) {
     console.error(error);
     throw new Error();
