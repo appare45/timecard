@@ -14,7 +14,6 @@ import {
   Spacer,
 } from '@chakra-ui/layout';
 import { Skeleton } from '@chakra-ui/skeleton';
-import { Editable, EditableInput, EditablePreview } from '@chakra-ui/editable';
 import { Select } from '@chakra-ui/select';
 import { Alert, AlertIcon, AlertTitle } from '@chakra-ui/alert';
 import {
@@ -128,7 +127,7 @@ const CreateTag = () => {
   ];
   const bgColor = useUniversalColors().background;
   return (
-    <HStack my="3" position="relative">
+    <HStack my="3" position="relative" zIndex={100} w="max-content">
       {createMode ? (
         <VStack
           position="absolute"
@@ -137,72 +136,68 @@ const CreateTag = () => {
           rounded="md"
           shadow="md"
         >
-          <HStack w="max-content">
-            <GroupTag
-              label={
-                <Editable
-                  placeholder="タグの名前を入力"
-                  onSubmit={(e) => setTagName(e)}
-                  startWithEditView
-                >
-                  <EditableInput />
-                  <EditablePreview />
-                </Editable>
-              }
-              color={tagColor}
-              size="lg"
-            />
-            <Select
-              variant="filled"
-              size="sm"
-              w="max-content"
-              iconColor={tagColor}
-              value={tagColor}
-              onChange={(e) => setTagColor(e.target.value as tagColors)}
-            >
-              {tagColors.map((color) => (
-                <option key={color} id={color}>
-                  {color}
-                </option>
-              ))}
-            </Select>
-          </HStack>
-          <Spacer />
-          {tagName.length == 0 && (
-            <Alert status="warning" w="auto" variant="subtle">
-              <AlertIcon />
-              タグの名前を入力してください
-            </Alert>
-          )}
-          <ButtonGroup>
-            <BasicButton
-              variant="primary"
-              disabled={tagName.length == 0 && tagName.length < 20}
-              onClick={() => {
-                if (currentGroup && tagName.length > 0)
-                  createTag(new tag(tagName, tagColor), currentGroup.id)
-                    .then(() => {
-                      toast({
-                        title: 'タグを作成しました',
-                        status: 'success',
-                      });
-                      setCreateMode.off();
-                    })
-                    .catch(() => {
-                      toast({ title: '作成に失敗しました', status: 'error' });
+          <form
+            onSubmit={() => {
+              if (currentGroup && tagName.length > 0)
+                createTag(new tag(tagName, tagColor), currentGroup.id)
+                  .then(() => {
+                    toast({
+                      title: 'タグを作成しました',
+                      status: 'success',
                     });
-              }}
-            >
-              作成
-            </BasicButton>
-            <CancelButton
-              variant="secondary"
-              colorScheme="red"
-              onClick={setCreateMode.off}
-            >
-              キャンセル
-            </CancelButton>
-          </ButtonGroup>
+                    setCreateMode.off();
+                  })
+                  .catch(() => {
+                    toast({ title: '作成に失敗しました', status: 'error' });
+                  });
+            }}
+          >
+            <HStack w="max-content">
+              <FormControl isRequired>
+                <FormLabel htmlFor="tagName">タグの名前</FormLabel>
+                <Input
+                  id="tagName"
+                  onChange={(e) => setTagName(e.target.value)}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel htmlFor="tagColor">タグのカラー</FormLabel>
+                <Select
+                  id="tagColor"
+                  variant="filled"
+                  size="sm"
+                  w="max-content"
+                  iconColor={tagColor}
+                  value={tagColor}
+                  onChange={(e) => setTagColor(e.target.value as tagColors)}
+                >
+                  {tagColors.map((color) => (
+                    <option key={color} id={color}>
+                      {color}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+            </HStack>
+            <Spacer />
+
+            <ButtonGroup>
+              <BasicButton
+                variant="primary"
+                disabled={tagName.length == 0 && tagName.length < 20}
+                type="submit"
+              >
+                作成
+              </BasicButton>
+              <CancelButton
+                variant="secondary"
+                colorScheme="red"
+                onClick={setCreateMode.off}
+              >
+                キャンセル
+              </CancelButton>
+            </ButtonGroup>
+          </form>
         </VStack>
       ) : (
         <BasicButton
@@ -250,12 +245,7 @@ const TagList = () => {
       {tags.length > 0 ? (
         <Stack shouldWrapChildren direction="row">
           {tags?.map((e) => (
-            <GroupTag
-              label={e.data().name ?? '読込中'}
-              color={e.data().color ?? 'gray'}
-              key={e.id}
-              size="lg"
-            />
+            <GroupTag tag={e} key={e.id} size="lg" />
           ))}
         </Stack>
       ) : (
