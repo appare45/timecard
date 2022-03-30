@@ -8,29 +8,14 @@ import { Alert, AlertIcon, AlertTitle } from '@chakra-ui/alert';
 import { FormControl, FormLabel } from '@chakra-ui/form-control';
 import { useToast } from '@chakra-ui/toast';
 import { QueryDocumentSnapshot } from '@firebase/firestore';
-import React, { useContext, useState } from 'react';
+import React, { Suspense, useContext, useState } from 'react';
 import { IoAdd } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
-import {
-  createTag,
-  deleteTag,
-  listTag,
-  tag,
-  tagColors,
-  updateTag,
-} from '../utils/group-tag';
-import { GroupTag } from './assets';
+import { createTag, listTag, tag, tagColors } from '../utils/group-tag';
+import { GroupTag, LoadingScreen } from './assets';
 import { useUniversalColors } from '../hooks/color-mode';
 import { BasicButton, CancelButton } from './buttons';
-import {
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-} from '@chakra-ui/modal';
+import { Modal, ModalContent, ModalOverlay } from '@chakra-ui/modal';
 import useSWR from 'swr';
 
 const CreateTag = () => {
@@ -154,66 +139,22 @@ const Tag: React.FC<{
   onUpdate: () => unknown;
 }> = ({ tag, onUpdate }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { currentGroup } = useContext(GroupContext);
-  const [newTag, setNewTag] = useState<tag>(tag.data());
+  const TagSettingModal = React.lazy(() => import('./TagSettingModal'));
   return (
     <>
       <GroupTag tag={tag} onClick={onOpen} />
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              updateTag({
-                ref: tag.ref,
-                data: newTag,
-              }).then(() => {
-                onUpdate();
+          <Suspense fallback={<LoadingScreen />}>
+            <TagSettingModal
+              tag={tag}
+              onUpdate={() => {
                 onClose();
-              });
-            }}
-          >
-            <ModalHeader>タグの編集</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <FormControl isRequired>
-                <FormLabel>名前</FormLabel>
-                <Input
-                  defaultValue={newTag.name}
-                  onChange={(e) =>
-                    setNewTag((T) => {
-                      const S = T;
-                      S.name = e.target.value;
-                      return S;
-                    })
-                  }
-                />
-              </FormControl>
-            </ModalBody>
-            <ModalFooter>
-              <HStack>
-                <CancelButton
-                  variant="secondary"
-                  onClick={async () => {
-                    if (currentGroup?.id) {
-                      await deleteTag({
-                        groupId: currentGroup?.id,
-                        tagId: tag.id,
-                      });
-                      onUpdate();
-                      onClose();
-                    }
-                  }}
-                >
-                  タグを削除
-                </CancelButton>
-                <BasicButton variant="primary" type="submit">
-                  設定
-                </BasicButton>
-              </HStack>
-            </ModalFooter>
-          </form>
+                onUpdate();
+              }}
+            />
+          </Suspense>
         </ModalContent>
       </Modal>
     </>
