@@ -21,7 +21,6 @@ export const GroupTagList: React.FC<{
 
   const { currentGroup } = useContext(GroupContext);
   const { data, error } = useSWR(currentGroup?.id, listTag);
-  console.warn(data, currentGroup?.id);
 
   return useMemo(() => {
     // 各タグ

@@ -8,7 +8,7 @@ import { Alert, AlertIcon, AlertTitle } from '@chakra-ui/alert';
 import { FormControl, FormLabel } from '@chakra-ui/form-control';
 import { useToast } from '@chakra-ui/toast';
 import { QueryDocumentSnapshot } from '@firebase/firestore';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { IoAdd } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import {
@@ -31,6 +31,7 @@ import {
   ModalHeader,
   ModalOverlay,
 } from '@chakra-ui/modal';
+import useSWR from 'swr';
 
 const CreateTag = () => {
   const [createMode, setCreateMode] = useBoolean(false);
@@ -150,7 +151,8 @@ export const TagSetting = (): JSX.Element => {
 
 const Tag: React.FC<{
   tag: QueryDocumentSnapshot<tag>;
-}> = ({ tag }) => {
+  onUpdate: () => unknown;
+}> = ({ tag, onUpdate }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { currentGroup } = useContext(GroupContext);
   const [newTag, setNewTag] = useState<tag>(tag.data());
@@ -161,11 +163,15 @@ const Tag: React.FC<{
         <ModalOverlay />
         <ModalContent>
           <form
-            onSubmit={() => {
+            onSubmit={(e) => {
+              e.preventDefault();
               updateTag({
                 ref: tag.ref,
                 data: newTag,
-              }).then(onClose);
+              }).then(() => {
+                onUpdate();
+                onClose();
+              });
             }}
           >
             <ModalHeader>タグの編集</ModalHeader>
@@ -195,7 +201,7 @@ const Tag: React.FC<{
                         groupId: currentGroup?.id,
                         tagId: tag.id,
                       });
-
+                      onUpdate();
                       onClose();
                     }
                   }}
@@ -215,31 +221,26 @@ const Tag: React.FC<{
 };
 const TagList = () => {
   const { currentGroup } = useContext(GroupContext);
-  const [tags, setTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
   // ToDo: 無限スクロールを実装
-  useEffect(() => {
-    if (currentGroup)
-      listTag(currentGroup.id).then((e) => {
-        const tags: QueryDocumentSnapshot<tag>[] = [];
-        e.forEach((j) => tags.push(j));
-
-        setTags(tags);
-        setIsLoaded(true);
-      });
-  }, [currentGroup, setIsLoaded]);
+  const { data, error, mutate } = useSWR(currentGroup?.id, listTag);
   return (
-    <Skeleton isLoaded={isLoaded}>
-      {tags.length > 0 ? (
+    <Skeleton isLoaded={!!data}>
+      {data?.length != 0 ? (
         <Stack shouldWrapChildren direction="row">
-          {tags?.map((e) => (
-            <Tag tag={e} key={e.id} />
+          {data?.map((e) => (
+            <Tag tag={e} key={e.id} onUpdate={mutate} />
           ))}
         </Stack>
       ) : (
         <Alert status="info">
           <AlertIcon />
           <AlertTitle>タグがありません</AlertTitle>
+        </Alert>
+      )}
+      {error && (
+        <Alert status="error">
+          <AlertIcon />
+          エラーが発生しました
         </Alert>
       )}
     </Skeleton>
