@@ -1,4 +1,3 @@
-import { ButtonGroup } from '@chakra-ui/button';
 import { useBoolean } from '@chakra-ui/hooks';
 import { Input } from '@chakra-ui/input';
 import {
@@ -10,12 +9,9 @@ import {
   Circle,
   Code,
   Link,
-  VStack,
-  Spacer,
 } from '@chakra-ui/layout';
 import { Skeleton } from '@chakra-ui/skeleton';
 import { Select } from '@chakra-ui/select';
-import { Alert, AlertIcon, AlertTitle } from '@chakra-ui/alert';
 import {
   FormControl,
   FormLabel,
@@ -31,7 +27,7 @@ import {
   Timestamp,
 } from '@firebase/firestore';
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { IoAdd, IoKeyOutline, IoKeySharp, IoPerson } from 'react-icons/io5';
+import { IoKeyOutline, IoKeySharp, IoPerson } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { Link as routerLink } from 'react-router-dom';
@@ -47,10 +43,9 @@ import {
 } from '../utils/group';
 import { createInvite } from '../utils/invite';
 import { getMember, listMembers, Member } from '../utils/member';
-import { createTag, listTag, tag, tagColors } from './../utils/group-tag';
-import { CopyButton, FormButtons, GroupTag } from './assets';
-import { useUniversalColors } from '../hooks/color-mode';
-import { BasicButton, CancelButton } from './buttons';
+import { CopyButton, FormButtons } from './assets';
+import { BasicButton } from './buttons';
+import { TagSetting } from './tag-setting';
 
 const OrganizationName = () => {
   const { currentGroup } = useContext(GroupContext);
@@ -105,156 +100,6 @@ const OrganizationName = () => {
         }
       />
     </HStack>
-  );
-};
-
-const CreateTag = () => {
-  const [createMode, setCreateMode] = useBoolean(false);
-  const [tagName, setTagName] = useState('');
-  const [tagColor, setTagColor] = useState<tagColors>('red');
-  const { currentGroup } = useContext(GroupContext);
-  const toast = useToast();
-  const tagColors: tagColors[] = [
-    'gray',
-    'red',
-    'orange',
-    'yellow',
-    'green',
-    'blue',
-    'cyan',
-    'purple',
-    'pink',
-  ];
-  const bgColor = useUniversalColors().background;
-  return (
-    <HStack my="3" position="relative" zIndex={100} w="max-content">
-      {createMode ? (
-        <VStack
-          position="absolute"
-          p="4"
-          bgColor={bgColor}
-          rounded="md"
-          shadow="md"
-        >
-          <form
-            onSubmit={() => {
-              if (currentGroup && tagName.length > 0)
-                createTag(new tag(tagName, tagColor), currentGroup.id)
-                  .then(() => {
-                    toast({
-                      title: 'タグを作成しました',
-                      status: 'success',
-                    });
-                    setCreateMode.off();
-                  })
-                  .catch(() => {
-                    toast({ title: '作成に失敗しました', status: 'error' });
-                  });
-            }}
-          >
-            <HStack w="max-content">
-              <FormControl isRequired>
-                <FormLabel htmlFor="tagName">タグの名前</FormLabel>
-                <Input
-                  id="tagName"
-                  onChange={(e) => setTagName(e.target.value)}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel htmlFor="tagColor">タグのカラー</FormLabel>
-                <Select
-                  id="tagColor"
-                  variant="filled"
-                  size="sm"
-                  w="max-content"
-                  iconColor={tagColor}
-                  value={tagColor}
-                  onChange={(e) => setTagColor(e.target.value as tagColors)}
-                >
-                  {tagColors.map((color) => (
-                    <option key={color} id={color}>
-                      {color}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-            </HStack>
-            <Spacer />
-
-            <ButtonGroup>
-              <BasicButton
-                variant="primary"
-                disabled={tagName.length == 0 && tagName.length < 20}
-                type="submit"
-              >
-                作成
-              </BasicButton>
-              <CancelButton
-                variant="secondary"
-                colorScheme="red"
-                onClick={setCreateMode.off}
-              >
-                キャンセル
-              </CancelButton>
-            </ButtonGroup>
-          </form>
-        </VStack>
-      ) : (
-        <BasicButton
-          leftIcon={<IoAdd />}
-          variant="secondary"
-          size="sm"
-          onClick={setCreateMode.on}
-        >
-          タグを作成
-        </BasicButton>
-      )}
-    </HStack>
-  );
-};
-
-const TagSetting = () => {
-  return (
-    <Box>
-      <Heading size="lg">タグ</Heading>
-      <HStack>
-        <CreateTag />
-        <TagList />
-      </HStack>
-    </Box>
-  );
-};
-
-const TagList = () => {
-  const { currentGroup } = useContext(GroupContext);
-  const [tags, setTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
-  // ToDo: 無限スクロールを実装
-  useEffect(() => {
-    if (currentGroup)
-      listTag(currentGroup.id).then((e) => {
-        const tags: QueryDocumentSnapshot<tag>[] = [];
-        e.forEach((j) => tags.push(j));
-
-        setTags(tags);
-        setIsLoaded(true);
-      });
-  }, [currentGroup, setIsLoaded]);
-  return (
-    <Skeleton isLoaded={isLoaded}>
-      {tags.length > 0 ? (
-        <Stack shouldWrapChildren direction="row">
-          {tags?.map((e) => (
-            <GroupTag tag={e} key={e.id} size="lg" />
-          ))}
-        </Stack>
-      ) : (
-        <Alert status="info">
-          <AlertIcon />
-          <AlertTitle>タグがありません</AlertTitle>
-        </Alert>
-      )}
-    </Skeleton>
   );
 };
 

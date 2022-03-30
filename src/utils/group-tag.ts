@@ -12,7 +12,7 @@ import {
   QuerySnapshot,
   startAfter,
 } from '@firebase/firestore';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { deleteDoc, doc, setDoc } from 'firebase/firestore';
 import { Db } from './firebase';
 
 export type tagColors =
@@ -78,6 +78,17 @@ export async function createTag(
     }
   } else {
     throw new Error('');
+  }
+}
+interface updateTagProps {
+  ref: DocumentReference<tag>;
+  data: tag;
+}
+export async function updateTag(props: updateTagProps): Promise<void> {
+  try {
+    await setDoc(props.ref, props.data);
+  } catch (error) {
+    console.error(error);
   }
 }
 export async function listTag(

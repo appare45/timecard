@@ -134,7 +134,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
             </BasicButton>
           </Box>
         </PopoverTrigger>
-        <PopoverContent w="auto">
+        <PopoverContent w="max-content">
           <PopoverArrow />
           <PopoverCloseButton />
           <PopoverHeader>タグを選択</PopoverHeader>
@@ -159,8 +159,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
           {userTags.map((tag) => (
             <GridItem key={tag.id}>
               <GroupTag
-                label={tag.data()?.name ?? ''}
-                color={tag.data()?.color ?? 'gray'}
+                tag={tag}
                 onRemove={isAdmin ? () => removeTag(tag) : undefined}
                 size="sm"
               />

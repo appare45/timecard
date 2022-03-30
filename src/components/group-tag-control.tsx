@@ -7,6 +7,7 @@ import { useState, useContext, useEffect, useMemo } from 'react';
 import { GroupContext } from '../contexts/group';
 import { tag, listTag } from '../utils/group-tag';
 import { GroupTag } from './assets';
+import { Alert } from '@chakra-ui/alert';
 
 export const GroupTagList: React.FC<{
   userTags: {
@@ -53,7 +54,7 @@ export const GroupTagList: React.FC<{
                 }
               }}
             >
-              <GroupTag label={tagData.name} color={tagData.color} />
+              <GroupTag tag={tag} />
             </Checkbox>
           );
         } else return null;
@@ -62,6 +63,7 @@ export const GroupTagList: React.FC<{
     return (
       <Skeleton isLoaded={isLoaded} w="min-content">
         <Stack spacing="2">
+          {groupTags.length === 0 && <Alert>タグがありません</Alert>}
           {groupTags.map((tag) => (
             <GroupTagMemo tag={tag} key={tag.id} />
           ))}
