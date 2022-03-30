@@ -7,9 +7,10 @@ import { Tag, TagLabel, TagLeftIcon, TagCloseButton } from '@chakra-ui/tag';
 import { useClipboard } from '@chakra-ui/hooks';
 import React, { useEffect, useRef } from 'react';
 import { IoCheckmark, IoClipboardOutline, IoPricetag } from 'react-icons/io5';
-import { tagColors } from '../utils/group-tag';
+import { tag } from '../utils/group-tag';
 import { Member } from '../utils/member';
 import { BasicButton, CancelButton } from './buttons';
+import { DocumentSnapshot } from 'firebase/firestore';
 
 export const LoadMoreButton: React.FC<{ loadMore: () => void }> = ({
   loadMore,
@@ -112,17 +113,24 @@ export const FormButtons: React.FC<{
 );
 
 export const GroupTag: React.FC<{
-  label: React.ReactElement | string;
-  color: tagColors;
+  tag: DocumentSnapshot<tag>;
   size?: string;
   onRemove?: () => void;
-}> = ({ label, color, size = 'md', onRemove }) => {
+  onClick?: () => unknown;
+}> = ({ tag, size = 'md', onRemove, onClick }) => {
   return (
-    <Tag colorScheme={color} size={size}>
-      <TagLeftIcon as={IoPricetag} />
-      <TagLabel>{label}</TagLabel>
-      {onRemove && <TagCloseButton onClick={onRemove} />}
-    </Tag>
+    <>
+      <Tag
+        cursor="pointer"
+        colorScheme={tag.data()?.color}
+        onClick={onClick}
+        size={size}
+      >
+        <TagLeftIcon as={IoPricetag} />
+        <TagLabel>{tag.data()?.name}</TagLabel>
+        {onRemove && <TagCloseButton onClick={onRemove} />}
+      </Tag>
+    </>
   );
 };
 
