@@ -161,7 +161,7 @@ const Tag: React.FC<{
         <ModalOverlay />
         <ModalContent>
           <form
-            onSubmit={(e) => {
+            onSubmit={() => {
               updateTag({
                 ref: tag.ref,
                 data: newTag,
