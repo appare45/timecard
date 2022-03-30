@@ -9,7 +9,6 @@ import {
   query,
   QueryConstraint,
   QueryDocumentSnapshot,
-  QuerySnapshot,
   startAfter,
 } from '@firebase/firestore';
 import { deleteDoc, doc, setDoc } from 'firebase/firestore';
@@ -95,17 +94,20 @@ export async function listTag(
   groupId: string,
   limitNumber?: number,
   lastDoc?: QueryDocumentSnapshot
-): Promise<QuerySnapshot<tag>> {
+): Promise<QueryDocumentSnapshot<tag>[]> {
   try {
     const qcs: QueryConstraint[] = [];
     if (limitNumber) qcs.push(limit(limitNumber));
     if (lastDoc) qcs.push(startAfter(lastDoc));
     qcs.push(orderBy('name', 'asc'));
-    return getDocs(
+    const data: QueryDocumentSnapshot<tag>[] = [];
+    await getDocs(
       query(collection(Db(), `group/${groupId}/tag`), ...qcs).withConverter(
         TagConverter
       )
-    );
+    ).then((e) => e.forEach((_) => data.push(_)));
+    console.info(data);
+    return data;
   } catch (error) {
     console.error(error);
     throw new Error();
