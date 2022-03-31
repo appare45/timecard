@@ -132,13 +132,3 @@ interface deletion_interface {
   groupId: string;
   tagId: string;
 }
-
-export async function deleteTag(params: deletion_interface): Promise<void> {
-  try {
-    const targetDoc = doc(Db(), `group/${params.groupId}/tag/`, params.tagId);
-    await deleteDoc(targetDoc);
-  } catch (error) {
-    console.error(error);
-    throw new Error();
-  }
-}
