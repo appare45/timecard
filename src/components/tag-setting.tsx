@@ -8,29 +8,16 @@ import { Alert, AlertIcon, AlertTitle } from '@chakra-ui/alert';
 import { FormControl, FormLabel } from '@chakra-ui/form-control';
 import { useToast } from '@chakra-ui/toast';
 import { QueryDocumentSnapshot } from '@firebase/firestore';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { Suspense, useContext, useState } from 'react';
 import { IoAdd } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
-import {
-  createTag,
-  deleteTag,
-  listTag,
-  tag,
-  tagColors,
-  updateTag,
-} from '../utils/group-tag';
-import { GroupTag } from './assets';
+import { createTag, listTag, tag, tagColors } from '../utils/group-tag';
+import { GroupTag, LoadingScreen } from './assets';
 import { useUniversalColors } from '../hooks/color-mode';
 import { BasicButton, CancelButton } from './buttons';
-import {
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-} from '@chakra-ui/modal';
+import { Modal, ModalContent, ModalOverlay } from '@chakra-ui/modal';
+import useSWR from 'swr';
+import { firestoreFetcher } from '../utils/swr-fetcher';
 
 const CreateTag = () => {
   const [createMode, setCreateMode] = useBoolean(false);
@@ -150,64 +137,25 @@ export const TagSetting = (): JSX.Element => {
 
 const Tag: React.FC<{
   tag: QueryDocumentSnapshot<tag>;
-}> = ({ tag }) => {
+  onUpdate: () => unknown;
+}> = ({ tag, onUpdate }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { currentGroup } = useContext(GroupContext);
-  const [newTag, setNewTag] = useState<tag>(tag.data());
+  const TagSettingModal = React.lazy(() => import('./TagSettingModal'));
   return (
     <>
       <GroupTag tag={tag} onClick={onOpen} />
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
-          <form
-            onSubmit={() => {
-              updateTag({
-                ref: tag.ref,
-                data: newTag,
-              }).then(onClose);
-            }}
-          >
-            <ModalHeader>タグの編集</ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>
-              <FormControl isRequired>
-                <FormLabel>名前</FormLabel>
-                <Input
-                  defaultValue={newTag.name}
-                  onChange={(e) =>
-                    setNewTag((T) => {
-                      const S = T;
-                      S.name = e.target.value;
-                      return S;
-                    })
-                  }
-                />
-              </FormControl>
-            </ModalBody>
-            <ModalFooter>
-              <HStack>
-                <CancelButton
-                  variant="secondary"
-                  onClick={async () => {
-                    if (currentGroup?.id) {
-                      await deleteTag({
-                        groupId: currentGroup?.id,
-                        tagId: tag.id,
-                      });
-
-                      onClose();
-                    }
-                  }}
-                >
-                  タグを削除
-                </CancelButton>
-                <BasicButton variant="primary" type="submit">
-                  設定
-                </BasicButton>
-              </HStack>
-            </ModalFooter>
-          </form>
+          <Suspense fallback={<LoadingScreen />}>
+            <TagSettingModal
+              tag={tag}
+              onUpdate={() => {
+                onClose();
+                onUpdate();
+              }}
+            />
+          </Suspense>
         </ModalContent>
       </Modal>
     </>
@@ -215,31 +163,29 @@ const Tag: React.FC<{
 };
 const TagList = () => {
   const { currentGroup } = useContext(GroupContext);
-  const [tags, setTags] = useState<QueryDocumentSnapshot<tag>[]>([]);
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
   // ToDo: 無限スクロールを実装
-  useEffect(() => {
-    if (currentGroup)
-      listTag(currentGroup.id).then((e) => {
-        const tags: QueryDocumentSnapshot<tag>[] = [];
-        e.forEach((j) => tags.push(j));
-
-        setTags(tags);
-        setIsLoaded(true);
-      });
-  }, [currentGroup, setIsLoaded]);
+  const { data, error, mutate } = useSWR<QueryDocumentSnapshot<tag>[]>(
+    [listTag, currentGroup?.id],
+    firestoreFetcher
+  );
   return (
-    <Skeleton isLoaded={isLoaded}>
-      {tags.length > 0 ? (
+    <Skeleton isLoaded={!!data}>
+      {data?.length != 0 ? (
         <Stack shouldWrapChildren direction="row">
-          {tags?.map((e) => (
-            <Tag tag={e} key={e.id} />
+          {data?.map((e) => (
+            <Tag tag={e} key={e.id} onUpdate={mutate} />
           ))}
         </Stack>
       ) : (
         <Alert status="info">
           <AlertIcon />
           <AlertTitle>タグがありません</AlertTitle>
+        </Alert>
+      )}
+      {error && (
+        <Alert status="error">
+          <AlertIcon />
+          エラーが発生しました
         </Alert>
       )}
     </Skeleton>

@@ -3,11 +3,12 @@ import { Stack } from '@chakra-ui/layout';
 import { DocumentSnapshot, QueryDocumentSnapshot } from '@firebase/firestore';
 import { Checkbox } from '@chakra-ui/checkbox';
 import { Skeleton } from '@chakra-ui/skeleton';
-import { useState, useContext, useEffect, useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 import { GroupContext } from '../contexts/group';
 import { tag, listTag } from '../utils/group-tag';
 import { GroupTag } from './assets';
 import { Alert } from '@chakra-ui/alert';
+import useSWR from 'swr';
 
 export const GroupTagList: React.FC<{
   userTags: {
@@ -17,27 +18,15 @@ export const GroupTagList: React.FC<{
   };
 }> = ({ userTags }) => {
   // グループのタグ
-  const [groupTags, setGroupTags] = useState<DocumentSnapshot<tag>[]>([]);
-  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   const { currentGroup } = useContext(GroupContext);
-  useEffect(() => {
-    if (currentGroup) {
-      // タグ一覧を取得
-      listTag(currentGroup.id).then((e) => {
-        const newTags: QueryDocumentSnapshot<tag>[] = [];
-        e.forEach((f) => newTags.push(f));
-        setGroupTags(newTags);
-        setIsLoaded(true);
-      });
-    }
-  }, [currentGroup]);
+  const { data, error } = useSWR(currentGroup?.id, listTag);
 
   return useMemo(() => {
     // 各タグ
-    const GroupTagMemo: React.FC<{ tag: DocumentSnapshot<tag> }> = ({
-      tag,
-    }): JSX.Element | null =>
+    const GroupTagMemo: React.FC<{
+      tag: DocumentSnapshot<tag> | QueryDocumentSnapshot<tag>;
+    }> = ({ tag }): JSX.Element | null =>
       useMemo(() => {
         const tagData = tag.data();
         if (tagData) {
@@ -61,14 +50,15 @@ export const GroupTagList: React.FC<{
       }, [tag]);
 
     return (
-      <Skeleton isLoaded={isLoaded} w="min-content">
+      <Skeleton isLoaded={!!data} w="min-content">
         <Stack spacing="2">
-          {groupTags.length === 0 && <Alert>タグがありません</Alert>}
-          {groupTags.map((tag) => (
+          {data?.length === 0 && <Alert>タグがありません</Alert>}
+          {data?.map((tag) => (
             <GroupTagMemo tag={tag} key={tag.id} />
           ))}
+          {error && <Alert variant="solid">エラーが発生しました</Alert>}
         </Stack>
       </Skeleton>
     );
-  }, [groupTags, isLoaded, userTags]);
+  }, [data, userTags, error]);
 };

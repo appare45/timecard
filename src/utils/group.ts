@@ -24,12 +24,13 @@ import {
   SetOptions,
   startAfter,
   DocumentReference,
+  deleteDoc,
 } from 'firebase/firestore';
 import { app } from './../utils/firebase';
 import { addMember, Member, setMemberStatus } from './member';
 const Db = getFirestore(app);
 
-class Admin {
+export class Admin {
   constructor(readonly upGraded: FieldValue, readonly upGradedBy: string) {}
 }
 
@@ -279,6 +280,17 @@ async function setAccount(
   }
 }
 
+export async function deleteAccount(
+  account: DocumentReference<Account>
+): Promise<void> {
+  try {
+    deleteDoc(account);
+  } catch (error) {
+    console.error(error);
+    throw new Error();
+  }
+}
+
 async function getAccount(
   email: string,
   groupId: string
@@ -295,13 +307,20 @@ async function getAccount(
   }
 }
 
-async function listAccount(groupId: string): Promise<QuerySnapshot<Account>> {
+export async function listAccount(
+  groupId: string
+): Promise<QueryDocumentSnapshot<Account>[]> {
   try {
     return await getDocs<Account>(
       collection(Db, `group/${groupId}/account/`).withConverter<Account>(
         accountDataConverter
       )
-    );
+    ).then((e) => {
+      const data: QueryDocumentSnapshot<Account>[] = [];
+      e.forEach((_) => data.push(_));
+      console.info(data);
+      return data;
+    });
   } catch (error) {
     console.error(error);
     throw new Error();
@@ -332,6 +351,17 @@ async function addAdmin(
     );
 
     return;
+  } catch (error) {
+    console.error(error);
+    throw new Error();
+  }
+}
+
+export async function deleteAdmin(
+  admin: DocumentReference<Admin>
+): Promise<void> {
+  try {
+    deleteDoc(admin);
   } catch (error) {
     console.error(error);
     throw new Error();
@@ -585,5 +615,4 @@ export {
   getLatestActivity,
   getAccount,
   setAccount,
-  listAccount,
 };

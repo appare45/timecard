@@ -32,6 +32,7 @@ service cloud.firestore {
       }
       match /group/{groupId}/account/{email} {
         allow get, create, update, list: if request.auth.token.email == email || isAdmin(groupId, request.auth.token.email)
+        allow delete: if request.auth.token.email != email && isAdmin(groupId, request.auth.token.email)
       }
       match /group/{groupId}/tag/{activity} {
         allow get, list, create, update, delete: if isGroupMember(groupId, request.auth.token.email)
@@ -44,10 +45,10 @@ service cloud.firestore {
       }
       match /group/{groupId}/admin/{memberId} {
         allow get, list: if isGroupMember(groupId, request.auth.token.email)
-        allow create: if isAdmin(groupId, request.auth.token.email)
+        allow create, delete: if isAdmin(groupId, request.auth.token.email)
       }
       match /invite/{email} {
-        allow create, list: if isAuthenticated()
+        allow create, list, delete: if isAuthenticated()
         allow get: if request.auth.token.email == email
       }
     }

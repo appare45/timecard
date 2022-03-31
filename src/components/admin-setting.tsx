@@ -1,51 +1,60 @@
-import { useBoolean } from '@chakra-ui/hooks';
 import { Input } from '@chakra-ui/input';
+import { useDisclosure } from '@chakra-ui/hooks';
 import {
   Box,
   Heading,
   Text,
   HStack,
   Stack,
-  Circle,
   Code,
   Link,
 } from '@chakra-ui/layout';
 import { Skeleton } from '@chakra-ui/skeleton';
-import { Select } from '@chakra-ui/select';
-import {
-  FormControl,
-  FormLabel,
-  FormHelperText,
-} from '@chakra-ui/form-control';
-import { Checkbox } from '@chakra-ui/checkbox';
 import { Table, Tr, Td } from '@chakra-ui/table';
 import { Tag, Tag as TagElement, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
 import { useToast } from '@chakra-ui/toast';
-import {
-  DocumentSnapshot,
-  QueryDocumentSnapshot,
-  Timestamp,
-} from '@firebase/firestore';
-import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { IoKeyOutline, IoKeySharp, IoPerson } from 'react-icons/io5';
+import { DocumentSnapshot, QueryDocumentSnapshot } from '@firebase/firestore';
+import React, {
+  Suspense,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import { IoKeyOutline, IoKeySharp, IoPerson, IoTrash } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
-import { AuthContext } from '../contexts/user';
 import { Link as routerLink } from 'react-router-dom';
 import {
   Account,
-  addAccount,
-  addAdmin,
+  deleteAccount,
+  deleteAdmin,
   getAdmin,
   getGroup,
   Group,
   listAccount,
   setGroup,
 } from '../utils/group';
-import { createInvite } from '../utils/invite';
-import { getMember, listMembers, Member } from '../utils/member';
+import { getMember } from '../utils/member';
 import { CopyButton, FormButtons } from './assets';
-import { BasicButton } from './buttons';
 import { TagSetting } from './tag-setting';
+import useSWR from 'swr';
+import { Alert, AlertIcon } from '@chakra-ui/alert';
+import { firestoreFetcher } from '../utils/swr-fetcher';
+import { BasicButton, CancelButton } from './buttons';
+import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  Modal,
+  ModalContent,
+  ModalOverlay,
+} from '@chakra-ui/modal';
+import { deleteInvite, getInvite } from '../utils/invite';
+import { Button, ButtonGroup } from '@chakra-ui/react';
 
 const OrganizationName = () => {
   const { currentGroup } = useContext(GroupContext);
@@ -103,143 +112,58 @@ const OrganizationName = () => {
   );
 };
 
-const CreateInvite = ({
-  email,
-  isAdmin,
-  memberId,
-}: {
-  email: string;
-  isAdmin: boolean;
-  memberId: string;
-}) => {
-  const [code] = useState(Math.random().toString(32).substring(2).slice(0, 6));
-  const { account } = useContext(AuthContext);
-  const { currentGroup } = useContext(GroupContext);
-
-  useEffect(() => {
-    if (account?.email && currentGroup && currentGroup)
-      createInvite(email, {
-        group: [currentGroup.ref],
-        authorId: account.uid,
-        used: false,
-      }).then(() => {
-        addAccount(
-          email,
-          new Account(memberId, false, Timestamp.now()),
-          currentGroup.id
-        );
-        if (isAdmin) addAdmin(email, memberId, currentGroup.id);
-      });
-  }, [
-    account?.email,
-    account?.uid,
-    code,
-    currentGroup,
-    email,
-    isAdmin,
-    memberId,
-  ]);
-  return <Text>作成しました</Text>;
-};
-
-const InviteElement = () => {
-  const [createState, setCreateState] = useBoolean(false);
-  const [email, setEmail] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [member, setMember] = useState('');
-  const [members, setMembers] = useState<QueryDocumentSnapshot<Member>[]>();
-
-  const { currentGroup } = useContext(GroupContext);
-  useEffect(() => {
-    if (currentGroup)
-      listMembers(currentGroup.id).then((e) => {
-        const _members: QueryDocumentSnapshot<Member>[] = [];
-        e?.forEach((f) => _members.push(f));
-        setMembers(_members);
-      });
-  }, [currentGroup]);
-  return (
-    <Box>
-      <Heading size="lg" mb="5">
-        招待
-      </Heading>
-      {createState ? (
-        <CreateInvite email={email} isAdmin={isAdmin} memberId={member} />
-      ) : (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (email.length) setCreateState.on();
-          }}
-        >
-          <Box>
-            <FormControl isRequired>
-              <FormLabel>メールアドレス</FormLabel>
-              <Input
-                value={email}
-                type="email"
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <FormHelperText>
-                招待する人のメールアドレスを入力してください
-              </FormHelperText>
-            </FormControl>
-            <FormControl isRequired>
-              <FormLabel>関連付けるメンバー</FormLabel>
-              {members && (
-                <Select
-                  onChange={(e) => {
-                    setMember(members[e.target.selectedIndex].id);
-                  }}
-                >
-                  {members.map((_member) => (
-                    <option id={_member.id} key={_member.id}>
-                      {_member.data().name}
-                    </option>
-                  ))}
-                </Select>
-              )}
-              <FormHelperText>招待するメンバーを選んでください</FormHelperText>
-            </FormControl>
-            <Checkbox
-              checked={isAdmin}
-              onChange={(e) => setIsAdmin(e.target.checked)}
-            >
-              管理者として招待
-            </Checkbox>
-          </Box>
-          <BasicButton variant="secondary" type="submit" mt="2" size="sm">
-            招待
-          </BasicButton>
-        </form>
-      )}
-    </Box>
-  );
-};
-
 const AccountList = () => {
-  const [accounts, setAccounts] = useState<QueryDocumentSnapshot<Account>[]>(
-    []
-  );
   const { currentGroup } = useContext(GroupContext);
-  useEffect(() => {
-    if (currentGroup)
-      listAccount(currentGroup.id).then((_accounts) => {
-        const __accounts: QueryDocumentSnapshot<Account>[] = [];
-        _accounts.forEach((account) => __accounts.push(account));
-        setAccounts(__accounts);
-      });
-  }, [currentGroup]);
+  const {
+    data: accounts,
+    error,
+    mutate,
+  } = useSWR<QueryDocumentSnapshot<Account>[]>(
+    [listAccount, currentGroup?.id],
+    firestoreFetcher
+  );
+  const Invite = React.lazy(() => import('./InviteElement'));
+  const { onClose, onOpen, isOpen } = useDisclosure();
   return (
     <Box>
-      <Heading size="lg" pb="2">
-        連携済みアカウント
-      </Heading>
-      <Table alignItems="flex-start">
-        {accounts.map((account) => (
-          <AccountItem account={account} key={account.id} />
-        ))}
-      </Table>
+      <HStack>
+        <Heading size="lg" pb="2">
+          連携済みアカウント
+        </Heading>
+        <BasicButton variant="secondary" onClick={onOpen}>
+          招待
+        </BasicButton>
+      </HStack>
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <Suspense fallback={<Skeleton />}>
+            <Invite
+              onSuccess={() => {
+                onClose();
+                mutate();
+              }}
+            />
+          </Suspense>
+        </ModalContent>
+      </Modal>
+      <Skeleton isLoaded={!!accounts}>
+        <Table alignItems="flex-start">
+          {accounts != undefined && (
+            <>
+              {accounts.map((account) => (
+                <AccountItem account={account} key={account.id} />
+              ))}
+            </>
+          )}
+        </Table>
+      </Skeleton>
+      {error && (
+        <Alert status="error">
+          <AlertIcon />
+          エラーが発生しました
+        </Alert>
+      )}
     </Box>
   );
 };
@@ -249,12 +173,16 @@ const AccountItem = ({
 }: {
   account: QueryDocumentSnapshot<Account>;
 }) => {
-  const [member, setMember] = useState<DocumentSnapshot<Member> | null>(null);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const { currentGroup } = useContext(GroupContext);
+  const { currentGroup, currentMember } = useContext(GroupContext);
+  const { data: member, mutate } = useSWR(
+    [account.data().memberId, currentGroup?.id],
+    getMember
+  );
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = useRef(null);
   useEffect(() => {
     if (currentGroup) {
-      getMember(account.data().memberId, currentGroup.id).then(setMember);
       try {
         getAdmin(account.data().memberId, currentGroup.id).then((e) => {
           if (e.data()) {
@@ -288,13 +216,65 @@ const AccountItem = ({
         </HStack>
       </Td>
       <Td>
-        <HStack alignItems="center">
-          <Circle
-            bgColor={account.data().isActive ? 'green.400' : 'gray.400'}
-            size="3"
-          />
-          <Text>{account.data().isActive ? 'アクティブ' : '承諾待ち'}</Text>
-        </HStack>
+        {currentMember?.id === member?.id ? (
+          '自分を削除することはできません'
+        ) : (
+          <>
+            <AlertDialog
+              isOpen={isOpen}
+              onClose={onClose}
+              leastDestructiveRef={cancelRef}
+            >
+              <AlertDialogOverlay>
+                <AlertDialogContent>
+                  <AlertDialogHeader>アカウント消去</AlertDialogHeader>
+                  <AlertDialogBody>
+                    アカウントを消去してもよろしいですか？
+                    消去を取り消すことはできません。消去後もアクティビティーは残り続けます。
+                  </AlertDialogBody>
+                  <AlertDialogFooter>
+                    <ButtonGroup>
+                      <Button
+                        colorScheme="red"
+                        variant="outline"
+                        ref={cancelRef}
+                        onClick={onClose}
+                      >
+                        キャンセル
+                      </Button>
+                      <CancelButton
+                        variant="primary"
+                        onClick={async () => {
+                          getInvite(account.id).then(
+                            async (e) => await deleteInvite(e.ref)
+                          );
+                          deleteAccount(account.ref);
+                          if (isAdmin && member && currentGroup) {
+                            getAdmin(member?.id, currentGroup?.id).then(
+                              async (e) => await deleteAdmin(e.ref)
+                            );
+                          }
+                          mutate();
+                          onClose();
+                        }}
+                      >
+                        消去
+                      </CancelButton>
+                    </ButtonGroup>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialogOverlay>
+            </AlertDialog>
+            <CancelButton
+              variant="secondary"
+              size="sm"
+              leftIcon={<IoTrash />}
+              onClick={onOpen}
+            >
+              削除
+            </CancelButton>
+          </>
+        )}
       </Td>
     </Tr>
   );
@@ -313,7 +293,6 @@ const AdminSetting: React.FC = () => {
         </HStack>
         <OrganizationName />
         <TagSetting />
-        <InviteElement />
         <AccountList />
       </Stack>
     </Box>
