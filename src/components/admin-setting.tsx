@@ -6,7 +6,6 @@ import {
   Text,
   HStack,
   Stack,
-  Circle,
   Code,
   Link,
 } from '@chakra-ui/layout';
@@ -20,13 +19,16 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
-import { IoKeyOutline, IoKeySharp, IoPerson } from 'react-icons/io5';
+import { IoKeyOutline, IoKeySharp, IoPerson, IoTrash } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { Link as routerLink } from 'react-router-dom';
 import {
   Account,
+  deleteAccount,
+  deleteAdmin,
   getAdmin,
   getGroup,
   Group,
@@ -39,8 +41,20 @@ import { TagSetting } from './tag-setting';
 import useSWR from 'swr';
 import { Alert, AlertIcon } from '@chakra-ui/alert';
 import { firestoreFetcher } from '../utils/swr-fetcher';
-import { BasicButton } from './buttons';
-import { Modal, ModalContent, ModalOverlay } from '@chakra-ui/modal';
+import { BasicButton, CancelButton } from './buttons';
+import {
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogOverlay,
+  Modal,
+  ModalContent,
+  ModalOverlay,
+} from '@chakra-ui/modal';
+import { deleteInvite, getInvite } from '../utils/invite';
+import { Button, ButtonGroup } from '@chakra-ui/react';
 
 const OrganizationName = () => {
   const { currentGroup } = useContext(GroupContext);
@@ -159,12 +173,14 @@ const AccountItem = ({
 }: {
   account: QueryDocumentSnapshot<Account>;
 }) => {
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const { currentGroup } = useContext(GroupContext);
-  const { data: member } = useSWR(
+  const { currentGroup, currentMember } = useContext(GroupContext);
+  const { data: member, mutate } = useSWR(
     [account.data().memberId, currentGroup?.id],
     getMember
   );
+  const [isAdmin, setIsAdmin] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = useRef(null);
   useEffect(() => {
     if (currentGroup) {
       try {
@@ -200,13 +216,65 @@ const AccountItem = ({
         </HStack>
       </Td>
       <Td>
-        <HStack alignItems="center">
-          <Circle
-            bgColor={account.data().isActive ? 'green.400' : 'gray.400'}
-            size="3"
-          />
-          <Text>{account.data().isActive ? 'アクティブ' : '承諾待ち'}</Text>
-        </HStack>
+        {currentMember?.id === member?.id ? (
+          '自分を削除することはできません'
+        ) : (
+          <>
+            <AlertDialog
+              isOpen={isOpen}
+              onClose={onClose}
+              leastDestructiveRef={cancelRef}
+            >
+              <AlertDialogOverlay>
+                <AlertDialogContent>
+                  <AlertDialogHeader>アカウント消去</AlertDialogHeader>
+                  <AlertDialogBody>
+                    アカウントを消去してもよろしいですか？
+                    消去を取り消すことはできません。消去後もアクティビティーは残り続けます。
+                  </AlertDialogBody>
+                  <AlertDialogFooter>
+                    <ButtonGroup>
+                      <Button
+                        colorScheme="red"
+                        variant="outline"
+                        ref={cancelRef}
+                        onClick={onClose}
+                      >
+                        キャンセル
+                      </Button>
+                      <CancelButton
+                        variant="primary"
+                        onClick={async () => {
+                          getInvite(account.id).then(
+                            async (e) => await deleteInvite(e.ref)
+                          );
+                          deleteAccount(account.ref);
+                          if (isAdmin && member && currentGroup) {
+                            getAdmin(member?.id, currentGroup?.id).then(
+                              async (e) => await deleteAdmin(e.ref)
+                            );
+                          }
+                          mutate();
+                          onClose();
+                        }}
+                      >
+                        消去
+                      </CancelButton>
+                    </ButtonGroup>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialogOverlay>
+            </AlertDialog>
+            <CancelButton
+              variant="secondary"
+              size="sm"
+              leftIcon={<IoTrash />}
+              onClick={onOpen}
+            >
+              削除
+            </CancelButton>
+          </>
+        )}
       </Td>
     </Tr>
   );

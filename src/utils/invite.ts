@@ -1,4 +1,5 @@
 import {
+  deleteDoc,
   doc,
   DocumentData,
   DocumentReference,
@@ -55,6 +56,17 @@ export const getInvite = async (
     return await getDoc(
       doc(Db(), `invite/${email}`).withConverter(inviteDataConverter)
     );
+  } catch (error) {
+    console.error(error);
+    throw new Error();
+  }
+};
+
+export const deleteInvite = async (
+  invite: DocumentReference<Invite>
+): Promise<void> => {
+  try {
+    await deleteDoc(invite);
   } catch (error) {
     console.error(error);
     throw new Error();

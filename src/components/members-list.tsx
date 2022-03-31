@@ -130,6 +130,7 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
       setUserTags(tagSnapshots);
       setIsLoaded(true);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   //  タグを追加するボタン（popover）
   const AddTagButton: React.FC = () => {
