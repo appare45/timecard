@@ -17,6 +17,7 @@ import { useUniversalColors } from '../hooks/color-mode';
 import { BasicButton, CancelButton } from './buttons';
 import { Modal, ModalContent, ModalOverlay } from '@chakra-ui/modal';
 import useSWR from 'swr';
+import { firestoreFetcher } from '../utils/swr-fetcher';
 
 const CreateTag = () => {
   const [createMode, setCreateMode] = useBoolean(false);
@@ -163,7 +164,10 @@ const Tag: React.FC<{
 const TagList = () => {
   const { currentGroup } = useContext(GroupContext);
   // ToDo: 無限スクロールを実装
-  const { data, error, mutate } = useSWR(currentGroup?.id, listTag);
+  const { data, error, mutate } = useSWR<QueryDocumentSnapshot<tag>[]>(
+    [listTag, currentGroup?.id],
+    firestoreFetcher
+  );
   return (
     <Skeleton isLoaded={!!data}>
       {data?.length != 0 ? (
