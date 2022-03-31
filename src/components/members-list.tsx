@@ -97,32 +97,40 @@ const MemberTags: React.FC<{ memberId: string; memberData: Member }> = ({
     [currentGroup, memberId]
   );
 
+  const removeTag = useCallback(
+    (tag: DocumentSnapshot<tag>) => {
+      const removeTagIndex = userTags.findIndex((e) => e.id === tag.id);
+      const newTags = [
+        ...userTags.slice(0, removeTagIndex),
+        ...userTags.slice(removeTagIndex + 1),
+      ];
+      const newTagsRef = newTags.map((e) => e.ref);
+      if (currentGroup) {
+        setMemberTag(newTagsRef, memberId, currentGroup.id);
+      }
+      setUserTags(newTags);
+    },
+    [currentGroup, memberId, userTags]
+  );
+
   useEffect(() => {
     const tagSnapshots: DocumentSnapshot<tag>[] = [];
     Promise.all(
       memberData.tag.map(
-        (tagRef): Promise<number> =>
-          getDoc(tagRef).then((e) => tagSnapshots.push(e))
+        (tagRef): Promise<void> =>
+          getDoc(tagRef).then((e) => {
+            if (e.exists()) {
+              tagSnapshots.push(e);
+            } else {
+              removeTag(e);
+            }
+          })
       )
     ).then(() => {
       setUserTags(tagSnapshots);
       setIsLoaded(true);
     });
-  }, [memberData]);
-
-  const removeTag = (tag: DocumentSnapshot<tag>) => {
-    const removeTagIndex = userTags.findIndex((e) => e.id === tag.id);
-    const newTags = [
-      ...userTags.slice(0, removeTagIndex),
-      ...userTags.slice(removeTagIndex + 1),
-    ];
-    const newTagsRef = newTags.map((e) => e.ref);
-    if (currentGroup) {
-      setMemberTag(newTagsRef, memberId, currentGroup.id);
-    }
-    setUserTags(newTags);
-  };
-
+  }, []);
   //  タグを追加するボタン（popover）
   const AddTagButton: React.FC = () => {
     return (
