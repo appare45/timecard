@@ -53,7 +53,8 @@ export const Db = (): Firestore => {
 
 export const analytics = getAnalytics();
 
-export const isEmulator = (): boolean => window.location.hostname == '0.0.0.0';
+export const isEmulator = (): boolean =>
+  window.location.hostname == 'localhost' && window.location.port === '8000';
 
 export const isProduction =
   import.meta.env.PROD && !import.meta.env.VITE_PREVIEW && !isEmulator();
