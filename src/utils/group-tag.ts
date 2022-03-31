@@ -106,7 +106,6 @@ export async function listTag(
         TagConverter
       )
     ).then((e) => e.forEach((_) => data.push(_)));
-    console.info(data);
     return data;
   } catch (error) {
     console.error(error);

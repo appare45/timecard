@@ -2,6 +2,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { enableIndexedDbPersistence } from 'firebase/firestore';
 import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { SWRConfig } from 'swr';
 import { LoadingScreen } from './components/assets';
 import Offline from './pages/offline';
 import theme from './theme';
@@ -32,7 +33,14 @@ function App(): JSX.Element {
       <BrowserRouter>
         <div className="App">
           <Suspense fallback={<LoadingScreen />}>
-            {navigator.onLine ? <UserUI /> : <Offline />}
+            <SWRConfig
+              value={{
+                revalidateOnFocus: false,
+                suspense: true,
+              }}
+            >
+              {navigator.onLine ? <UserUI /> : <Offline />}
+            </SWRConfig>
           </Suspense>
         </div>
       </BrowserRouter>

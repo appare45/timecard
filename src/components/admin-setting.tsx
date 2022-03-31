@@ -46,6 +46,9 @@ import { getMember, listMembers, Member } from '../utils/member';
 import { CopyButton, FormButtons } from './assets';
 import { BasicButton } from './buttons';
 import { TagSetting } from './tag-setting';
+import useSWR from 'swr';
+import { Alert, AlertIcon } from '@chakra-ui/alert';
+import { firestoreFetcher } from '../utils/swr-fetcher';
 
 const OrganizationName = () => {
   const { currentGroup } = useContext(GroupContext);
@@ -218,28 +221,33 @@ const InviteElement = () => {
 };
 
 const AccountList = () => {
-  const [accounts, setAccounts] = useState<QueryDocumentSnapshot<Account>[]>(
-    []
-  );
   const { currentGroup } = useContext(GroupContext);
-  useEffect(() => {
-    if (currentGroup)
-      listAccount(currentGroup.id).then((_accounts) => {
-        const __accounts: QueryDocumentSnapshot<Account>[] = [];
-        _accounts.forEach((account) => __accounts.push(account));
-        setAccounts(__accounts);
-      });
-  }, [currentGroup]);
+  const { data: accounts, error } = useSWR<QueryDocumentSnapshot<Account>[]>(
+    [listAccount, currentGroup?.id],
+    firestoreFetcher
+  );
   return (
     <Box>
       <Heading size="lg" pb="2">
         連携済みアカウント
       </Heading>
-      <Table alignItems="flex-start">
-        {accounts.map((account) => (
-          <AccountItem account={account} key={account.id} />
-        ))}
-      </Table>
+      <Skeleton isLoaded={!!accounts}>
+        <Table alignItems="flex-start">
+          {accounts != undefined && (
+            <>
+              {accounts.map((account) => (
+                <AccountItem account={account} key={account.id} />
+              ))}
+            </>
+          )}
+        </Table>
+      </Skeleton>
+      {error && (
+        <Alert status="error">
+          <AlertIcon />
+          エラーが発生しました
+        </Alert>
+      )}
     </Box>
   );
 };
@@ -249,12 +257,14 @@ const AccountItem = ({
 }: {
   account: QueryDocumentSnapshot<Account>;
 }) => {
-  const [member, setMember] = useState<DocumentSnapshot<Member> | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const { currentGroup } = useContext(GroupContext);
+  const { data: member } = useSWR(
+    [account.data().memberId, currentGroup?.id],
+    getMember
+  );
   useEffect(() => {
     if (currentGroup) {
-      getMember(account.data().memberId, currentGroup.id).then(setMember);
       try {
         getAdmin(account.data().memberId, currentGroup.id).then((e) => {
           if (e.data()) {

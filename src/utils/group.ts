@@ -295,13 +295,20 @@ async function getAccount(
   }
 }
 
-async function listAccount(groupId: string): Promise<QuerySnapshot<Account>> {
+export async function listAccount(
+  groupId: string
+): Promise<QueryDocumentSnapshot<Account>[]> {
   try {
     return await getDocs<Account>(
       collection(Db, `group/${groupId}/account/`).withConverter<Account>(
         accountDataConverter
       )
-    );
+    ).then((e) => {
+      const data: QueryDocumentSnapshot<Account>[] = [];
+      e.forEach((_) => data.push(_));
+      console.info(data);
+      return data;
+    });
   } catch (error) {
     console.error(error);
     throw new Error();
@@ -585,5 +592,4 @@ export {
   getLatestActivity,
   getAccount,
   setAccount,
-  listAccount,
 };
