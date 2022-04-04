@@ -17,7 +17,7 @@ export const databaseURL = `https://${
 
 const firebaseConfig = {
   apiKey: `${import.meta.env.VITE_FIREBASE_API_KEY}`,
-  authDomain: `clubroom.appare45.com`,
+  authDomain: `auth.clubroom.appare45.com`,
   databaseURL: databaseURL,
   projectId: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}`,
   storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
