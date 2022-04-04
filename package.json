@@ -32,7 +32,7 @@
     "build": "tsc && vite build",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "preview": "tsc --watch | vite build --watch | firebase emulators:start --import './sample1'",
+    "preview": "tsc --watch | vite build --watch | vite dev | firebase emulators:start --import './sample1'",
     "test": "firebase emulators:exec --only firestore 'yarn jest --silent'"
   },
   "eslintConfig": {
