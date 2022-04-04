@@ -22,7 +22,7 @@ const firebaseConfig = {
   projectId: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}`,
   storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID}.appspot.com`,
   appId: `${import.meta.env.VITE_FIREBASE_APP_ID}`,
-  measurementId: `G-${import.meta.env.VITE_FIREBASE_MEASUREMENT_ID}`,
+  measurementId: `${import.meta.env.VITE_FIREBASE_MEASUREMENT_ID}`,
 };
 
 const app = initializeApp(firebaseConfig);
@@ -54,7 +54,8 @@ export const Db = (): Firestore => {
 export const analytics = getAnalytics();
 
 export const isEmulator = (): boolean =>
-  window.location.hostname == 'localhost' && window.location.port === '8000';
+  window.location.hostname == 'localhost' &&
+  (window.location.port === '8000' || window.location.port === '3000');
 
 export const isProduction =
   import.meta.env.PROD && !import.meta.env.VITE_PREVIEW && !isEmulator();
