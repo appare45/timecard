@@ -1,5 +1,5 @@
 import { Box, HStack, Circle, Center } from '@chakra-ui/layout';
-import { Link as RouterLink, Routes } from 'react-router-dom';
+import { Routes } from 'react-router-dom';
 import { useToast } from '@chakra-ui/toast';
 import {
   DocumentReference,
@@ -15,14 +15,12 @@ import React, {
   useState,
 } from 'react';
 import { useMemo } from 'react';
-import { IoEaselOutline, IoPersonCircleOutline } from 'react-icons/io5';
 import { Nav } from './../components/nav';
 import { Route } from 'react-router-dom';
 import { LoadingScreen } from '../components/assets';
 import { GroupContext } from '../contexts/group';
 import { AuthContext } from '../contexts/user';
 import { useIsPrint } from '../hooks/media-query';
-import { GroupTemplate } from '../templates/group';
 import {
   Account,
   getAccount,
@@ -31,28 +29,9 @@ import {
   setAccount,
 } from '../utils/group';
 import { Member, getMember } from '../utils/member';
-import { BasicButton } from '../components/buttons';
 
 type groupProps = {
   groups: DocumentReference<Group>[];
-};
-
-const ScanButton: React.FC<{ setFrontMode: () => void }> = ({
-  setFrontMode,
-}) => {
-  return (
-    <>
-      <BasicButton
-        mt="5"
-        mb="3"
-        variant="primary"
-        leftIcon={<IoEaselOutline />}
-        onClick={() => setFrontMode()}
-      >
-        フロントモードに切り替える
-      </BasicButton>
-    </>
-  );
 };
 
 const GroupUI: React.FC<groupProps> = ({ groups }) => {
@@ -162,15 +141,12 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
     });
   }, [toast]);
 
-  const AllActivity = React.lazy(
-    () => import('../components/display-activities')
-  );
-
   const Members = React.lazy(() => import('./members'));
   const Front = React.lazy(() => import('../components/front'));
   const NewGroup = React.lazy(() => import('../components/new-group'));
   const Setting = React.lazy(() => import('./setting'));
   const Activities = React.lazy(() => import('./timeline'));
+  const Top = React.lazy(() => import('./top'));
   return (
     <>
       {!!groups.length && currentGroup && (
@@ -201,33 +177,7 @@ const GroupUI: React.FC<groupProps> = ({ groups }) => {
                     <Routes>
                       <Route
                         path="/"
-                        element={
-                          <GroupTemplate
-                            title="最新のアクティビティー"
-                            sideWidget={
-                              <>
-                                {isAdmin && (
-                                  <ScanButton
-                                    setFrontMode={() => {
-                                      setFrontMode(true);
-                                      document.body.requestFullscreen();
-                                    }}
-                                  />
-                                )}
-                                <BasicButton
-                                  as={RouterLink}
-                                  leftIcon={<IoPersonCircleOutline />}
-                                  to={`/member/${currentMemberData?.id}`}
-                                  variant="secondary"
-                                >
-                                  自分のアクティビティーを確認
-                                </BasicButton>
-                              </>
-                            }
-                          >
-                            <AllActivity loadMore={false} />
-                          </GroupTemplate>
-                        }
+                        element={<Top setFrontMode={setFrontMode} />}
                       />
                       <Route path={`activity/*`} element={<Activities />} />
                       <Route path={`member/*`} element={<Members />} />

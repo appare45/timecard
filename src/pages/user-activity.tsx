@@ -17,7 +17,7 @@ import React, {
   Suspense,
   useCallback,
 } from 'react';
-import { IoPersonCircleOutline, IoQrCode } from 'react-icons/io5';
+import { IoQrCode, IoSettings } from 'react-icons/io5';
 import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
 import { GroupContext } from '../contexts/group';
@@ -135,7 +135,7 @@ function UserActivity(): JSX.Element {
               )}
               {isOwnMember && (
                 <BasicButton
-                  leftIcon={<IoPersonCircleOutline />}
+                  leftIcon={<IoSettings />}
                   variant="secondary"
                   as={Link}
                   to={`/setting`}
