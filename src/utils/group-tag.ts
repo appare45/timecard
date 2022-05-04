@@ -127,3 +127,8 @@ export async function deleteTag(params: deletion_interface): Promise<void> {
     throw new Error();
   }
 }
+
+interface deletion_interface {
+  groupId: string;
+  tagId: string;
+}
