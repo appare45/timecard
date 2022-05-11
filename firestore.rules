@@ -42,6 +42,7 @@ service cloud.firestore {
       }
       match /group/{groupId}/member/{memberId} {
         allow get, list, create, update: if isGroupMember(groupId, request.auth.token.email)
+        allow delete: if isAdmin(groupId, request.auth.token.email)
       }
       match /group/{groupId}/admin/{memberId} {
         allow get, list: if isGroupMember(groupId, request.auth.token.email)

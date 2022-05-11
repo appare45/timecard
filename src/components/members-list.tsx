@@ -9,7 +9,7 @@ import React, {
   SetStateAction,
   Dispatch,
 } from 'react';
-import { IoAdd, IoAnalytics, IoPricetag } from 'react-icons/io5';
+import { IoAdd, IoAnalytics, IoPricetag, IoTrash } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { Link as RouterLink } from 'react-router-dom';
 import {
@@ -20,7 +20,13 @@ import {
 } from '@firebase/firestore';
 import { GroupTag, LoadMoreButton, MemberAvatar } from './assets';
 import { listTag, tag } from '../utils/group-tag';
-import { listMembers, Member, setMember, setMemberTag } from '../utils/member';
+import {
+  deleteMember,
+  listMembers,
+  Member,
+  setMember,
+  setMemberTag,
+} from '../utils/member';
 import { GroupTagList } from './group-tag-control';
 import Card, { cardWidth } from './createCard';
 import { BasicButton } from './buttons';
@@ -214,6 +220,7 @@ const MembersListTable: React.FC<{
   membersData: QueryDocumentSnapshot<Member>[];
   isSimple?: boolean;
 }> = ({ membersData, isSimple = false }) => {
+  const { currentMember, isAdmin } = useContext(GroupContext);
   return useMemo(
     () => (
       <>
@@ -232,13 +239,22 @@ const MembersListTable: React.FC<{
                     to={`/member/${member.id}`}
                   />
                 </Tooltip>
+                {currentMember?.id !== member.id && isAdmin && (
+                  <Tooltip label="メンバーの削除">
+                    <IconButton
+                      aria-label="メンバーの削除"
+                      icon={<IoTrash />}
+                      onClick={() => deleteMember(member.ref)}
+                    />
+                  </Tooltip>
+                )}
               </ButtonGroup>
             }
           />
         ))}
       </>
     ),
-    [isSimple, membersData]
+    [currentMember?.id, isAdmin, isSimple, membersData]
   );
 };
 

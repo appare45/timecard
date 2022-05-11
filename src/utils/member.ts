@@ -1,6 +1,7 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   DocumentData,
   DocumentReference,
@@ -163,6 +164,17 @@ export const setMemberStatus = async (
     );
     return;
   } catch (error) {
+    throw new Error();
+  }
+};
+
+export const deleteMember = async (
+  member: DocumentReference<Member>
+): Promise<void> => {
+  try {
+    await deleteDoc(member);
+  } catch (error) {
+    console.error(error);
     throw new Error();
   }
 };
