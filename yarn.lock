@@ -1162,14 +1162,6 @@
     selenium-webdriver "4.0.0-rc-1"
     tslib "^2.1.0"
 
-"@firebase/component@0.5.12":
-  version "0.5.12"
-  resolved "https://registry.yarnpkg.com/@firebase/component/-/component-0.5.12.tgz#901f59255fce8ee98f2772de6c5a0f8097cbdcef"
-  integrity sha512-gAKwxo0Ev+rp7Px+Yr71WbcC0CM9Tevhv0g38ORp2p57HqGjY65D3MD+jTKGZl58N/0nmX6MRRKym3bq/3k1gw==
-  dependencies:
-    "@firebase/util" "1.5.1"
-    tslib "^2.1.0"
-
 "@firebase/component@0.5.13":
   version "0.5.13"
   resolved "https://registry.yarnpkg.com/@firebase/component/-/component-0.5.13.tgz#65a382e83bddd109380c9aa1f280791b1b4567c4"
@@ -1177,7 +1169,7 @@
     "@firebase/util" "1.5.2"
     tslib "^2.1.0"
 
-"@firebase/database-compat@0.1.8":
+"@firebase/database-compat@0.1.8", "@firebase/database-compat@^0.1.8":
   version "0.1.8"
   resolved "https://registry.yarnpkg.com/@firebase/database-compat/-/database-compat-0.1.8.tgz#ab627f2bdbe94367f515d5bded880c86886bbd28"
   dependencies:
@@ -1188,26 +1180,6 @@
     "@firebase/util" "1.5.2"
     tslib "^2.1.0"
 
-"@firebase/database-compat@^0.1.1":
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/@firebase/database-compat/-/database-compat-0.1.7.tgz#326f14532c2ec00842aa5e5f387aeaf941748551"
-  integrity sha512-T1mleRv2A8wyTV/jUuOdkN9Tl2lz0RGauqGc9nxP3AUzS9m3gIDN7u4CahZSdJlkR6tSU/MEWlfs5Q/oZStqxg==
-  dependencies:
-    "@firebase/component" "0.5.12"
-    "@firebase/database" "0.12.7"
-    "@firebase/database-types" "0.9.6"
-    "@firebase/logger" "0.3.2"
-    "@firebase/util" "1.5.1"
-    tslib "^2.1.0"
-
-"@firebase/database-types@0.9.6", "@firebase/database-types@^0.9.3":
-  version "0.9.6"
-  resolved "https://registry.yarnpkg.com/@firebase/database-types/-/database-types-0.9.6.tgz#dcea2564ada9afe522d2520d889008f13ad8d2a1"
-  integrity sha512-E7U28X+FtVtug7EkIkaOXbdP8ghCPno21WWgEiDKsneY28N5WOwccfXqSzHgAAezkR40ht/ZqXlCsUhEpv6JXw==
-  dependencies:
-    "@firebase/app-types" "0.7.0"
-    "@firebase/util" "1.5.1"
-
 "@firebase/database-types@0.9.7":
   version "0.9.7"
   resolved "https://registry.yarnpkg.com/@firebase/database-types/-/database-types-0.9.7.tgz#c5ee0ea9bb2703a13c1c47fe880fc577d5ce7f33"
@@ -1215,17 +1187,13 @@
     "@firebase/app-types" "0.7.0"
     "@firebase/util" "1.5.2"
 
-"@firebase/database@0.12.7":
-  version "0.12.7"
-  resolved "https://registry.yarnpkg.com/@firebase/database/-/database-0.12.7.tgz#49b9c326b9b86da6f5238627176a1a21fc2cc768"
-  integrity sha512-HL2NMQ3Ce5YNM2MdEuACHmU9NQEwq2F64R0XK+CReph40skxp+A7TvlJDO5bTAC0s3l3ebgCA9VmxfJu5R6UAA==
+"@firebase/database-types@^0.9.7":
+  version "0.9.8"
+  resolved "https://registry.yarnpkg.com/@firebase/database-types/-/database-types-0.9.8.tgz#5a9bb1d2c492ad635eff5f3cfbe6a0ea6a2463e7"
+  integrity sha512-bI7bwF5xc0nPi6Oa3JVt6JJdfhVAnEpCwgfTNILR4lYDPtxdxlRXhZzQ5lfqlCj7PR+drKh9RvMu6C24N1q04w==
   dependencies:
-    "@firebase/auth-interop-types" "0.1.6"
-    "@firebase/component" "0.5.12"
-    "@firebase/logger" "0.3.2"
-    "@firebase/util" "1.5.1"
-    faye-websocket "0.11.4"
-    tslib "^2.1.0"
+    "@firebase/app-types" "0.7.0"
+    "@firebase/util" "1.6.0"
 
 "@firebase/database@0.12.8":
   version "0.12.8"
@@ -1424,16 +1392,16 @@
     node-fetch "2.6.7"
     tslib "^2.1.0"
 
-"@firebase/util@1.5.1":
-  version "1.5.1"
-  resolved "https://registry.yarnpkg.com/@firebase/util/-/util-1.5.1.tgz#80ee586c78ed444eb7b96406e00513f279ef5a82"
-  integrity sha512-ojwPg8sKVcoU/kC1QdTrD+eUDyjQkZyiH9tlouXeZdAeDddCYNvHgIeBQhZt62WIcjlNhy1zro/xdV5nUUU38A==
-  dependencies:
-    tslib "^2.1.0"
-
 "@firebase/util@1.5.2":
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/@firebase/util/-/util-1.5.2.tgz#bdd2bc11c956a8a6a0fa25fbd752a13e033558bc"
+  dependencies:
+    tslib "^2.1.0"
+
+"@firebase/util@1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@firebase/util/-/util-1.6.0.tgz#31aea6bba3ee98fc83a60eb189cb187243f4ef4b"
+  integrity sha512-6+hhqb4Zzjoo12xofTDHPkgW3FnN4ydBsjd5X2KuQI268DR3W3Ld64W/gkKPZrKRgUxeNeb+pykfP3qRe7q+vA==
   dependencies:
     tslib "^2.1.0"
 
@@ -3787,17 +3755,19 @@ find-up@^4.0.0, find-up@^4.1.0:
     locate-path "^5.0.0"
     path-exists "^4.0.0"
 
-firebase-admin@^10.1.0:
-  version "10.1.0"
-  resolved "https://registry.yarnpkg.com/firebase-admin/-/firebase-admin-10.1.0.tgz#53b1f9c16e7dc6b7e04494f4f3740fbde77990d8"
+firebase-admin@^10.2.0:
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/firebase-admin/-/firebase-admin-10.2.0.tgz#e5a97d35819b5872e3e29384b48f67dab59ede04"
+  integrity sha512-6ehn5J9UEFgi4+naqYvozmGpnZae3cJLdwSkSsDc8/Y0eTBjVMFdf9N2ft7N81UNHA0N5DknOyXhlsdAdyBLCA==
   dependencies:
-    "@firebase/database-compat" "^0.1.1"
-    "@firebase/database-types" "^0.9.3"
+    "@firebase/database-compat" "^0.1.8"
+    "@firebase/database-types" "^0.9.7"
     "@types/node" ">=12.12.47"
     dicer "^0.3.0"
     jsonwebtoken "^8.5.1"
     jwks-rsa "^2.0.2"
     node-forge "^1.3.1"
+    uuid "^8.3.2"
   optionalDependencies:
     "@google-cloud/firestore" "^4.15.1"
     "@google-cloud/storage" "^5.18.3"
@@ -7441,7 +7411,7 @@ util-deprecate@^1.0.1, util-deprecate@~1.0.1:
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
   integrity sha1-RQ1Nyfpw3nMnYvvS1KKJgUGaDM8=
 
-uuid@^8.0.0:
+uuid@^8.0.0, uuid@^8.3.2:
   version "8.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
   integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
