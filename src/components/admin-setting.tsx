@@ -1,15 +1,8 @@
 import { Input } from '@chakra-ui/input';
-import { Text, HStack } from '@chakra-ui/layout';
-import {
-  Box,
-  Stack,
-  Heading,
-  Alert,
-  AlertIcon,
-  useDisclosure,
-  FormControl,
-  FormLabel,
-} from '@chakra-ui/react';
+import { Text, HStack, Box, Stack, Heading } from '@chakra-ui/layout';
+import { FormControl, FormLabel } from '@chakra-ui/form-control';
+import { useDisclosure } from '@chakra-ui/hooks';
+import { Alert, AlertIcon } from '@chakra-ui/alert';
 import {
   Modal,
   ModalContent,

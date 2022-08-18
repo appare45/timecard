@@ -39,7 +39,7 @@ import {
   ModalOverlay,
 } from '@chakra-ui/modal';
 import { deleteInvite, getInvite } from '../utils/invite';
-import { Button, ButtonGroup } from '@chakra-ui/react';
+import { Button, ButtonGroup } from '@chakra-ui/button';
 
 export const AccountList = (): React.ReactElement => {
   const { currentGroup } = useContext(GroupContext);
