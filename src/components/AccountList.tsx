@@ -1,8 +1,8 @@
 import { useDisclosure } from '@chakra-ui/hooks';
-import { Box, Heading, HStack, Stack, Code, Link } from '@chakra-ui/layout';
+import { Box, Heading, HStack, Code, Link } from '@chakra-ui/layout';
 import { Skeleton } from '@chakra-ui/skeleton';
 import { Table, Tr, Td } from '@chakra-ui/table';
-import { Tag, Tag as TagElement, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
+import { Tag, TagLabel, TagLeftIcon } from '@chakra-ui/tag';
 import { QueryDocumentSnapshot } from '@firebase/firestore';
 import React, {
   Suspense,
@@ -11,7 +11,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { IoKeyOutline, IoKeySharp, IoPerson, IoTrash } from 'react-icons/io5';
+import { IoKeySharp, IoPerson, IoTrash } from 'react-icons/io5';
 import { GroupContext } from '../contexts/group';
 import { Link as routerLink } from 'react-router-dom';
 import {
@@ -23,7 +23,6 @@ import {
 } from '../utils/group';
 import { getMember } from '../utils/member';
 import { CopyButton } from './assets';
-import { TagSetting } from './tag-setting';
 import useSWR from 'swr';
 import { Alert, AlertIcon } from '@chakra-ui/alert';
 import { firestoreFetcher } from '../utils/swr-fetcher';
@@ -40,10 +39,9 @@ import {
   ModalOverlay,
 } from '@chakra-ui/modal';
 import { deleteInvite, getInvite } from '../utils/invite';
-import { Button, ButtonGroup } from '@chakra-ui/react';
-import { OrganizationName } from './admin-setting';
+import { Button, ButtonGroup } from '@chakra-ui/button';
 
-const AccountList = () => {
+export const AccountList = (): React.ReactElement => {
   const { currentGroup } = useContext(GroupContext);
   const {
     data: accounts,
@@ -56,46 +54,48 @@ const AccountList = () => {
   const Invite = React.lazy(() => import('./InviteElement'));
   const { onClose, onOpen, isOpen } = useDisclosure();
   return (
-    <Box>
-      <HStack>
-        <Heading size="lg" pb="2">
-          連携済みアカウント
-        </Heading>
-        <BasicButton variant="secondary" onClick={onOpen}>
-          招待
-        </BasicButton>
-      </HStack>
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <Suspense fallback={<Skeleton />}>
-            <Invite
-              onSuccess={() => {
-                onClose();
-                mutate();
-              }}
-            />
-          </Suspense>
-        </ModalContent>
-      </Modal>
-      <Skeleton isLoaded={!!accounts}>
-        <Table alignItems="flex-start">
-          {accounts != undefined && (
-            <>
-              {accounts.map((account) => (
-                <AccountItem account={account} key={account.id} />
-              ))}
-            </>
-          )}
-        </Table>
-      </Skeleton>
-      {error && (
-        <Alert status="error">
-          <AlertIcon />
-          エラーが発生しました
-        </Alert>
-      )}
-    </Box>
+    <>
+      <Box>
+        <HStack>
+          <Heading size="lg" pb="2">
+            連携済みアカウント
+          </Heading>
+          <BasicButton variant="secondary" onClick={onOpen}>
+            招待
+          </BasicButton>
+        </HStack>
+        <Modal isOpen={isOpen} onClose={onClose}>
+          <ModalOverlay />
+          <ModalContent>
+            <Suspense fallback={<Skeleton />}>
+              <Invite
+                onSuccess={() => {
+                  onClose();
+                  mutate();
+                }}
+              />
+            </Suspense>
+          </ModalContent>
+        </Modal>
+        <Skeleton isLoaded={!!accounts}>
+          <Table alignItems="flex-start">
+            {accounts != undefined && (
+              <>
+                {accounts.map((account) => (
+                  <AccountItem account={account} key={account.id} />
+                ))}
+              </>
+            )}
+          </Table>
+        </Skeleton>
+        {error && (
+          <Alert status="error">
+            <AlertIcon />
+            エラーが発生しました
+          </Alert>
+        )}
+      </Box>
+    </>
   );
 };
 const AccountItem = ({
@@ -207,23 +207,5 @@ const AccountItem = ({
         )}
       </Td>
     </Tr>
-  );
-};
-export const AdminSetting: React.FC = () => {
-  return (
-    <Box>
-      <Stack py="4" spacing="8">
-        <HStack spacing="4">
-          <Heading size="lg">組織設定</Heading>
-          <TagElement>
-            <TagLeftIcon as={IoKeyOutline} />
-            <TagLabel>管理者のみが設定できます</TagLabel>
-          </TagElement>
-        </HStack>
-        <OrganizationName />
-        <TagSetting />
-        <AccountList />
-      </Stack>
-    </Box>
   );
 };

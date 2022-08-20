@@ -48,6 +48,10 @@ service cloud.firestore {
         allow get, list: if isGroupMember(groupId, request.auth.token.email)
         allow create, delete: if isAdmin(groupId, request.auth.token.email)
       }
+      match /group/{groupId}/place/{placeId} {
+        allow get, list: if isGroupMember(groupId, request.auth.token.email) 
+        allow create, delete: if isAdmin(groupId, request.auth.token.email)
+      }
       match /invite/{email} {
         allow create, list, delete: if isAuthenticated()
         allow get: if request.auth.token.email == email
