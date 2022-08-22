@@ -1449,10 +1449,10 @@
     "@firebase/util" "1.5.1"
     tslib "^2.1.0"
 
-"@firebase/rules-unit-testing@^2.0.2":
-  version "2.0.2"
-  resolved "https://registry.npmjs.org/@firebase/rules-unit-testing/-/rules-unit-testing-2.0.2.tgz"
-  integrity sha512-odW2Znq5BjWC0QdNLfUbQEI2IxwFX6mgVwFB/vpfs8MUd44ohCHLif8veASKjhrIf0uVIs9vjfOsHb5ONlC76g==
+"@firebase/rules-unit-testing@^2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@firebase/rules-unit-testing/-/rules-unit-testing-2.0.4.tgz#fe988970f1062df1257552623c598bdec5e30c2d"
+  integrity sha512-WZBCi3E5qpOjhXz9yYMsSeKQL8+bp5AlTRmTUfir4Wvm4plfNi04EyTfO/nqRCAIUEL8k6jDdNRx1IDuCyFBdg==
   dependencies:
     node-fetch "2.6.7"
 
