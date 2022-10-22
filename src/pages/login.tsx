@@ -1,20 +1,21 @@
 import React from 'react';
 import { Box, Center, Heading } from '@chakra-ui/layout';
 import { Image } from '@chakra-ui/image';
-import { StyledFirebaseAuth } from 'react-firebaseui';
+import { FirebaseAuth } from 'react-firebaseui';
 import { GoogleAuthProvider } from 'firebase/auth';
 import { useUniversalColors } from '../hooks/color-mode';
 import { auth } from '../utils/auth';
 
-const FirebaseAuth: React.FC<{ redirectUri: string; isLoading: boolean }> = ({
-  redirectUri,
-}) => {
+const FirebaseLoginButton: React.FC<{
+  redirectUri: string;
+  isLoading: boolean;
+}> = ({ redirectUri }) => {
   const loginUiConfig: firebaseui.auth.Config = {
     signInFlow: 'redirect',
     signInSuccessUrl: redirectUri,
     signInOptions: [GoogleAuthProvider.PROVIDER_ID],
   };
-  return <StyledFirebaseAuth uiConfig={loginUiConfig} firebaseAuth={auth()} />;
+  return <FirebaseAuth uiConfig={loginUiConfig} firebaseAuth={auth()} />;
 };
 export default function Login(props: {
   redirectUri: string;
@@ -38,7 +39,7 @@ export default function Login(props: {
           <Heading textAlign="center" mb="3">
             ログイン
           </Heading>
-          <FirebaseAuth
+          <FirebaseLoginButton
             redirectUri={props.redirectUri}
             isLoading={props.isLoading}
           />
