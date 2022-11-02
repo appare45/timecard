@@ -4,49 +4,67 @@
 | main | [![Node.js CI](https://github.com/appare45/timecard/actions/workflows/build.yml/badge.svg)](https://github.com/appare45/timecard/actions/workflows/build.yml) |
 | develop | [![Node.js CI](https://github.com/appare45/timecard/actions/workflows/build.yml/badge.svg?branch=develop)](https://github.com/appare45/timecard/actions/workflows/build.yml) |
 
-# Getting Started with Create React App
+# Clubroom
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+物理研究部出欠管理システム Clubroom
 
-## Available Scripts
+- [ログイン](https://clubroom.appare45.com/)
+- 運用費 0 円
 
-In the project directory, you can run:
+## 構成
 
-### `yarn start`
+![システム構成図](./system.svg)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### フロントエンド
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+- React
+  - JavaScript フレームワーク
+  - HTML の生成に利用
+- Chakra UI
+  - 主に UI コンポーネントに使用
+- Vite
+  - ビルドに使用
 
-### `yarn test`
+### バックエンド
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Cloudflare Pages
+  - ページの配信に使用
+  - Firebase Hosting の方が優秀な可能性あり
+- Firestore
+  - データの保管に使用
+- Firebase Authentication
+  - ユーザー認証に使用
 
-### `yarn build`
+## 開発
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+管理者の方はメールアドレスを記載の上で[kaibatsu35.7m45@gmail.com](mailto:kaibatsu35.7m45@gmail.com)までご連絡ください。  
+管理を行ってくれる方も探しています。  
+本アプリは Node.js を用いて開発されています。
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 開発サーバーの起動
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+# npm run dev
+yarn dev
+```
 
-### `yarn eject`
+### 仮想環境（エミュレーター）の起動
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```bash
+# npm run preview
+yarn preview
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+データ等も含めて起動します
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### 環境変数
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+以下の通り環境変数を設定してください。  
+環境変数は`.env`ファイルを現在のディレクトリに置くことで設定されます
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+VITE_FIREBASE_API_KEY = <firebase api key>
+VITE_FIREBASE_APP_ID = <firebase のapp id>
+VITE_FIREBASE_MEASUREMENT_ID = <firebaseのmeasurement id>
+VITE_FIREBASE_PROJECT_ID = <firebaseのproject id>
+```
